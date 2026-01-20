@@ -1,0 +1,52 @@
+# Git ignore file for Offline PDF Tools
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Linux
+*~
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*.swn
+
+# Build outputs
+dist/
+build/
+*.zip
+
+# Logs
+*.log
+npm-debug.log*
+
+# Node (if added later)
+node_modules/
+package-lock.json
+yarn.lock
+
+# Temporary files
+*.tmp
+*.temp
+
+# Environment
+.env
+.env.local
+
+# Testing
+coverage/
+.nyc_output/
+
+# Misc
+*.bak
+*.orig
