@@ -98,6 +98,16 @@ function setupEventListeners() {
         radioCard.classList.add('selected');
       }
     }
+
+    // Tool help button toggle
+    const helpBtn = e.target.closest('.tool-help-btn');
+    if (helpBtn) {
+      const targetId = helpBtn.getAttribute('data-target');
+      const descElement = document.getElementById(targetId);
+      if (descElement) {
+        descElement.classList.toggle('hidden');
+      }
+    }
   });
 }
 

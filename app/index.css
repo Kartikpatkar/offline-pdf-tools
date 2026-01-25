@@ -100,6 +100,31 @@ body {
   cursor: not-allowed;
 }
 
+/* Help Button */
+.tool-help-btn {
+  background: none !important;
+  border: none !important;
+  font-size: 20px !important;
+  cursor: pointer !important;
+  padding: 0 8px !important;
+  color: var(--primary-color) !important;
+  transition: all 0.2s ease !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+  opacity: 0.8 !important;
+}
+
+.tool-help-btn:hover {
+  opacity: 1 !important;
+  transform: scale(1.15) !important;
+}
+
+.tool-help-btn:active {
+  transform: scale(0.95) !important;
+}
+
 /* Page Thumbnails */
 .page-thumb {
   cursor: pointer;
