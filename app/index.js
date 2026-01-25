@@ -11,6 +11,7 @@ import { parsePageRange, isValidRangeSyntax } from '../utils/rangeParser.js';
 const state = {
   currentTool: null,
   selectedFiles: [],
+  fileMetadata: new Map(), // Store page counts for files
   pageCount: 0,
   selectedPages: new Set(),
   pageOrder: []
@@ -18,86 +19,156 @@ const state = {
 
 // DOM Elements
 const elements = {
-  toolButtons: document.querySelectorAll('.tool-btn'),
-  uploadArea: document.getElementById('uploadArea'),
-  fileInput: document.getElementById('fileInput'),
-  fileList: document.getElementById('fileList'),
-  fileItems: document.getElementById('fileItems'),
-  clearFiles: document.getElementById('clearFiles'),
+  toolTabs: document.querySelectorAll('.tool-tab'),
+  toolCards: document.getElementById('toolCards'),
+  toolDescription: document.getElementById('toolDescription'),
   uploadSection: document.getElementById('uploadSection'),
+  uploadZone: document.getElementById('uploadZone'),
+  fileInput: document.getElementById('fileInput'),
+  filesAndOptionsContainer: document.getElementById('filesAndOptionsContainer'),
+  fileListSection: document.getElementById('fileListSection'),
+  fileItems: document.getElementById('fileItems'),
+  fileCount: document.getElementById('fileCount'),
+  clearFiles: document.getElementById('clearFiles'),
+  addMoreFiles: document.getElementById('addMoreFiles'),
   uploadTitle: document.getElementById('uploadTitle'),
-  uploadHint: document.getElementById('uploadHint'),
   toolOptions: document.getElementById('toolOptions'),
   splitOptions: document.getElementById('splitOptions'),
   extractOptions: document.getElementById('extractOptions'),
   rotateOptions: document.getElementById('rotateOptions'),
   deleteOptions: document.getElementById('deleteOptions'),
   reorderOptions: document.getElementById('reorderOptions'),
+  extractPageSelector: document.getElementById('extractPageSelector'),
+  rotatePageSelector: document.getElementById('rotatePageSelector'),
+  deletePageSelector: document.getElementById('deletePageSelector'),
+  reorderPageSelector: document.getElementById('reorderPageSelector'),
   actionSection: document.getElementById('actionSection'),
   processBtn: document.getElementById('processBtn'),
-  processBtnText: document.getElementById('processBtnText'),
-  resetBtn: document.getElementById('resetBtn'),
-  statusSection: document.getElementById('statusSection'),
-  statusMessage: document.getElementById('statusMessage'),
-  progressBar: document.getElementById('progressBar'),
-  pageRange: document.getElementById('pageRange'),
+  btnText: document.getElementById('btnText'),
+  processingOverlay: document.getElementById('processingOverlay'),
+  toastContainer: document.getElementById('toastContainer'),
+  pageFrom: document.getElementById('pageFrom'),
+  pageTo: document.getElementById('pageTo'),
   totalPages: document.getElementById('totalPages')
 };
 
 // Initialize App
 function init() {
   setupEventListeners();
+  // Set default tool to merge (matches the active tab in HTML)
+  selectTool('merge');
   console.log('Offline PDF Tools initialized - 100% private, 100% offline');
 }
 
 // Setup Event Listeners
 function setupEventListeners() {
-  // Tool selection
-  elements.toolButtons.forEach(btn => {
-    btn.addEventListener('click', () => selectTool(btn.dataset.tool));
+  // Tool selection (tabs)
+  elements.toolTabs.forEach(tab => {
+    tab.addEventListener('click', () => selectTool(tab.dataset.tool));
   });
 
   // File upload
-  elements.uploadArea.addEventListener('click', () => elements.fileInput.click());
+  elements.uploadZone.addEventListener('click', () => elements.fileInput.click());
   elements.fileInput.addEventListener('change', handleFileSelect);
   
   // Drag and drop
-  elements.uploadArea.addEventListener('dragover', handleDragOver);
-  elements.uploadArea.addEventListener('dragleave', handleDragLeave);
-  elements.uploadArea.addEventListener('drop', handleDrop);
+  elements.uploadZone.addEventListener('dragover', handleDragOver);
+  elements.uploadZone.addEventListener('dragleave', handleDragLeave);
+  elements.uploadZone.addEventListener('drop', handleDrop);
 
   // Clear files
   elements.clearFiles.addEventListener('click', clearFiles);
 
+  // Add more files
+  elements.addMoreFiles.addEventListener('click', () => elements.fileInput.click());
+
   // Process button
   elements.processBtn.addEventListener('click', processFiles);
 
-  // Reset button
-  elements.resetBtn.addEventListener('click', reset);
+  // Radio card selections
+  document.addEventListener('click', (e) => {
+    const radioCard = e.target.closest('.radio-card');
+    if (radioCard) {
+      const input = radioCard.querySelector('input[type="radio"]');
+      if (input) {
+        input.checked = true;
+        document.querySelectorAll('.radio-card').forEach(card => {
+          card.classList.remove('selected');
+        });
+        radioCard.classList.add('selected');
+      }
+    }
+  });
 }
 
 // Tool Selection
 function selectTool(tool) {
   state.currentTool = tool;
   
-  // Update UI
-  elements.toolButtons.forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.tool === tool);
+  // Update UI - update tabs
+  elements.toolTabs.forEach(tab => {
+    tab.classList.toggle('active', tab.dataset.tool === tool);
   });
+
+  // Tool descriptions
+  const toolInfo = {
+    merge: {
+      title: 'How it works',
+      desc: 'Combine multiple PDF files into a single document. Simply upload your files and click merge!',
+      icon: 'ℹ️'
+    },
+    split: {
+      title: 'How it works',
+      desc: 'Extract specific page ranges into a new PDF. Use commas for individual pages and dashes for ranges.',
+      icon: 'ℹ️'
+    },
+    extract: {
+      title: 'How it works',
+      desc: 'Select individual pages to create a new PDF. Click on pages to toggle selection.',
+      icon: 'ℹ️'
+    },
+    rotate: {
+      title: 'How it works',
+      desc: 'Rotate selected pages by your chosen angle. Select rotation direction first, then choose pages.',
+      icon: 'ℹ️'
+    },
+    delete: {
+      title: 'How it works',
+      desc: 'Remove unwanted pages from your PDF. Select the pages you want to delete.',
+      icon: 'ℹ️'
+    },
+    reorder: {
+      title: 'How it works',
+      desc: 'Drag and drop pages to rearrange their order in the PDF document.',
+      icon: 'ℹ️'
+    }
+  };
+
+  // Update tool description
+  const info = toolInfo[tool];
+  elements.toolDescription.innerHTML = `
+    <div class="flex items-start gap-3">
+      <div class="text-2xl">${info.icon}</div>
+      <div>
+        <h3 class="font-semibold text-lg mb-1" style="color: var(--text-color);">${info.title}</h3>
+        <p class="text-sm" style="color: var(--text-color); opacity: 0.7;">${info.desc}</p>
+      </div>
+    </div>
+  `;
 
   // Update upload section text
   const uploadTexts = {
-    merge: { title: 'Select multiple PDFs to merge', hint: 'Select 2 or more PDF files', multiple: true },
-    split: { title: 'Select PDF to split', hint: 'Select a single PDF file', multiple: false },
-    extract: { title: 'Select PDF to extract pages from', hint: 'Select a single PDF file', multiple: false },
-    rotate: { title: 'Select PDF to rotate pages', hint: 'Select a single PDF file', multiple: false },
-    delete: { title: 'Select PDF to delete pages from', hint: 'Select a single PDF file', multiple: false },
-    reorder: { title: 'Select PDF to reorder pages', hint: 'Select a single PDF file', multiple: false }
+    merge: { title: 'Drop your PDF files here', multiple: true },
+    split: { title: 'Drop your PDF file here', multiple: false },
+    extract: { title: 'Drop your PDF file here', multiple: false },
+    rotate: { title: 'Drop your PDF file here', multiple: false },
+    delete: { title: 'Drop your PDF file here', multiple: false },
+    reorder: { title: 'Drop your PDF file here', multiple: false }
   };
 
   const config = uploadTexts[tool];
   elements.uploadTitle.textContent = config.title;
-  elements.uploadHint.textContent = config.hint;
+  elements.fileInput.multiple = config.multiple;
   elements.fileInput.multiple = config.multiple;
 
   // Update process button text
@@ -109,7 +180,7 @@ function selectTool(tool) {
     delete: 'Delete Pages',
     reorder: 'Reorder & Export'
   };
-  elements.processBtnText.textContent = buttonTexts[tool];
+  elements.btnText.textContent = buttonTexts[tool];
 
   // Reset state
   clearFiles();
@@ -123,28 +194,34 @@ function handleFileSelect(event) {
 
 function handleDragOver(event) {
   event.preventDefault();
-  elements.uploadArea.classList.add('drag-over');
+  elements.uploadZone.classList.add('drag-over');
 }
 
 function handleDragLeave(event) {
   event.preventDefault();
-  elements.uploadArea.classList.remove('drag-over');
+  elements.uploadZone.classList.remove('drag-over');
 }
 
 function handleDrop(event) {
   event.preventDefault();
-  elements.uploadArea.classList.remove('drag-over');
+  elements.uploadZone.classList.remove('drag-over');
   
   const files = Array.from(event.dataTransfer.files);
   addFiles(files);
 }
 
 async function addFiles(files) {
+  console.log('addFiles called with:', files);
+  console.log('Current tool:', state.currentTool);
+  
   // Validate PDFs
   if (!areAllPDFs(files)) {
+    console.log('Files are not PDFs');
     showStatus('Please select only PDF files', 'error');
     return;
   }
+
+  console.log('All files are PDFs');
 
   // Check file count based on tool
   if (state.currentTool === 'merge') {
@@ -155,6 +232,21 @@ async function addFiles(files) {
       return;
     }
     state.selectedFiles = files;
+  }
+
+  console.log('Selected files:', state.selectedFiles);
+
+  // Load page counts for all files
+  for (const file of state.selectedFiles) {
+    if (!state.fileMetadata.has(file)) {
+      try {
+        const pageCount = await pdfService.getPageCount(file);
+        state.fileMetadata.set(file, { pageCount });
+      } catch (error) {
+        console.error('Error loading page count for', file.name, error);
+        state.fileMetadata.set(file, { pageCount: '?' });
+      }
+    }
   }
 
   // Update UI
@@ -171,45 +263,93 @@ async function addFiles(files) {
   }
 }
 
+function getSplitRangeString() {
+  const from = parseInt(elements.pageFrom?.value, 10);
+  const to = parseInt(elements.pageTo?.value, 10);
+
+  if (Number.isNaN(from) || Number.isNaN(to)) {
+    throw new Error('Please enter both From and To pages');
+  }
+  if (from < 1 || to < 1) {
+    throw new Error('Page numbers must be 1 or higher');
+  }
+  if (state.pageCount && (from > state.pageCount || to > state.pageCount)) {
+    throw new Error(`Page numbers must be between 1 and ${state.pageCount}`);
+  }
+  if (from > to) {
+    throw new Error('From page cannot be greater than To page');
+  }
+
+  return `${from}-${to}`;
+}
+
 function displayFileList() {
+  console.log('displayFileList called');
+  console.log('elements.fileItems:', elements.fileItems);
+  console.log('state.selectedFiles:', state.selectedFiles);
+  
   elements.fileItems.innerHTML = '';
   
   state.selectedFiles.forEach((file, index) => {
+    console.log('Creating list item for:', file.name);
     const li = document.createElement('li');
+    li.className = 'flex items-center justify-between p-3 rounded-lg';
+    li.style.backgroundColor = 'var(--secondary-color)';
+    
+    const metadata = state.fileMetadata.get(file);
+    const pageInfo = metadata ? ` · ${metadata.pageCount} pages` : '';
+    
     li.innerHTML = `
-      <span>${file.name} (${formatFileSize(file.size)})</span>
-      <button class="btn-secondary" onclick="removeFile(${index})">Remove</button>
+      <span style="color: var(--text-color);">${file.name} (${formatFileSize(file.size)}${pageInfo})</span>
+      <button class="btn-secondary" data-file-index="${index}">Remove</button>
     `;
+    
+    // Add click listener to remove button
+    const removeBtn = li.querySelector('button');
+    removeBtn.addEventListener('click', () => {
+      state.selectedFiles.splice(index, 1);
+      displayFileList();
+      if (state.selectedFiles.length === 0) {
+        clearFiles();
+      }
+    });
+    
     elements.fileItems.appendChild(li);
   });
 
+  // Update file count
+  elements.fileCount.textContent = state.selectedFiles.length;
+  
+  console.log('File count updated to:', state.selectedFiles.length);
+  console.log('Showing file list section');
+
   if (state.selectedFiles.length > 0) {
-    elements.fileList.style.display = 'block';
-    elements.actionSection.style.display = 'block';
+    elements.filesAndOptionsContainer.classList.remove('hidden');
+    elements.actionSection.classList.remove('hidden');
+    elements.uploadSection.classList.add('hidden');
   } else {
-    elements.fileList.style.display = 'none';
-    elements.actionSection.style.display = 'none';
+    elements.filesAndOptionsContainer.classList.add('hidden');
+    elements.actionSection.classList.add('hidden');
+    elements.uploadSection.classList.remove('hidden');
   }
+  
+  console.log('Container display:', elements.filesAndOptionsContainer.classList);
 }
 
 function clearFiles() {
   state.selectedFiles = [];
+  state.fileMetadata.clear();
   state.pageCount = 0;
   state.selectedPages.clear();
   state.pageOrder = [];
   elements.fileInput.value = '';
+  if (elements.pageFrom) elements.pageFrom.value = '';
+  if (elements.pageTo) elements.pageTo.value = '';
   displayFileList();
   hideToolOptions();
   hideStatus();
+  elements.uploadSection.classList.remove('hidden');
 }
-
-window.removeFile = function(index) {
-  state.selectedFiles.splice(index, 1);
-  displayFileList();
-  if (state.selectedFiles.length === 0) {
-    clearFiles();
-  }
-};
 
 // Load Page Info
 async function loadPageInfo() {
@@ -231,11 +371,6 @@ async function loadPageInfo() {
 // Show Tool Options
 function showToolOptions() {
   // Hide all options first
-  document.querySelectorAll('.option-panel').forEach(panel => {
-    panel.style.display = 'none';
-  });
-
-  // Show relevant option panel
   const optionPanels = {
     split: elements.splitOptions,
     extract: elements.extractOptions,
@@ -244,14 +379,19 @@ function showToolOptions() {
     reorder: elements.reorderOptions
   };
 
+  // Hide all panels
+  Object.values(optionPanels).forEach(panel => {
+    if (panel) panel.classList.add('hidden');
+  });
+
   const panel = optionPanels[state.currentTool];
   if (panel) {
-    panel.style.display = 'block';
-    elements.toolOptions.style.display = 'block';
+    panel.classList.remove('hidden');
+    elements.toolOptions.classList.remove('hidden');
 
     // Initialize tool-specific UI
     if (state.currentTool === 'extract') {
-      renderPageSelector('pageSelector');
+      renderPageSelector('extractPageSelector');
     } else if (state.currentTool === 'rotate') {
       renderPageSelector('rotatePageSelector');
     } else if (state.currentTool === 'delete') {
@@ -260,12 +400,12 @@ function showToolOptions() {
       renderReorderList();
     }
   } else {
-    elements.toolOptions.style.display = 'none';
+    elements.toolOptions.classList.add('hidden');
   }
 }
 
 function hideToolOptions() {
-  elements.toolOptions.style.display = 'none';
+  elements.toolOptions.classList.add('hidden');
 }
 
 // Page Selector
@@ -300,8 +440,9 @@ function renderPageSelector(containerId) {
 
 // Reorder List
 function renderReorderList() {
-  const container = document.getElementById('reorderPageList');
+  const container = document.getElementById('reorderPageSelector');
   container.innerHTML = '';
+  container.classList.add('page-grid');
 
   state.pageOrder.forEach((pageNum, index) => {
     const pageItem = document.createElement('div');
@@ -368,10 +509,7 @@ async function processFiles() {
         break;
 
       case 'split':
-        const rangeString = elements.pageRange.value;
-        if (!isValidRangeSyntax(rangeString)) {
-          throw new Error('Invalid page range syntax');
-        }
+        const rangeString = getSplitRangeString();
         result = await pdfService.splitPDF(state.selectedFiles[0], rangeString);
         await downloadPDF(result, generateTimestampedFilename('split'));
         showStatus('PDF split successfully!', 'success');
@@ -422,30 +560,46 @@ async function processFiles() {
 
 // Status & Progress
 function showStatus(message, type = 'info') {
-  elements.statusMessage.textContent = message;
-  elements.statusMessage.className = `status-message ${type}`;
-  elements.statusSection.style.display = 'block';
+  const toast = document.createElement('div');
+  toast.className = 'card p-4 mb-3';
+  toast.style.minWidth = '250px';
+  
+  const icon = type === 'error' ? '❌' : type === 'warning' ? '⚠️' : type === 'success' ? '✅' : 'ℹ️';
+  
+  toast.innerHTML = `
+    <div class="flex items-center gap-3">
+      <span class="text-xl">${icon}</span>
+      <span style="color: var(--text-color);">${message}</span>
+    </div>
+  `;
+  
+  elements.toastContainer.appendChild(toast);
+  
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transition = 'opacity 0.3s';
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
 }
 
 function hideStatus() {
-  elements.statusSection.style.display = 'none';
+  elements.toastContainer.innerHTML = '';
 }
 
 function showProgress() {
-  elements.progressBar.style.display = 'block';
+  elements.processingOverlay.classList.remove('hidden');
 }
 
 function hideProgress() {
-  elements.progressBar.style.display = 'none';
+  elements.processingOverlay.classList.add('hidden');
 }
 
 // Reset
 function reset() {
   state.currentTool = null;
   clearFiles();
-  elements.toolButtons.forEach(btn => btn.classList.remove('active'));
+  elements.toolTabs.forEach(tab => tab.classList.remove('active'));
   elements.uploadTitle.textContent = 'Drop PDF files here or click to browse';
-  elements.uploadHint.textContent = 'Your files never leave your computer';
   hideStatus();
 }
 

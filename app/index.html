@@ -1,151 +1,253 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="en" class="h-full">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Offline PDF Tools</title>
   <link rel="stylesheet" href="index.css">
 </head>
-<body>
-  <!-- Header -->
-  <header class="header">
-    <div class="header-content">
-      <h1>📄 Offline PDF Tools</h1>
-      <p class="privacy-badge">🔒 100% Private · Works Offline · No Uploads</p>
-    </div>
-  </header>
-
-  <!-- Main Container -->
-  <main class="container">
-    
-    <!-- Tool Selection -->
-    <section class="tool-selector">
-      <h2>Select Tool</h2>
-      <div class="tool-buttons">
-        <button class="tool-btn" data-tool="merge">
-          <span class="tool-icon">📑</span>
-          <span>Merge PDFs</span>
-        </button>
-        <button class="tool-btn" data-tool="split">
-          <span class="tool-icon">✂️</span>
-          <span>Split PDF</span>
-        </button>
-        <button class="tool-btn" data-tool="extract">
-          <span class="tool-icon">📋</span>
-          <span>Extract Pages</span>
-        </button>
-        <button class="tool-btn" data-tool="rotate">
-          <span class="tool-icon">🔄</span>
-          <span>Rotate Pages</span>
-        </button>
-        <button class="tool-btn" data-tool="delete">
-          <span class="tool-icon">🗑️</span>
-          <span>Delete Pages</span>
-        </button>
-        <button class="tool-btn" data-tool="reorder">
-          <span class="tool-icon">🔀</span>
-          <span>Reorder Pages</span>
-        </button>
+<body class="h-full m-0 overflow-auto" style="background-color: var(--bg-color);">
+  <div class="min-h-full">
+    <!-- Hero Header -->
+    <header class="gradient-bg text-white py-12 px-4 mb-8">
+      <div class="max-w-6xl mx-auto text-center">
+        <div class="flex items-center justify-center gap-4 mb-4">
+          <div class="text-6xl">📄</div>
+          <h1 id="appTitle" class="text-4xl md:text-5xl font-bold">Offline PDF Tools</h1>
+        </div>
+        <p id="privacyBadge" class="badge text-base">🔒 100% Private · Works Offline · No Uploads</p>
       </div>
-    </section>
+    </header>
 
-    <!-- File Upload Area -->
-    <section class="upload-section" id="uploadSection">
-      <div class="upload-area" id="uploadArea">
-        <div class="upload-icon">📁</div>
-        <h3 id="uploadTitle">Drop PDF files here or click to browse</h3>
-        <p class="upload-hint" id="uploadHint">Your files never leave your computer</p>
-        <input type="file" id="fileInput" accept=".pdf,application/pdf" style="display: none;">
-      </div>
-      
-      <!-- File List -->
-      <div class="file-list" id="fileList" style="display: none;">
-        <h3>Selected Files</h3>
-        <ul id="fileItems"></ul>
-        <button class="btn btn-secondary" id="clearFiles">Clear All</button>
-      </div>
-    </section>
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto px-4 pb-12">
 
-    <!-- Tool-Specific Options -->
-    <section class="tool-options" id="toolOptions" style="display: none;">
-      
-      <!-- Split Tool Options -->
-      <div class="option-panel" id="splitOptions" style="display: none;">
-        <h3>Split Options</h3>
-        <label for="pageRange">Page Range (e.g., 1-3,5,7-10):</label>
-        <input type="text" id="pageRange" placeholder="1-3,5,7-10">
-        <p class="hint">Total pages: <span id="totalPages">-</span></p>
-      </div>
+      <!-- Tool Selection Tabs -->
+      <section class="mb-6">
+        <h2 class="text-xl font-bold mb-3" style="color: var(--text-color);">Choose Your Tool</h2>
+        <div class="flex flex-wrap gap-2" id="toolCards">
+          <button class="tool-tab active px-4 py-2 rounded-lg font-medium text-sm flex items-center gap-2 transition" data-tool="merge">
+            <span class="text-lg">📑</span>
+            <span>Merge</span>
+          </button>
+          <button class="tool-tab px-4 py-2 rounded-lg font-medium text-sm flex items-center gap-2 transition" data-tool="split" style="background-color: var(--secondary-color); color: var(--text-color);">
+            <span class="text-lg">✂️</span>
+            <span>Split</span>
+          </button>
+          <button class="tool-tab px-4 py-2 rounded-lg font-medium text-sm flex items-center gap-2 transition" data-tool="extract" style="background-color: var(--secondary-color); color: var(--text-color);">
+            <span class="text-lg">📋</span>
+            <span>Extract</span>
+          </button>
+          <button class="tool-tab px-4 py-2 rounded-lg font-medium text-sm flex items-center gap-2 transition" data-tool="rotate" style="background-color: var(--secondary-color); color: var(--text-color);">
+            <span class="text-lg">🔄</span>
+            <span>Rotate</span>
+          </button>
+          <button class="tool-tab px-4 py-2 rounded-lg font-medium text-sm flex items-center gap-2 transition" data-tool="delete" style="background-color: var(--secondary-color); color: var(--text-color);">
+            <span class="text-lg">🗑️</span>
+            <span>Delete</span>
+          </button>
+          <button class="tool-tab px-4 py-2 rounded-lg font-medium text-sm flex items-center gap-2 transition" data-tool="reorder" style="background-color: var(--secondary-color); color: var(--text-color);">
+            <span class="text-lg">🔀</span>
+            <span>Reorder</span>
+          </button>
+        </div>
+      </section>
 
-      <!-- Extract Tool Options -->
-      <div class="option-panel" id="extractOptions" style="display: none;">
-        <h3>Extract Pages</h3>
-        <div id="pageSelector"></div>
-      </div>
-
-      <!-- Rotate Tool Options -->
-      <div class="option-panel" id="rotateOptions" style="display: none;">
-        <h3>Rotate Pages</h3>
-        <div class="rotation-controls">
-          <label>Rotation Angle:</label>
-          <div class="radio-group">
-            <label>
-              <input type="radio" name="rotation" value="90" checked>
-              90° Clockwise
-            </label>
-            <label>
-              <input type="radio" name="rotation" value="180">
-              180°
-            </label>
-            <label>
-              <input type="radio" name="rotation" value="270">
-              90° Counter-clockwise
-            </label>
+      <!-- Tool Description -->
+      <div id="toolDescription" class="card p-6 mb-8">
+        <div class="flex items-start gap-3">
+          <div class="text-2xl">ℹ️</div>
+          <div>
+            <h3 class="font-semibold text-lg mb-1" style="color: var(--text-color);">How it works</h3>
+            <p class="text-sm" style="color: var(--text-color); opacity: 0.7;">Combine multiple PDF files into a single document. Simply upload your files and click merge!</p>
           </div>
         </div>
-        <div id="rotatePageSelector"></div>
       </div>
 
-      <!-- Delete Tool Options -->
-      <div class="option-panel" id="deleteOptions" style="display: none;">
-        <h3>Delete Pages</h3>
-        <div id="deletePageSelector"></div>
+      <!-- Upload Area -->
+      <section id="uploadSection" class="mb-8">
+        <div id="uploadZone" class="upload-zone p-12 text-center cursor-pointer">
+          <div class="text-7xl mb-6">☁️</div>
+          <h3 id="uploadTitle" class="text-2xl font-bold mb-2" style="color: var(--text-color);">Drop your PDF files here</h3>
+          <p class="text-base mb-4" style="color: var(--text-color); opacity: 0.6;">or click to browse from your computer</p>
+          <div class="inline-block px-6 py-3 rounded-lg font-semibold" style="background-color: var(--secondary-color); color: var(--text-color);">
+            📁 Select Files
+          </div>
+          <p class="text-sm mt-4" style="color: var(--primary-color); font-weight: 600;">🔒 All processing happens locally in your browser</p>
+          <input type="file" id="fileInput" accept=".pdf,application/pdf" multiple style="display: none;">
+        </div>
+      </section>
+
+      
+      <div id="filesAndOptionsContainer" class="mb-8 hidden" style="display: flex; gap: 1rem; flex-wrap: nowrap;">
+        <!-- Tool Options (2/3) -->
+        <div style="flex: 0 0 66.6667%; min-width: 0; max-height: 600px; overflow-y: auto;">
+          <section id="toolOptions">
+        <!-- Split Options -->
+        <div id="splitOptions" class="card p-6 hidden">
+          <div class="flex items-start gap-3 mb-4">
+            <div class="text-2xl">✂️</div>
+            <div class="flex-1">
+              <h3 class="text-xl font-bold mb-1" style="color: var(--text-color);">Split Configuration</h3>
+              <p class="text-sm" style="color: var(--text-color); opacity: 0.7;">Enter page ranges to extract (e.g., 1-3, 5, 7-10)</p>
+            </div>
+          </div>
+          <div class="space-y-3">
+            <div class="flex gap-2 items-end">
+              <div class="flex-1">
+                <label for="pageFrom" class="block text-sm font-semibold mb-2" style="color: var(--text-color);">From page</label>
+                <input type="number" id="pageFrom" min="1" class="w-full" placeholder="e.g., 1">
+              </div>
+              <div class="flex-1">
+                <label for="pageTo" class="block text-sm font-semibold mb-2" style="color: var(--text-color);">To page</label>
+                <input type="number" id="pageTo" min="1" class="w-full" placeholder="e.g., 5">
+              </div>
+            </div>
+            <div class="flex items-center justify-between text-sm px-3 py-2 rounded-lg" style="background-color: var(--secondary-color); color: var(--text-color);">
+              <span style="opacity: 0.75;">Inclusive range will be saved as a new PDF.</span>
+              <span class="flex items-center gap-2 font-semibold">
+                <span>📄</span>
+                <span>Total: <strong id="totalPages">-</strong></span>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Extract Options -->
+        <div id="extractOptions" class="card p-6 hidden">
+          <div class="flex items-start gap-3 mb-4">
+            <div class="text-2xl">📋</div>
+            <div class="flex-1">
+              <h3 class="text-xl font-bold mb-1" style="color: var(--text-color);">Select Pages</h3>
+              <p class="text-sm" style="color: var(--text-color); opacity: 0.7;">Click on pages to include them in the extracted PDF</p>
+            </div>
+          </div>
+          <div id="extractPageSelector" class="max-h-96 overflow-y-auto custom-scrollbar"></div>
+        </div>
+
+        <!-- Rotate Options -->
+        <div id="rotateOptions" class="card p-6 hidden">
+          <div class="flex items-start gap-3 mb-4">
+            <div class="text-2xl">🔄</div>
+            <div class="flex-1">
+              <h3 class="text-xl font-bold mb-1" style="color: var(--text-color);">Rotate Pages</h3>
+              <p class="text-sm" style="color: var(--text-color); opacity: 0.7;">Choose rotation angle and select pages to rotate</p>
+            </div>
+          </div>
+          <div class="mb-6">
+            <label class="block text-sm font-semibold mb-3" style="color: var(--text-color);">Rotation Angle</label>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <label class="radio-card selected">
+                <input type="radio" name="rotation" value="90" checked class="hidden">
+                <div class="flex items-center gap-3">
+                  <div class="text-2xl">↻</div>
+                  <div>
+                    <div class="font-semibold" style="color: var(--text-color);">90° Clockwise</div>
+                    <div class="text-xs" style="opacity: 0.6;">Right turn</div>
+                  </div>
+                </div>
+              </label>
+              <label class="radio-card">
+                <input type="radio" name="rotation" value="180" class="hidden">
+                <div class="flex items-center gap-3">
+                  <div class="text-2xl">⟲</div>
+                  <div>
+                    <div class="font-semibold" style="color: var(--text-color);">180°</div>
+                    <div class="text-xs" style="opacity: 0.6;">Upside down</div>
+                  </div>
+                </div>
+              </label>
+              <label class="radio-card">
+                <input type="radio" name="rotation" value="270" class="hidden">
+                <div class="flex items-center gap-3">
+                  <div class="text-2xl">↺</div>
+                  <div>
+                    <div class="font-semibold" style="color: var(--text-color);">90° Counter-CW</div>
+                    <div class="text-xs" style="opacity: 0.6;">Left turn</div>
+                  </div>
+                </div>
+              </label>
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-semibold mb-3" style="color: var(--text-color);">Select Pages</label>
+            <div id="rotatePageSelector" class="max-h-64 overflow-y-auto custom-scrollbar"></div>
+          </div>
+        </div>
+
+        <!-- Delete Options -->
+        <div id="deleteOptions" class="card p-6 hidden">
+          <div class="flex items-start gap-3 mb-4">
+            <div class="text-2xl">🗑️</div>
+            <div class="flex-1">
+              <h3 class="text-xl font-bold mb-1" style="color: var(--text-color);">Delete Pages</h3>
+              <p class="text-sm" style="color: var(--text-color); opacity: 0.7;">Click on pages you want to remove from the PDF</p>
+            </div>
+          </div>
+          <div id="deletePageSelector" class="max-h-96 overflow-y-auto custom-scrollbar"></div>
+        </div>
+
+        <!-- Reorder Options -->
+        <div id="reorderOptions" class="card p-6 hidden">
+          <div class="flex items-start gap-3 mb-4">
+            <div class="text-2xl">🔀</div>
+            <div class="flex-1">
+              <h3 class="text-xl font-bold mb-1" style="color: var(--text-color);">Reorder Pages</h3>
+              <p class="text-sm" style="color: var(--text-color); opacity: 0.7;">Drag and drop pages to change their order</p>
+            </div>
+          </div>
+          <div id="reorderPageSelector" class="max-h-96 overflow-y-auto custom-scrollbar"></div>
+        </div>
+          </section>
+        </div>
+
+        <!-- File List (1/3) - moved to right side -->
+        <div style="flex: 0 0 33.3333%; min-width: 0;">
+          <section id="fileListSection">
+            <div class="card p-6 h-full flex flex-col">
+              <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center gap-2">
+                  <span class="text-2xl">📚</span>
+                  <h3 class="text-xl font-bold" style="color: var(--text-color);">Your Files</h3>
+                  <span id="fileCount" class="px-3 py-1 rounded-full text-sm font-semibold" style="background-color: var(--secondary-color); color: var(--text-color);">0</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="addMoreFiles" class="px-4 py-2 rounded-lg text-sm font-semibold transition hover:opacity-80" style="background-color: var(--secondary-color); color: var(--text-color);">
+                    Add More
+                  </button>
+                  <button id="clearFiles" class="px-4 py-2 rounded-lg text-sm font-semibold transition hover:opacity-80" style="background-color: var(--secondary-color); color: var(--text-color);">
+                    Clear All
+                  </button>
+                </div>
+              </div>
+              <div id="fileItems" class="space-y-3 flex-1 overflow-y-auto custom-scrollbar"></div>
+            </div>
+          </section>
+        </div>
       </div>
 
-      <!-- Reorder Tool Options -->
-      <div class="option-panel" id="reorderOptions" style="display: none;">
-        <h3>Reorder Pages</h3>
-        <p class="hint">Drag and drop pages to reorder them</p>
-        <div id="reorderPageList" class="page-grid"></div>
-      </div>
+      <!-- Action Button -->
+      <section id="actionSection" class="hidden">
+        <button id="processBtn" class="btn-primary w-full text-lg flex items-center justify-center gap-3">
+          <span class="text-2xl">⚡</span>
+          <span id="btnText">Process PDF</span>
+        </button>
+      </section>
+    </main>
+  </div>
 
-    </section>
+  <!-- Processing Overlay -->
+  <div id="processingOverlay" class="fixed inset-0 flex items-center justify-center hidden" style="background-color: rgba(0, 0, 0, 0.7); z-index: 50; backdrop-filter: blur(8px);">
+    <div class="card p-8 text-center max-w-sm mx-4">
+      <div class="spinner w-16 h-16 border-4 rounded-full mb-6 mx-auto" style="border-color: var(--secondary-color); border-top-color: var(--primary-color);"></div>
+      <h3 class="text-xl font-bold mb-2" style="color: var(--text-color);">Processing your PDF...</h3>
+      <p class="text-sm" style="color: var(--text-color); opacity: 0.7;">This should only take a moment</p>
+    </div>
+  </div>
 
-    <!-- Action Buttons -->
-    <section class="action-section" id="actionSection" style="display: none;">
-      <button class="btn btn-primary" id="processBtn">
-        <span id="processBtnText">Process PDF</span>
-      </button>
-      <button class="btn btn-secondary" id="resetBtn">Start Over</button>
-    </section>
+  <!-- Toast Container -->
+  <div id="toastContainer" class="fixed bottom-6 right-6 z-50 space-y-3"></div>
 
-    <!-- Progress & Status -->
-    <section class="status-section" id="statusSection" style="display: none;">
-      <div class="status-message" id="statusMessage"></div>
-      <div class="progress-bar" id="progressBar" style="display: none;">
-        <div class="progress-fill"></div>
-      </div>
-    </section>
-
-  </main>
-
-  <!-- Footer -->
-  <footer class="footer">
-    <p>All processing happens in your browser. No data is uploaded or stored.</p>
-    <p class="version">v1.0.0</p>
-  </footer>
-
-  <!-- Load app logic -->
   <script type="module" src="index.js"></script>
 </body>
 </html>
