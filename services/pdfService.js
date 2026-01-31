@@ -227,7 +227,41 @@ class PDFService {
     const pdfDoc = await PDFDocument.load(arrayBuffer);
     return pdfDoc.getPageCount();
   }
-}
+  /**
+   * Render a page thumbnail as a data URL
+   * @param {File} file - PDF File object
+   * @param {number} pageIndex - Page index (0-based)
+   * @param {number} width - Thumbnail width in pixels
+   * @param {number} height - Thumbnail height in pixels
+   * @returns {Promise<string>} - Data URL of the rendered thumbnail
+   */
+  async renderPageThumbnail(file, pageIndex, width = 150, height = 200) {
+    if (!file) {
+      throw new Error('No file provided');
+    }
+
+    // Use PDF.js which is built into modern browsers
+    const arrayBuffer = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    const page = await pdf.getPage(pageIndex + 1); // PDF.js uses 1-based indexing
+
+    const viewport = page.getViewport({ scale: 1 });
+    const scale = Math.min(width / viewport.width, height / viewport.height);
+    const scaledViewport = page.getViewport({ scale });
+
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    canvas.height = scaledViewport.height;
+    canvas.width = scaledViewport.width;
+
+    const renderContext = {
+      canvasContext: context,
+      viewport: scaledViewport
+    };
+
+    await page.render(renderContext).promise;
+    return canvas.toDataURL('image/jpeg', 0.8);
+  }}
 
 // Export singleton instance
 export default new PDFService();
