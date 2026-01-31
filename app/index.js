@@ -530,7 +530,6 @@ function renderReorderList() {
   state.pageOrder.forEach((pageNum, index) => {
     const pageItem = document.createElement('div');
     pageItem.className = 'page-item reorder-item';
-    pageItem.textContent = `Page ${pageNum}`;
     pageItem.draggable = true;
     pageItem.dataset.index = index;
 
@@ -560,7 +559,6 @@ function renderReorderList() {
     pageNumber.className = 'page-number';
     pageNumber.textContent = `Page ${pageNum}`;
 
-    pageItem.innerHTML = '';
     pageItem.appendChild(thumbnailContainer);
     pageItem.appendChild(pageNumber);
 
