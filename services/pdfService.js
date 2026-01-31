@@ -136,6 +136,37 @@ class PDFService {
   }
 
   /**
+   * Rotate pages with individual rotations
+   * @param {File} file - PDF File object
+   * @param {Map<number, number>} pageRotations - Map of page number (1-based) to rotation angle
+   * @returns {Promise<Uint8Array>} - Rotated PDF as byte array
+   */
+  async rotatePagesPerPage(file, pageRotations) {
+    if (!file) {
+      throw new Error('No file provided');
+    }
+    if (!pageRotations || pageRotations.size === 0) {
+      throw new Error('No rotations specified');
+    }
+
+    const arrayBuffer = await file.arrayBuffer();
+    const pdfDoc = await PDFDocument.load(arrayBuffer);
+    const totalPages = pdfDoc.getPageCount();
+
+    for (const [pageNum, rotation] of pageRotations) {
+      if (rotation !== 0) {
+        const pageIndex = pageNum - 1;
+        if (pageIndex >= 0 && pageIndex < totalPages) {
+          const page = pdfDoc.getPage(pageIndex);
+          page.setRotation(degrees(rotation));
+        }
+      }
+    }
+
+    return await pdfDoc.save();
+  }
+
+  /**
    * Delete specific pages from PDF
    * @param {File} file - PDF File object
    * @param {number[]} pageNumbers - Array of page numbers to delete (1-indexed)

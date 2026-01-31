@@ -14,7 +14,9 @@ const state = {
   fileMetadata: new Map(), // Store page counts for files
   pageCount: 0,
   selectedPages: new Set(),
-  pageOrder: []
+  pageOrder: [],
+  pageRotations: new Map(), // pageIndex -> rotation (0, 90, 180, 270)
+  thumbnailImages: new Map() // pageIndex -> Image object for redrawing
 };
 
 // DOM Elements
@@ -184,7 +186,7 @@ function selectTool(tool) {
     },
     rotate: {
       title: 'How it works',
-      desc: 'Rotate selected pages by your chosen angle. Select rotation direction first, then choose pages.',
+      desc: 'Click the rotation button on each page to cycle through 0°, 90°, 180°, 270° rotations.',
       icon: 'ℹ️'
     },
     delete: {
@@ -413,6 +415,8 @@ function clearFiles() {
   state.pageCount = 0;
   state.selectedPages.clear();
   state.pageOrder = [];
+  state.pageRotations.clear();
+  state.thumbnailImages.clear();
   elements.fileInput.value = '';
   if (elements.pageFrom) elements.pageFrom.value = '';
   if (elements.pageTo) elements.pageTo.value = '';
@@ -433,6 +437,14 @@ async function loadPageInfo() {
     // Initialize page order for reorder tool
     if (state.currentTool === 'reorder') {
       state.pageOrder = Array.from({ length: state.pageCount }, (_, i) => i + 1);
+    }
+
+    // Initialize page rotations for rotate tool
+    if (state.currentTool === 'rotate') {
+      state.pageRotations.clear();
+      for (let i = 1; i <= state.pageCount; i++) {
+        state.pageRotations.set(i, 0);
+      }
     }
   } catch (error) {
     showStatus(`Error loading PDF: ${error.message}`, 'error');
@@ -484,6 +496,8 @@ function renderPageSelector(containerId) {
   const container = document.getElementById(containerId);
   container.innerHTML = '';
 
+  state.thumbnailImages = new Map(); // Reset thumbnail images
+
   const grid = document.createElement('div');
   grid.className = 'page-grid';
 
@@ -523,16 +537,38 @@ function renderPageSelector(containerId) {
     pageItem.appendChild(thumbnailContainer);
     pageItem.appendChild(pageNumber);
 
-    // Add click handler
-    pageItem.addEventListener('click', () => {
-      if (state.selectedPages.has(i)) {
-        state.selectedPages.delete(i);
-        pageItem.classList.remove('selected');
-      } else {
-        state.selectedPages.add(i);
-        pageItem.classList.add('selected');
-      }
-    });
+    if (state.currentTool === 'rotate') {
+      // Add rotation controls
+      const rotationControls = document.createElement('div');
+      rotationControls.className = 'rotation-controls flex gap-1 mt-2 justify-center';
+
+      const currentRotation = state.pageRotations.get(i) || 0;
+
+      const rotateBtn = document.createElement('button');
+      rotateBtn.className = 'rotate-btn';
+      rotateBtn.textContent = `${currentRotation}°`;
+      rotateBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const newRotation = (state.pageRotations.get(i) + 90) % 360;
+        state.pageRotations.set(i, newRotation);
+        rotateBtn.textContent = `${newRotation}°`;
+        redrawThumbnail(canvas, i, newRotation);
+      });
+      rotationControls.appendChild(rotateBtn);
+
+      pageItem.appendChild(rotationControls);
+    } else {
+      // Add click handler for selection
+      pageItem.addEventListener('click', () => {
+        if (state.selectedPages.has(i)) {
+          state.selectedPages.delete(i);
+          pageItem.classList.remove('selected');
+        } else {
+          state.selectedPages.add(i);
+          pageItem.classList.add('selected');
+        }
+      });
+    }
 
     grid.appendChild(pageItem);
 
@@ -558,16 +594,20 @@ function renderPageSelector(containerId) {
         const dataUrl = await pdfService.renderPageThumbnail(state.selectedFiles[0], i - 1, 120, 160);
         const img = new Image();
         img.onload = () => {
+          state.thumbnailImages.set(i, img); // Store for redrawing
           const ctx = canvas.getContext('2d');
           ctx.clearRect(0, 0, 120, 160);
+          // Apply rotation
+          const rotation = state.pageRotations.get(i) || 0;
+          ctx.save();
+          ctx.translate(60, 80); // center
+          ctx.rotate(rotation * Math.PI / 180);
           // Calculate scaling to fit the canvas while maintaining aspect ratio
           const scale = Math.min(120 / img.width, 160 / img.height);
           const scaledWidth = img.width * scale;
           const scaledHeight = img.height * scale;
-          const x = (120 - scaledWidth) / 2;
-          const y = (160 - scaledHeight) / 2;
-
-          ctx.drawImage(img, x, y, scaledWidth, scaledHeight);
+          ctx.drawImage(img, -scaledWidth/2, -scaledHeight/2, scaledWidth, scaledHeight);
+          ctx.restore();
         };
         img.src = dataUrl;
       } catch (error) {
@@ -595,6 +635,23 @@ function renderPageSelector(containerId) {
       console.warn(`${failedCount} page thumbnails failed to render`);
     }
   });
+}
+
+// Redraw thumbnail with new rotation
+function redrawThumbnail(canvas, pageNum, rotation) {
+  const img = state.thumbnailImages.get(pageNum);
+  if (!img) return;
+
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, 120, 160);
+  ctx.save();
+  ctx.translate(60, 80);
+  ctx.rotate(rotation * Math.PI / 180);
+  const scale = Math.min(120 / img.width, 160 / img.height);
+  const scaledWidth = img.width * scale;
+  const scaledHeight = img.height * scale;
+  ctx.drawImage(img, -scaledWidth/2, -scaledHeight/2, scaledWidth, scaledHeight);
+  ctx.restore();
 }
 
 // Reorder List
@@ -771,11 +828,12 @@ async function processFiles() {
         break;
 
       case 'rotate':
-        if (state.selectedPages.size === 0) {
-          throw new Error('Please select pages to rotate');
+        // Check if any pages have rotation set
+        const hasRotations = Array.from(state.pageRotations.values()).some(rot => rot > 0);
+        if (!hasRotations) {
+          throw new Error('No pages have rotation set');
         }
-        const rotation = parseInt(document.querySelector('input[name="rotation"]:checked').value);
-        result = await pdfService.rotatePages(state.selectedFiles[0], Array.from(state.selectedPages), rotation);
+        result = await pdfService.rotatePagesPerPage(state.selectedFiles[0], state.pageRotations);
         await downloadPDF(result, generateTimestampedFilename('rotated'));
         showStatus('Pages rotated successfully!', 'success');
         break;

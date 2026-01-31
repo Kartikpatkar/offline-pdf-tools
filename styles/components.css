@@ -113,6 +113,29 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1), 0 0 0 3px rgba(124, 58, 237, 0.3);
 }
 
+/* Rotate Buttons */
+.rotate-btn {
+  cursor: pointer;
+  border: 1px solid var(--secondary-color);
+  background-color: var(--secondary-color);
+  color: var(--text-color);
+  transition: all 0.2s ease;
+  font-size: 14px;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.rotate-btn:hover {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+  color: white;
+  transform: scale(1.05);
+}
+
+.rotate-btn:active {
+  transform: scale(0.95);
+}
+
 /* Help Button */
 .tool-help-btn {
   background: none !important;
