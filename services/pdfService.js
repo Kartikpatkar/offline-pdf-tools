@@ -240,27 +240,37 @@ class PDFService {
       throw new Error('No file provided');
     }
 
-    // Use PDF.js which is built into modern browsers
-    const arrayBuffer = await file.arrayBuffer();
-    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-    const page = await pdf.getPage(pageIndex + 1); // PDF.js uses 1-based indexing
+    // Check if PDF.js is available
+    if (typeof pdfjsLib === 'undefined') {
+      throw new Error('PDF.js library not loaded');
+    }
 
-    const viewport = page.getViewport({ scale: 1 });
-    const scale = Math.min(width / viewport.width, height / viewport.height);
-    const scaledViewport = page.getViewport({ scale });
+    try {
+      // Use PDF.js to render the page
+      const arrayBuffer = await file.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      const page = await pdf.getPage(pageIndex + 1); // PDF.js uses 1-based indexing
 
-    const canvas = document.createElement('canvas');
-    const context = canvas.getContext('2d');
-    canvas.height = scaledViewport.height;
-    canvas.width = scaledViewport.width;
+      const viewport = page.getViewport({ scale: 1 });
+      const scale = Math.min(width / viewport.width, height / viewport.height);
+      const scaledViewport = page.getViewport({ scale });
 
-    const renderContext = {
-      canvasContext: context,
-      viewport: scaledViewport
-    };
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d');
+      canvas.height = scaledViewport.height;
+      canvas.width = scaledViewport.width;
 
-    await page.render(renderContext).promise;
-    return canvas.toDataURL('image/jpeg', 0.8);
+      const renderContext = {
+        canvasContext: context,
+        viewport: scaledViewport
+      };
+
+      await page.render(renderContext).promise;
+      return canvas.toDataURL('image/jpeg', 0.8);
+    } catch (error) {
+      console.error('Error in renderPageThumbnail:', error);
+      throw error;
+    }
   }}
 
 // Export singleton instance
