@@ -5,19 +5,28 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Offline PDF Tools</title>
   <link rel="stylesheet" href="index.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body class="h-full m-0 overflow-auto" style="background-color: var(--bg-color);">
   <div class="min-h-full">
     <!-- Modern Compact Header -->
     <header class="gradient-bg text-white py-4 px-4 mb-4 shadow-sm rounded-b-xl flex items-center justify-between" style="min-height: 56px;">
       <div class="flex items-center gap-3">
-        <span class="text-3xl md:text-4xl">📄</span>
+        <span class="text-3xl md:text-4xl" style="font-size: large;">📄</span>
         <h1 id="appTitle" class="text-xl md:text-2xl font-bold tracking-tight" style="margin-bottom: 0;">Offline PDF Tools</h1>
       </div>
-      <span id="privacyBadge" class="badge text-xs md:text-sm px-3 py-1 rounded-full bg-white bg-opacity-10 border border-white border-opacity-20 font-medium flex items-center gap-1">
-        <span class="text-base">🔒</span>
-        <span>100% Private · Offline · No Uploads</span>
-      </span>
+      <div class="flex items-center gap-2">
+        <span id="privacyBadge" class="badge text-xs md:text-sm px-3 py-1 rounded-full bg-white bg-opacity-10 border border-white border-opacity-20 font-medium flex items-center gap-1">
+          <span class="text-base">🔒</span>
+          <span>100% Private · Offline · No Uploads</span>
+        </span>
+        <input type="checkbox" class="theme-checkbox" id="themeToggle">
+        <label for="themeToggle" class="theme-toggle-label">
+          <i class="fas fa-moon"></i>
+          <i class="fas fa-sun"></i>
+          <span class="ball"></span>
+        </label>
+      </div>
     </header>
 
     <!-- Main Container -->
@@ -132,7 +141,7 @@
             <button class="tool-help-btn" data-target="extractDescription" style="background: none; border: none; font-size: 20px; cursor: pointer; padding: 0 8px; color: var(--text-color);">❓</button>
           </div>
           <p id="extractDescription" class="text-sm mb-4 hidden" style="color: var(--text-color); opacity: 0.7;">Click on pages to include them in the extracted PDF</p>
-          <div id="extractPageSelector" class="max-h-96 overflow-y-auto custom-scrollbar"></div>
+          <div id="extractPageSelector" class="max-h-96 overflow-y-auto custom-scrollbar" style="padding: 5px 0;"></div>
         </div>
 
         <!-- Rotate Options -->

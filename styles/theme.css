@@ -1,0 +1,58 @@
+/* Theme Variables and Overrides */
+
+/* CSS Variables */
+:root {
+  --bg-color: #fafbfc;
+  --surface-color: #ffffff;
+  --text-color: #1a202c;
+  --primary-color: #7c3aed;
+  --secondary-color: #e2e8f0;
+}
+
+/* Theme variants applied to the root element (html) */
+:root.light-theme {
+  --bg-color: #fafbfc;
+  --surface-color: #ffffff;
+  --text-color: #111827;
+  --primary-color: #7c3aed;
+  --secondary-color: #e2e8f0;
+}
+
+:root.dark-theme {
+  --bg-color: #0f1724; /* lighter navy for less darkness */
+  --surface-color: #1e293b; /* lighter card surfaces */
+  --text-color: #f1f5f9; /* slightly dimmed text for less contrast */
+  --primary-color: #8b5cf6; /* softer purple accent */
+  --secondary-color: #334155; /* lighter gray surfaces and borders */
+}
+
+/* Smooth transitions when switching themes */
+html, body, .card {
+  transition: background-color 180ms ease, color 180ms ease, border-color 180ms ease;
+}
+
+/* Gradient Background */
+.gradient-bg {
+  background: linear-gradient(135deg, var(--primary-color) 0%, #a855f7 100%);
+}
+
+/* Dark-mode specific tweaks */
+html.dark-theme .gradient-bg {
+  background: linear-gradient(135deg, #0f1724 0%, #2b0b4a 100%);
+}
+
+html.dark-theme .badge {
+  background: rgba(255,255,255,0.05);
+  color: var(--text-color);
+  border-color: rgba(255,255,255,0.08);
+}
+
+html.dark-theme .card {
+  background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+  box-shadow: 0 6px 24px rgba(2,6,23,0.4);
+}
+
+/* Slightly darker scrollbar track in dark mode for contrast */
+html.dark-theme .custom-scrollbar::-webkit-scrollbar-track {
+  background: #0f1724;
+}

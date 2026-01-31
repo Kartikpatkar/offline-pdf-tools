@@ -1,0 +1,330 @@
+/* Component Styles */
+
+/* Card Component */
+.card {
+  background: var(--surface-color);
+  border-radius: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card:hover {
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+  transform: translateY(-2px);
+}
+
+/* Tool Tabs */
+.tool-tab {
+  cursor: pointer;
+  border: 2px solid transparent;
+  background-color: var(--secondary-color);
+  color: var(--text-color);
+}
+
+.tool-tab:hover {
+  border-color: var(--primary-color);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.tool-tab.active {
+  border-color: var(--primary-color);
+  background: linear-gradient(135deg, var(--primary-color), #a855f7);
+  color: white;
+  box-shadow: 0 4px 15px rgba(124, 58, 237, 0.4);
+}
+
+/* Upload Zone */
+.upload-zone {
+  border: 3px dashed var(--secondary-color);
+  border-radius: 20px;
+  transition: all 0.3s ease;
+  background: var(--surface-color);
+}
+
+.upload-zone:hover,
+.upload-zone.drag-over {
+  border-color: var(--primary-color);
+  background: rgba(124, 58, 237, 0.05);
+  transform: scale(1.01);
+}
+
+/* Buttons */
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary-color), #a855f7);
+  color: white;
+  font-weight: 600;
+  padding: 16px 32px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
+}
+
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(124, 58, 237, 0.4);
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Help Button */
+.tool-help-btn {
+  background: none !important;
+  border: none !important;
+  font-size: 20px !important;
+  cursor: pointer !important;
+  padding: 0 8px !important;
+  color: var(--primary-color) !important;
+  transition: all 0.2s ease !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+  opacity: 0.8 !important;
+}
+
+.tool-help-btn:hover {
+  opacity: 1 !important;
+  transform: scale(1.15) !important;
+}
+
+.tool-help-btn:active {
+  transform: scale(0.95) !important;
+}
+
+/* Page Thumbnails */
+.page-thumb {
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 3px solid transparent;
+  border-radius: 12px;
+  position: relative;
+  overflow: hidden;
+}
+
+.page-thumb:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+}
+
+.page-thumb.selected {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.2);
+}
+
+.page-thumb::after {
+  content: '✓';
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 24px;
+  height: 24px;
+  background: var(--primary-color);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+  opacity: 0;
+  transform: scale(0);
+  transition: all 0.2s ease;
+}
+
+.page-thumb.selected::after {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* File Item */
+.file-item {
+  animation: slideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Spinner */
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Toast */
+.toast {
+  animation: toastSlide 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+}
+
+@keyframes toastSlide {
+  from {
+    opacity: 0;
+    transform: translateX(100px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Reorder Items */
+.reorder-item {
+  transition: all 0.2s ease;
+}
+
+.reorder-item:hover {
+  transform: scale(1.05);
+}
+
+.dragging {
+  opacity: 0.5;
+  transform: rotate(5deg);
+}
+
+/* Badge */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 100px;
+  font-size: 14px;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.95);
+  color: var(--primary-color);
+  backdrop-filter: blur(10px);
+}
+
+/* Scrollbar */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: var(--secondary-color);
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--primary-color);
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #6d28d9;
+}
+
+/* Input Fields */
+input[type="text"],
+input[type="number"] {
+  border: 2px solid var(--secondary-color);
+  border-radius: 12px;
+  padding: 12px 16px;
+  transition: all 0.2s ease;
+  background: var(--surface-color);
+  color: var(--text-color);
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+}
+
+/* Radio Card */
+.radio-card {
+  border: 2px solid var(--secondary-color);
+  border-radius: 12px;
+  padding: 12px 20px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  background: var(--surface-color);
+}
+
+.radio-card:hover {
+  border-color: var(--primary-color);
+  background: rgba(124, 58, 237, 0.05);
+}
+
+.radio-card.selected {
+  border-color: var(--primary-color);
+  background: rgba(124, 58, 237, 0.1);
+}
+
+/* Theme Toggle Styles */
+.theme-checkbox {
+  opacity: 0;
+  position: absolute;
+}
+
+.theme-toggle-label {
+  background-color: #111;
+  width: 50px;
+  height: 26px;
+  border-radius: 50px;
+  position: relative;
+  padding: 5px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background-color 0.2s ease;
+}
+
+.fa-moon {
+  color: #f1c40f;
+}
+
+.fa-sun {
+  color: #f39c12;
+}
+
+.theme-toggle-label .ball {
+  background-color: #fff;
+  width: 22px;
+  height: 22px;
+  position: absolute;
+  left: 2px;
+  top: 2px;
+  border-radius: 50%;
+  transition: transform 0.2s linear;
+}
+
+.theme-checkbox:checked + .theme-toggle-label .ball {
+  transform: translateX(24px);
+}
+
+/* Dark mode adjustments for toggle */
+html.dark-theme .theme-toggle-label {
+  background-color: #334155;
+}
