@@ -426,12 +426,43 @@ function renderPageSelector(containerId) {
   const grid = document.createElement('div');
   grid.className = 'page-grid';
 
+  // Create page items with thumbnails
+  const thumbnailPromises = [];
   for (let i = 1; i <= state.pageCount; i++) {
     const pageItem = document.createElement('div');
     pageItem.className = 'page-item';
-    pageItem.textContent = `Page ${i}`;
     pageItem.dataset.page = i;
-    
+
+    // Create thumbnail container
+    const thumbnailContainer = document.createElement('div');
+    thumbnailContainer.className = 'page-thumbnail-container';
+
+    // Create canvas for thumbnail
+    const canvas = document.createElement('canvas');
+    canvas.className = 'page-thumbnail';
+    canvas.width = 120;
+    canvas.height = 160;
+
+    // Add loading placeholder
+    const context = canvas.getContext('2d');
+    context.fillStyle = 'var(--secondary-color)';
+    context.fillRect(0, 0, 120, 160);
+    context.fillStyle = 'var(--text-color)';
+    context.font = '12px Arial';
+    context.textAlign = 'center';
+    context.fillText('Loading...', 60, 80);
+
+    thumbnailContainer.appendChild(canvas);
+
+    // Add page number
+    const pageNumber = document.createElement('div');
+    pageNumber.className = 'page-number';
+    pageNumber.textContent = `Page ${i}`;
+
+    pageItem.appendChild(thumbnailContainer);
+    pageItem.appendChild(pageNumber);
+
+    // Add click handler
     pageItem.addEventListener('click', () => {
       if (state.selectedPages.has(i)) {
         state.selectedPages.delete(i);
@@ -443,9 +474,49 @@ function renderPageSelector(containerId) {
     });
 
     grid.appendChild(pageItem);
+
+    // Render thumbnail asynchronously
+    const thumbnailPromise = pdfService.renderPageThumbnail(state.selectedFiles[0], i - 1, 120, 160)
+      .then(dataUrl => {
+        const img = new Image();
+        img.onload = () => {
+          const ctx = canvas.getContext('2d');
+          ctx.clearRect(0, 0, 120, 160);
+          // Calculate scaling to fit the canvas while maintaining aspect ratio
+          const scale = Math.min(120 / img.width, 160 / img.height);
+          const scaledWidth = img.width * scale;
+          const scaledHeight = img.height * scale;
+          const x = (120 - scaledWidth) / 2;
+          const y = (160 - scaledHeight) / 2;
+
+          ctx.drawImage(img, x, y, scaledWidth, scaledHeight);
+        };
+        img.src = dataUrl;
+      })
+      .catch(error => {
+        console.error(`Error rendering thumbnail for page ${i}:`, error);
+        // Show error state
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = 'var(--secondary-color)';
+        ctx.fillRect(0, 0, 120, 160);
+        ctx.fillStyle = '#ff6b6b';
+        ctx.font = '10px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('Error', 60, 80);
+      });
+
+    thumbnailPromises.push(thumbnailPromise);
   }
 
   container.appendChild(grid);
+
+  // Handle any errors in thumbnail rendering
+  Promise.allSettled(thumbnailPromises).then(results => {
+    const failedCount = results.filter(result => result.status === 'rejected').length;
+    if (failedCount > 0) {
+      console.warn(`${failedCount} page thumbnails failed to render`);
+    }
+  });
 }
 
 // Reorder List
@@ -454,12 +525,42 @@ function renderReorderList() {
   container.innerHTML = '';
   container.classList.add('page-grid');
 
+  // Create page items with thumbnails for reordering
+  const thumbnailPromises = [];
   state.pageOrder.forEach((pageNum, index) => {
     const pageItem = document.createElement('div');
-    pageItem.className = 'page-item';
-    pageItem.textContent = `Page ${pageNum}`;
+    pageItem.className = 'page-item reorder-item';
     pageItem.draggable = true;
     pageItem.dataset.index = index;
+
+    // Create thumbnail container
+    const thumbnailContainer = document.createElement('div');
+    thumbnailContainer.className = 'page-thumbnail-container';
+
+    // Create canvas for thumbnail
+    const canvas = document.createElement('canvas');
+    canvas.className = 'page-thumbnail';
+    canvas.width = 120;
+    canvas.height = 160;
+
+    // Add loading placeholder
+    const context = canvas.getContext('2d');
+    context.fillStyle = 'var(--secondary-color)';
+    context.fillRect(0, 0, 120, 160);
+    context.fillStyle = 'var(--text-color)';
+    context.font = '12px Arial';
+    context.textAlign = 'center';
+    context.fillText('Loading...', 60, 80);
+
+    thumbnailContainer.appendChild(canvas);
+
+    // Add page number
+    const pageNumber = document.createElement('div');
+    pageNumber.className = 'page-number';
+    pageNumber.textContent = `Page ${pageNum}`;
+
+    pageItem.appendChild(thumbnailContainer);
+    pageItem.appendChild(pageNumber);
 
     pageItem.addEventListener('dragstart', handleReorderDragStart);
     pageItem.addEventListener('dragover', handleReorderDragOver);
@@ -467,6 +568,46 @@ function renderReorderList() {
     pageItem.addEventListener('dragend', handleReorderDragEnd);
 
     container.appendChild(pageItem);
+
+    // Render thumbnail asynchronously
+    const thumbnailPromise = pdfService.renderPageThumbnail(state.selectedFiles[0], pageNum - 1, 120, 160)
+      .then(dataUrl => {
+        const img = new Image();
+        img.onload = () => {
+          const ctx = canvas.getContext('2d');
+          ctx.clearRect(0, 0, 120, 160);
+          // Calculate scaling to fit the canvas while maintaining aspect ratio
+          const scale = Math.min(120 / img.width, 160 / img.height);
+          const scaledWidth = img.width * scale;
+          const scaledHeight = img.height * scale;
+          const x = (120 - scaledWidth) / 2;
+          const y = (160 - scaledHeight) / 2;
+
+          ctx.drawImage(img, x, y, scaledWidth, scaledHeight);
+        };
+        img.src = dataUrl;
+      })
+      .catch(error => {
+        console.error(`Error rendering thumbnail for page ${pageNum}:`, error);
+        // Show error state
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = 'var(--secondary-color)';
+        ctx.fillRect(0, 0, 120, 160);
+        ctx.fillStyle = '#ff6b6b';
+        ctx.font = '10px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('Error', 60, 80);
+      });
+
+    thumbnailPromises.push(thumbnailPromise);
+  });
+
+  // Handle any errors in thumbnail rendering
+  Promise.allSettled(thumbnailPromises).then(results => {
+    const failedCount = results.filter(result => result.status === 'rejected').length;
+    if (failedCount > 0) {
+      console.warn(`${failedCount} page thumbnails failed to render`);
+    }
   });
 }
 
