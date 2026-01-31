@@ -288,9 +288,9 @@ input[type="number"]:focus {
 }
 
 .theme-toggle-label {
-  background-color: #111;
-  width: 50px;
-  height: 26px;
+  background-color: #ffffff;
+  width: 60px;
+  height: 30px;
   border-radius: 50px;
   position: relative;
   padding: 5px;
@@ -301,18 +301,23 @@ input[type="number"]:focus {
   transition: background-color 0.2s ease;
 }
 
-.fa-moon {
-  color: #f1c40f;
+.theme-icon {
+  font-size: large;
+  z-index: 1;
 }
 
-.fa-sun {
-  color: #f39c12;
+.theme-toggle-label .theme-icon:first-child {
+  color: #f1c40f; /* Moon icon color */
+}
+
+.theme-toggle-label .theme-icon:last-child {
+  color: #f39c12; /* Sun icon color */
 }
 
 .theme-toggle-label .ball {
-  background-color: #fff;
-  width: 22px;
-  height: 22px;
+  background-color: #a855f7;
+  width: 26px;
+  height: 26px;
   position: absolute;
   left: 2px;
   top: 2px;
@@ -321,7 +326,7 @@ input[type="number"]:focus {
 }
 
 .theme-checkbox:checked + .theme-toggle-label .ball {
-  transform: translateX(24px);
+  transform: translateX(30px);
 }
 
 /* Dark mode adjustments for toggle */

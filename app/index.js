@@ -53,11 +53,56 @@ const elements = {
 };
 
 // Initialize App
-function init() {
+async function init() {
+  await loadPDFJS();
   setupEventListeners();
   // Set default tool to merge (matches the active tab in HTML)
   selectTool('merge');
   console.log('Offline PDF Tools initialized - 100% private, 100% offline');
+}
+
+// Load PDF.js from extension resources
+function loadPDFJS() {
+  return new Promise((resolve, reject) => {
+    if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.getURL) {
+      // Load worker first
+      fetch(chrome.runtime.getURL('lib/pdf.worker.min.js'))
+        .then(response => response.text())
+        .then(workerCode => {
+          // Create blob URL for worker
+          const workerBlob = new Blob([workerCode], { type: 'application/javascript' });
+          const workerUrl = URL.createObjectURL(workerBlob);
+          
+          const pdfjsScript = document.createElement('script');
+          pdfjsScript.src = chrome.runtime.getURL('lib/pdf.min.js');
+          pdfjsScript.onload = function() {
+            console.log('PDF.js script loaded');
+            // Configure PDF.js worker after PDF.js loads
+            if (typeof pdfjsLib !== 'undefined') {
+              pdfjsLib.GlobalWorkerOptions.workerSrc = workerUrl;
+              console.log('PDF.js configured successfully, version:', pdfjsLib.version);
+              window.pdfjsReady = true;
+              resolve();
+            } else {
+              console.error('pdfjsLib not available after script load');
+              reject(new Error('pdfjsLib not available after script load'));
+            }
+          };
+          pdfjsScript.onerror = function(e) {
+            console.error('Failed to load PDF.js script:', e);
+            reject(new Error('Failed to load PDF.js script'));
+          };
+          document.head.appendChild(pdfjsScript);
+        })
+        .catch(error => {
+          console.error('Failed to load PDF.js worker:', error);
+          reject(error);
+        });
+    } else {
+      console.error('Chrome runtime not available');
+      reject(new Error('Chrome runtime not available'));
+    }
+  });
 }
 
 // Setup Event Listeners
@@ -475,9 +520,26 @@ function renderPageSelector(containerId) {
 
     grid.appendChild(pageItem);
 
-    // Render thumbnail asynchronously
-    const thumbnailPromise = pdfService.renderPageThumbnail(state.selectedFiles[0], i - 1, 120, 160)
-      .then(dataUrl => {
+    // Render thumbnail asynchronously - check if PDF.js is loaded
+    const thumbnailPromise = (async () => {
+      try {
+        // Wait for PDF.js to be available
+        if (typeof pdfjsLib === 'undefined') {
+          console.log('Waiting for PDF.js to load...');
+          // Wait up to 5 seconds for PDF.js to load
+          let attempts = 0;
+          while (typeof pdfjsLib === 'undefined' && attempts < 50) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+            attempts++;
+          }
+
+          if (typeof pdfjsLib === 'undefined') {
+            throw new Error('PDF.js failed to load within timeout');
+          }
+        }
+
+        console.log('PDF.js is ready, rendering thumbnail for page', i);
+        const dataUrl = await pdfService.renderPageThumbnail(state.selectedFiles[0], i - 1, 120, 160);
         const img = new Image();
         img.onload = () => {
           const ctx = canvas.getContext('2d');
@@ -492,8 +554,7 @@ function renderPageSelector(containerId) {
           ctx.drawImage(img, x, y, scaledWidth, scaledHeight);
         };
         img.src = dataUrl;
-      })
-      .catch(error => {
+      } catch (error) {
         console.error(`Error rendering thumbnail for page ${i}:`, error);
         // Show error state
         const ctx = canvas.getContext('2d');
@@ -503,7 +564,8 @@ function renderPageSelector(containerId) {
         ctx.font = '10px Arial';
         ctx.textAlign = 'center';
         ctx.fillText('Error', 60, 80);
-      });
+      }
+    })();
 
     thumbnailPromises.push(thumbnailPromise);
   }
@@ -570,8 +632,25 @@ function renderReorderList() {
     container.appendChild(pageItem);
 
     // Render thumbnail asynchronously
-    const thumbnailPromise = pdfService.renderPageThumbnail(state.selectedFiles[0], pageNum - 1, 120, 160)
-      .then(dataUrl => {
+    const thumbnailPromise = (async () => {
+      try {
+        // Wait for PDF.js to be available
+        if (typeof pdfjsLib === 'undefined') {
+          console.log('Waiting for PDF.js to load...');
+          // Wait up to 5 seconds for PDF.js to load
+          let attempts = 0;
+          while (typeof pdfjsLib === 'undefined' && attempts < 50) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+            attempts++;
+          }
+
+          if (typeof pdfjsLib === 'undefined') {
+            throw new Error('PDF.js failed to load within timeout');
+          }
+        }
+
+        console.log('PDF.js is ready, rendering thumbnail for page', pageNum);
+        const dataUrl = await pdfService.renderPageThumbnail(state.selectedFiles[0], pageNum - 1, 120, 160);
         const img = new Image();
         img.onload = () => {
           const ctx = canvas.getContext('2d');
@@ -586,8 +665,7 @@ function renderReorderList() {
           ctx.drawImage(img, x, y, scaledWidth, scaledHeight);
         };
         img.src = dataUrl;
-      })
-      .catch(error => {
+      } catch (error) {
         console.error(`Error rendering thumbnail for page ${pageNum}:`, error);
         // Show error state
         const ctx = canvas.getContext('2d');
@@ -597,7 +675,8 @@ function renderReorderList() {
         ctx.font = '10px Arial';
         ctx.textAlign = 'center';
         ctx.fillText('Error', 60, 80);
-      });
+      }
+    })();
 
     thumbnailPromises.push(thumbnailPromise);
   });
