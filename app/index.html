@@ -5,24 +5,41 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Offline PDF Tools</title>
   <link rel="stylesheet" href="index.css">
+  <link rel="preload" href="../assets/icons/icons.svg" as="image" type="image/svg+xml">
 </head>
 <body class="h-full m-0 overflow-auto" style="background-color: var(--bg-color);">
   <div class="min-h-full">
     <!-- Modern Compact Header -->
-    <header class="gradient-bg text-white py-4 px-4 mb-4 shadow-sm rounded-b-xl flex items-center justify-between" style="min-height: 56px;">
+    <header class="gradient-bg text-white py-4 px-4 mb-4 shadow-sm rounded-b-xl flex items-center justify-between min-height-header">
       <div class="flex items-center gap-3">
-        <span class="text-3xl md:text-4xl" style="font-size: large;">📄</span>
-        <h1 id="appTitle" class="text-xl md:text-2xl font-bold tracking-tight" style="margin-bottom: 0;">Offline PDF Tools</h1>
+        <span class="text-3xl md:text-4xl">
+          <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <use href="../assets/icons/icons.svg#icon-document"></use>
+          </svg>
+        </span>
+        <h1 id="appTitle" class="text-xl md:text-2xl font-bold tracking-tight margin-bottom-zero">Offline PDF Tools</h1>
       </div>
       <div class="flex items-center gap-2">
         <span id="privacyBadge" class="badge text-xs md:text-sm px-3 py-1 rounded-full bg-white bg-opacity-10 border border-white border-opacity-20 font-medium flex items-center gap-1">
-          <span class="text-base">🔒</span>
+          <span class="text-base">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <use href="../assets/icons/icons.svg#icon-lock"></use>
+            </svg>
+          </span>
           <span>100% Private · Offline · No Uploads</span>
         </span>
         <input type="checkbox" class="theme-checkbox" id="themeToggle">
         <label for="themeToggle" class="theme-toggle-label">
-          <span class="theme-icon">☀️</span>
-          <span class="theme-icon">🌙</span>
+          <span class="theme-icon">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <use href="../assets/icons/icons.svg#icon-sun"></use>
+            </svg>
+          </span>
+          <span class="theme-icon">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <use href="../assets/icons/icons.svg#icon-moon"></use>
+            </svg>
+          </span>
           <span class="ball"></span>
         </label>
       </div>
@@ -34,32 +51,48 @@
       <!-- Tool Selection Tabs -->
       <section class="mb-6">
         <div class="flex items-center justify-between mb-3">
-          <h2 class="text-xl font-bold" style="color: var(--text-color);">Choose Your Tool</h2>
-          <button class="tool-help-btn" data-target="toolDescription">❓</button>
+          <h2 class="text-xl font-bold text-primary">Choose Your Tool</h2>
+          <button class="tool-help-btn" data-target="toolDescription">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <use href="../assets/icons/icons.svg#icon-help"></use>
+            </svg>
+          </button>
         </div>
         <div class="flex flex-wrap gap-2" id="toolCards">
           <button class="tool-tab active px-4 py-2 rounded-lg font-medium text-sm flex items-center gap-2 transition" data-tool="merge">
-            <span class="text-lg">📑</span>
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <use href="../assets/icons/icons.svg#icon-merge"></use>
+            </svg>
             <span>Merge</span>
           </button>
-          <button class="tool-tab px-4 py-2 rounded-lg font-medium text-sm flex items-center gap-2 transition" data-tool="split" style="background-color: var(--secondary-color); color: var(--text-color);">
-            <span class="text-lg">✂️</span>
+          <button class="tool-tab px-4 py-2 rounded-lg font-medium text-sm flex items-center gap-2 transition" data-tool="split">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <use href="../assets/icons/icons.svg#icon-split"></use>
+            </svg>
             <span>Split</span>
           </button>
-          <button class="tool-tab px-4 py-2 rounded-lg font-medium text-sm flex items-center gap-2 transition" data-tool="extract" style="background-color: var(--secondary-color); color: var(--text-color);">
-            <span class="text-lg">📋</span>
+          <button class="tool-tab px-4 py-2 rounded-lg font-medium text-sm flex items-center gap-2 transition" data-tool="extract">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <use href="../assets/icons/icons.svg#icon-extract"></use>
+            </svg>
             <span>Extract</span>
           </button>
-          <button class="tool-tab px-4 py-2 rounded-lg font-medium text-sm flex items-center gap-2 transition" data-tool="rotate" style="background-color: var(--secondary-color); color: var(--text-color);">
-            <span class="text-lg">🔄</span>
+          <button class="tool-tab px-4 py-2 rounded-lg font-medium text-sm flex items-center gap-2 transition" data-tool="rotate">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <use href="../assets/icons/icons.svg#icon-rotate"></use>
+            </svg>
             <span>Rotate</span>
           </button>
-          <button class="tool-tab px-4 py-2 rounded-lg font-medium text-sm flex items-center gap-2 transition" data-tool="delete" style="background-color: var(--secondary-color); color: var(--text-color);">
-            <span class="text-lg">🗑️</span>
+          <button class="tool-tab px-4 py-2 rounded-lg font-medium text-sm flex items-center gap-2 transition" data-tool="delete">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <use href="../assets/icons/icons.svg#icon-delete"></use>
+            </svg>
             <span>Delete</span>
           </button>
-          <button class="tool-tab px-4 py-2 rounded-lg font-medium text-sm flex items-center gap-2 transition" data-tool="reorder" style="background-color: var(--secondary-color); color: var(--text-color);">
-            <span class="text-lg">🔀</span>
+          <button class="tool-tab px-4 py-2 rounded-lg font-medium text-sm flex items-center gap-2 transition" data-tool="reorder">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <use href="../assets/icons/icons.svg#icon-reorder"></use>
+            </svg>
             <span>Reorder</span>
           </button>
         </div>
@@ -68,10 +101,14 @@
       <!-- Tool Description -->
       <div id="toolDescription" class="card p-6 mb-8 hidden">
         <div class="flex items-start gap-3">
-          <div class="text-2xl">ℹ️</div>
+          <div class="text-2xl">
+            <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <use href="../assets/icons/icons.svg#icon-help"></use>
+            </svg>
+          </div>
           <div>
-            <h3 class="font-semibold text-lg mb-1" style="color: var(--text-color);">How it works</h3>
-            <p class="text-sm" style="color: var(--text-color); opacity: 0.7;">Combine multiple PDF files into a single document. Simply upload your files and click merge!</p>
+            <h3 class="font-semibold text-lg mb-1 text-primary">How it works</h3>
+            <p class="text-sm text-secondary">Combine multiple PDF files into a single document. Simply upload your files and click merge!</p>
           </div>
         </div>
       </div>
@@ -79,49 +116,71 @@
       <!-- Upload Area -->
       <section id="uploadSection" class="mb-8">
         <div id="uploadZone" class="upload-zone p-12 text-center cursor-pointer">
-          <div class="text-7xl mb-6">☁️</div>
-          <h3 id="uploadTitle" class="text-2xl font-bold mb-2" style="color: var(--text-color);">Drop your PDF files here</h3>
-          <p class="text-base mb-4" style="color: var(--text-color); opacity: 0.6;">or click to browse from your computer</p>
-          <div class="inline-block px-6 py-3 rounded-lg font-semibold" style="background-color: var(--secondary-color); color: var(--text-color);">
-            📁 Select Files
+          <div class="text-7xl mb-6">
+            <svg width="64" height="64" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+              <use href="../assets/icons/icons.svg#icon-cloud"></use>
+            </svg>
           </div>
-          <p class="text-sm mt-4" style="color: var(--primary-color); font-weight: 600;">🔒 All processing happens locally in your browser</p>
-          <input type="file" id="fileInput" accept=".pdf,application/pdf" multiple style="display: none;">
+          <h3 id="uploadTitle" class="text-2xl font-bold mb-2 text-primary">Drop your PDF files here</h3>
+          <p class="text-base mb-4 text-muted">or click to browse from your computer</p>
+          <div class="inline-block px-6 py-3 rounded-lg font-semibold bg-secondary-text">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline mr-2">
+              <use href="../assets/icons/icons.svg#icon-folder"></use>
+            </svg>
+            Select Files
+          </div>
+          <p class="text-sm mt-4 text-accent">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline mr-2">
+              <use href="../assets/icons/icons.svg#icon-lock"></use>
+            </svg>
+            All processing happens locally in your browser
+          </p>
+          <input type="file" id="fileInput" accept=".pdf,application/pdf" multiple class="display-none">
         </div>
       </section>
 
       
-      <div id="filesAndOptionsContainer" class="mb-8 hidden" style="display: flex; gap: 1rem; flex-wrap: nowrap;">
+      <div id="filesAndOptionsContainer" class="mb-8 hidden files-options-container">
         <!-- Tool Options (2/3) -->
-        <div style="flex: 0 0 66.6667%; min-width: 0; max-height: 600px; overflow-y: auto;">
+        <div class="tool-options-section">
           <section id="toolOptions">
         <!-- Split Options -->
         <div id="splitOptions" class="card p-6 hidden">
           <div class="flex items-start justify-between mb-4">
             <div class="flex items-start gap-3 flex-1">
-              <div class="text-2xl">✂️</div>
+              <div class="text-2xl">
+                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <use href="../assets/icons/icons.svg#icon-split"></use>
+                </svg>
+              </div>
               <div class="flex-1">
-                <h3 class="text-xl font-bold mb-1" style="color: var(--text-color);">Split Configuration</h3>
+                <h3 class="text-xl font-bold mb-1 text-primary">Split Configuration</h3>
               </div>
             </div>
-            <button class="tool-help-btn" data-target="splitDescription" style="background: none; border: none; font-size: 20px; cursor: pointer; padding: 0 8px; color: var(--text-color);">❓</button>
+            <button class="tool-help-btn" data-target="splitDescription">
+              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <use href="../assets/icons/icons.svg#icon-help"></use>
+              </svg>
+            </button>
           </div>
-          <p id="splitDescription" class="text-sm mb-4 hidden" style="color: var(--text-color); opacity: 0.7;">Enter page ranges to extract (e.g., 1-3, 5, 7-10)</p>
+          <p id="splitDescription" class="text-sm mb-4 hidden text-secondary">Enter page ranges to extract (e.g., 1-3, 5, 7-10)</p>
           <div class="space-y-3">
             <div class="flex gap-2 items-end">
               <div class="flex-1">
-                <label for="pageFrom" class="block text-sm font-semibold mb-2" style="color: var(--text-color);">From page</label>
+                <label for="pageFrom" class="block text-sm font-semibold mb-2 text-primary">From page</label>
                 <input type="number" id="pageFrom" min="1" class="w-full" placeholder="e.g., 1">
               </div>
               <div class="flex-1">
-                <label for="pageTo" class="block text-sm font-semibold mb-2" style="color: var(--text-color);">To page</label>
+                <label for="pageTo" class="block text-sm font-semibold mb-2 text-primary">To page</label>
                 <input type="number" id="pageTo" min="1" class="w-full" placeholder="e.g., 5">
               </div>
             </div>
-            <div class="flex items-center justify-between text-sm px-3 py-2 rounded-lg" style="background-color: var(--secondary-color); color: var(--text-color);">
-              <span style="opacity: 0.75;">Inclusive range will be saved as a new PDF.</span>
+            <div class="flex items-center justify-between text-sm px-3 py-2 rounded-lg bg-secondary-text">
+              <span class="text-low-opacity">Inclusive range will be saved as a new PDF.</span>
               <span class="flex items-center gap-2 font-semibold">
-                <span>📄</span>
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <use href="../assets/icons/icons.svg#icon-document"></use>
+                </svg>
                 <span>Total: <strong id="totalPages">-</strong></span>
               </span>
             </div>
@@ -132,31 +191,47 @@
         <div id="extractOptions" class="card p-6 hidden">
           <div class="flex items-start justify-between mb-4">
             <div class="flex items-start gap-3 flex-1">
-              <div class="text-2xl">📋</div>
+              <div class="text-2xl">
+                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <use href="../assets/icons/icons.svg#icon-extract"></use>
+                </svg>
+              </div>
               <div class="flex-1">
-                <h3 class="text-xl font-bold mb-1" style="color: var(--text-color);">Select Pages</h3>
+                <h3 class="text-xl font-bold mb-1 text-primary">Select Pages</h3>
               </div>
             </div>
-            <button class="tool-help-btn" data-target="extractDescription" style="background: none; border: none; font-size: 20px; cursor: pointer; padding: 0 8px; color: var(--text-color);">❓</button>
+            <button class="tool-help-btn" data-target="extractDescription">
+              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <use href="../assets/icons/icons.svg#icon-help"></use>
+              </svg>
+            </button>
           </div>
-          <p id="extractDescription" class="text-sm mb-4 hidden" style="color: var(--text-color); opacity: 0.7;">Click on pages to include them in the extracted PDF</p>
-          <div id="extractPageSelector" class="max-h-96 overflow-y-auto custom-scrollbar" style="padding: 5px;"></div>
+          <p id="extractDescription" class="text-sm mb-4 hidden text-secondary">Click on pages to include them in the extracted PDF</p>
+          <div id="extractPageSelector" class="max-h-96 overflow-y-auto custom-scrollbar page-selector-padding"></div>
         </div>
 
         <!-- Rotate Options -->
         <div id="rotateOptions" class="card p-6 hidden">
           <div class="flex items-start justify-between mb-4">
             <div class="flex items-start gap-3 flex-1">
-              <div class="text-2xl">🔄</div>
+              <div class="text-2xl">
+                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <use href="../assets/icons/icons.svg#icon-rotate"></use>
+                </svg>
+              </div>
               <div class="flex-1">
-                <h3 class="text-xl font-bold mb-1" style="color: var(--text-color);">Rotate Pages</h3>
+                <h3 class="text-xl font-bold mb-1 text-primary">Rotate Pages</h3>
               </div>
             </div>
-            <button class="tool-help-btn" data-target="rotateDescription" style="background: none; border: none; font-size: 20px; cursor: pointer; padding: 0 8px; color: var(--text-color);">❓</button>
+            <button class="tool-help-btn" data-target="rotateDescription">
+              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <use href="../assets/icons/icons.svg#icon-help"></use>
+              </svg>
+            </button>
           </div>
-          <p id="rotateDescription" class="text-sm mb-4 hidden" style="color: var(--text-color); opacity: 0.7;">Click the rotation button on each page to cycle through 0°, 90°, 180°, 270° rotations</p>
+          <p id="rotateDescription" class="text-sm mb-4 hidden text-secondary">Click the rotation button on each page to cycle through 0°, 90°, 180°, 270° rotations</p>
           <div>
-            <div id="rotatePageSelector" class="max-h-96 overflow-y-auto custom-scrollbar" style="padding: 5px;"></div>
+            <div id="rotatePageSelector" class="max-h-96 overflow-y-auto custom-scrollbar page-selector-padding"></div>
           </div>
         </div>
 
@@ -164,50 +239,74 @@
         <div id="deleteOptions" class="card p-6 hidden">
           <div class="flex items-start justify-between mb-4">
             <div class="flex items-start gap-3 flex-1">
-              <div class="text-2xl">🗑️</div>
+              <div class="text-2xl">
+                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <use href="../assets/icons/icons.svg#icon-delete"></use>
+                </svg>
+              </div>
               <div class="flex-1">
-                <h3 class="text-xl font-bold mb-1" style="color: var(--text-color);">Delete Pages</h3>
+                <h3 class="text-xl font-bold mb-1 text-primary">Delete Pages</h3>
               </div>
             </div>
-            <button class="tool-help-btn" data-target="deleteDescription" style="background: none; border: none; font-size: 20px; cursor: pointer; padding: 0 8px; color: var(--text-color);">❓</button>
+            <button class="tool-help-btn" data-target="deleteDescription">
+              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <use href="../assets/icons/icons.svg#icon-help"></use>
+              </svg>
+            </button>
           </div>
-          <p id="deleteDescription" class="text-sm mb-4 hidden" style="color: var(--text-color); opacity: 0.7;">Click on pages you want to remove from the PDF</p>
-          <div id="deletePageSelector" class="max-h-96 overflow-y-auto custom-scrollbar" style="padding: 5px;"></div>
+          <p id="deleteDescription" class="text-sm mb-4 hidden text-secondary">Click on pages you want to remove from the PDF</p>
+          <div id="deletePageSelector" class="max-h-96 overflow-y-auto custom-scrollbar page-selector-padding"></div>
         </div>
 
         <!-- Reorder Options -->
         <div id="reorderOptions" class="card p-6 hidden">
           <div class="flex items-start justify-between mb-4">
             <div class="flex items-start gap-3 flex-1">
-              <div class="text-2xl">🔀</div>
+              <div class="text-2xl">
+                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <use href="../assets/icons/icons.svg#icon-reorder"></use>
+                </svg>
+              </div>
               <div class="flex-1">
-                <h3 class="text-xl font-bold mb-1" style="color: var(--text-color);">Reorder Pages</h3>
+                <h3 class="text-xl font-bold mb-1 text-primary">Reorder Pages</h3>
               </div>
             </div>
-            <button class="tool-help-btn" data-target="reorderDescription" style="background: none; border: none; font-size: 20px; cursor: pointer; padding: 0 8px; color: var(--text-color);">❓</button>
+            <button class="tool-help-btn" data-target="reorderDescription">
+              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <use href="../assets/icons/icons.svg#icon-help"></use>
+              </svg>
+            </button>
           </div>
-          <p id="reorderDescription" class="text-sm mb-4 hidden" style="color: var(--text-color); opacity: 0.7;">Drag and drop pages to change their order</p>
-          <div id="reorderPageSelector" class="max-h-96 overflow-y-auto custom-scrollbar" style="padding: 5px;"></div>
+          <p id="reorderDescription" class="text-sm mb-4 hidden text-secondary">Drag and drop pages to change their order</p>
+          <div id="reorderPageSelector" class="max-h-96 overflow-y-auto custom-scrollbar page-selector-padding"></div>
         </div>
           </section>
         </div>
 
         <!-- File List (1/3) - moved to right side -->
-        <div style="flex: 0 0 33.3333%; min-width: 0;">
+        <div class="file-list-section">
           <section id="fileListSection">
             <div class="card p-6 h-full flex flex-col">
               <div class="flex items-center justify-between mb-4">
                 <div class="flex items-center gap-2">
-                  <span class="text-2xl">📚</span>
-                  <h3 class="text-xl font-bold" style="color: var(--text-color);">Your Files</h3>
-                  <span id="fileCount" class="px-3 py-1 rounded-full text-sm font-semibold" style="background-color: var(--secondary-color); color: var(--text-color);">0</span>
+                  <span class="text-2xl">
+                    <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <use href="../assets/icons/icons.svg#icon-clipboard"></use>
+                    </svg>
+                  </span>
+                  <h3 class="text-xl font-bold text-primary">Your Files</h3>
+                  <span id="fileCount" class="px-3 py-1 rounded-full text-sm font-semibold bg-secondary-text">0</span>
                 </div>
                 <div class="flex items-center gap-2">
                   <button id="addMoreFiles" class="icon-btn px-3 py-2 rounded-lg text-sm font-semibold" title="Add More Files">
-                    <span class="text-lg">➕</span>
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <use href="../assets/icons/icons.svg#icon-plus"></use>
+                    </svg>
                   </button>
                   <button id="clearFiles" class="icon-btn px-3 py-2 rounded-lg text-sm font-semibold" title="Clear All Files">
-                    <span class="text-lg">🗑️</span>
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <use href="../assets/icons/icons.svg#icon-delete"></use>
+                    </svg>
                   </button>
                 </div>
               </div>
@@ -220,7 +319,11 @@
       <!-- Action Button -->
       <section id="actionSection" class="hidden">
         <button id="processBtn" class="btn-primary w-full text-lg flex items-center justify-center gap-3">
-          <span class="text-2xl">⚡</span>
+          <span class="text-2xl">
+            <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <use href="../assets/icons/icons.svg#icon-lightning"></use>
+            </svg>
+          </span>
           <span id="btnText">Process PDF</span>
         </button>
       </section>
@@ -228,16 +331,16 @@
   </div>
 
   <!-- Processing Overlay -->
-  <div id="processingOverlay" class="fixed inset-0 flex items-center justify-center hidden" style="background-color: rgba(0, 0, 0, 0.7); z-index: 50; backdrop-filter: blur(8px);">
+  <div id="processingOverlay" class="fixed inset-0 flex items-center justify-center hidden processing-overlay-bg z-index-overlay backdrop-blur">
     <div class="card p-8 text-center max-w-sm mx-4">
-      <div class="spinner w-16 h-16 border-4 rounded-full mb-6 mx-auto" style="border-color: var(--secondary-color); border-top-color: var(--primary-color);"></div>
-      <h3 class="text-xl font-bold mb-2" style="color: var(--text-color);">Processing your PDF...</h3>
-      <p class="text-sm" style="color: var(--text-color); opacity: 0.7;">This should only take a moment</p>
+      <div class="spinner w-16 h-16 border-4 rounded-full mb-6 mx-auto spinner-border"></div>
+      <h3 class="text-xl font-bold mb-2 text-primary">Processing your PDF...</h3>
+      <p class="text-sm text-secondary">This should only take a moment</p>
     </div>
   </div>
 
   <!-- Toast Container -->
-  <div id="toastContainer" class="fixed bottom-6 right-6 z-50 space-y-3"></div>
+  <div id="toastContainer" class="fixed bottom-6 right-6 z-index-overlay space-y-3"></div>
 
   <script type="module" src="index.js"></script>
 </body>

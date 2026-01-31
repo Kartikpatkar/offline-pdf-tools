@@ -419,10 +419,12 @@ input[type="number"]:focus {
 
 .theme-toggle-label .theme-icon:first-child {
   color: #f1c40f; /* Moon icon color */
+  padding: 2px 0 0 2px;
 }
 
 .theme-toggle-label .theme-icon:last-child {
   color: #f39c12; /* Sun icon color */
+      padding: 1px 1px 0 0;
 }
 
 .theme-toggle-label .ball {
@@ -443,4 +445,91 @@ input[type="number"]:focus {
 /* Dark mode adjustments for toggle */
 html.dark-theme .theme-toggle-label {
   background-color: #334155;
+}
+
+/* Layout Classes */
+.files-options-container {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: nowrap;
+}
+
+.tool-options-section {
+  flex: 0 0 66.6667%;
+  min-width: 0;
+}
+
+.file-list-section {
+  flex: 0 0 33.3333%;
+  min-width: 0;
+  height: 100%;
+}
+
+/* Text Color Classes */
+.text-primary {
+  color: var(--text-color);
+}
+
+.text-secondary {
+  color: var(--text-color);
+  opacity: 0.7;
+}
+
+.text-muted {
+  color: var(--text-color);
+  opacity: 0.6;
+}
+
+.text-accent {
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+.text-low-opacity {
+  opacity: 0.75;
+}
+
+/* Background Classes */
+.bg-secondary {
+  background-color: var(--secondary-color);
+}
+
+.bg-secondary-text {
+  background-color: var(--secondary-color);
+  color: var(--text-color);
+}
+
+/* Utility Classes */
+.margin-bottom-zero {
+  margin-bottom: 0;
+}
+
+.min-height-header {
+  min-height: 56px;
+}
+
+.display-none {
+  display: none;
+}
+
+.z-index-overlay {
+  z-index: 50;
+}
+
+.backdrop-blur {
+  backdrop-filter: blur(8px);
+}
+
+.processing-overlay-bg {
+  background-color: rgba(0, 0, 0, 0.7);
+}
+
+.spinner-border {
+  border-color: var(--secondary-color);
+  border-top-color: var(--primary-color);
+}
+
+/* Page Selector Padding */
+.page-selector-padding {
+  padding: 5px;
 }
