@@ -4,7 +4,7 @@
  */
 
 import pdfService from '../services/pdfService.js';
-import { downloadPDF, generateTimestampedFilename, isPDF, areAllPDFs, formatFileSize } from '../utils/fileUtils.js';
+import { downloadPDF, generateTimestampedFilename, generateActionFilename, isPDF, areAllPDFs, formatFileSize } from '../utils/fileUtils.js';
 import { parsePageRange, isValidRangeSyntax } from '../utils/rangeParser.js';
 
 // Application State
@@ -14,7 +14,9 @@ const state = {
   fileMetadata: new Map(), // Store page counts for files
   pageCount: 0,
   selectedPages: new Set(),
-  pageOrder: []
+  pageOrder: [],
+  pageRotations: new Map(), // pageIndex -> rotation (0, 90, 180, 270)
+  thumbnailImages: new Map() // pageIndex -> Image object for redrawing
 };
 
 // DOM Elements
@@ -65,39 +67,26 @@ async function init() {
 function loadPDFJS() {
   return new Promise((resolve, reject) => {
     if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.getURL) {
-      // Load worker first
-      fetch(chrome.runtime.getURL('lib/pdf.worker.min.js'))
-        .then(response => response.text())
-        .then(workerCode => {
-          // Create blob URL for worker
-          const workerBlob = new Blob([workerCode], { type: 'application/javascript' });
-          const workerUrl = URL.createObjectURL(workerBlob);
-          
-          const pdfjsScript = document.createElement('script');
-          pdfjsScript.src = chrome.runtime.getURL('lib/pdf.min.js');
-          pdfjsScript.onload = function() {
-            console.log('PDF.js script loaded');
-            // Configure PDF.js worker after PDF.js loads
-            if (typeof pdfjsLib !== 'undefined') {
-              pdfjsLib.GlobalWorkerOptions.workerSrc = workerUrl;
-              console.log('PDF.js configured successfully, version:', pdfjsLib.version);
-              window.pdfjsReady = true;
-              resolve();
-            } else {
-              console.error('pdfjsLib not available after script load');
-              reject(new Error('pdfjsLib not available after script load'));
-            }
-          };
-          pdfjsScript.onerror = function(e) {
-            console.error('Failed to load PDF.js script:', e);
-            reject(new Error('Failed to load PDF.js script'));
-          };
-          document.head.appendChild(pdfjsScript);
-        })
-        .catch(error => {
-          console.error('Failed to load PDF.js worker:', error);
-          reject(error);
-        });
+      const pdfjsScript = document.createElement('script');
+      pdfjsScript.src = chrome.runtime.getURL('lib/pdf.min.js');
+      pdfjsScript.onload = function() {
+        console.log('PDF.js script loaded');
+        // Configure PDF.js worker after PDF.js loads
+        if (typeof pdfjsLib !== 'undefined') {
+          pdfjsLib.GlobalWorkerOptions.workerSrc = chrome.runtime.getURL('lib/pdf.worker.min.js');
+          console.log('PDF.js configured successfully, version:', pdfjsLib.version);
+          window.pdfjsReady = true;
+          resolve();
+        } else {
+          console.error('pdfjsLib not available after script load');
+          reject(new Error('pdfjsLib not available after script load'));
+        }
+      };
+      pdfjsScript.onerror = function(e) {
+        console.error('Failed to load PDF.js script:', e);
+        reject(new Error('Failed to load PDF.js script'));
+      };
+      document.head.appendChild(pdfjsScript);
     } else {
       console.error('Chrome runtime not available');
       reject(new Error('Chrome runtime not available'));
@@ -184,7 +173,7 @@ function selectTool(tool) {
     },
     rotate: {
       title: 'How it works',
-      desc: 'Rotate selected pages by your chosen angle. Select rotation direction first, then choose pages.',
+      desc: 'Click the rotation button on each page to cycle through 0°, 90°, 180°, 270° rotations.',
       icon: 'ℹ️'
     },
     delete: {
@@ -236,6 +225,17 @@ function selectTool(tool) {
     reorder: 'Reorder & Export'
   };
   elements.btnText.textContent = buttonTexts[tool];
+
+  // Adjust layout for merge tool (no options needed)
+  const toolOptionsContainer = elements.toolOptions.parentElement;
+  const fileListContainer = elements.fileListSection.parentElement;
+  if (tool === 'merge') {
+    toolOptionsContainer.style.display = 'none';
+    fileListContainer.style.flex = '1';
+  } else {
+    toolOptionsContainer.style.display = 'block';
+    fileListContainer.style.flex = '0 0 33.3333%';
+  }
 
   // Reset state
   clearFiles();
@@ -352,11 +352,16 @@ function displayFileList() {
     li.style.backgroundColor = 'var(--secondary-color)';
     
     const metadata = state.fileMetadata.get(file);
-    const pageInfo = metadata ? ` · ${metadata.pageCount} pages` : '';
+    const pageInfo = metadata ? metadata.pageCount : '?';
     
     li.innerHTML = `
-      <span style="color: var(--text-color);">${file.name} (${formatFileSize(file.size)}${pageInfo})</span>
-      <button class="btn-secondary" data-file-index="${index}">Remove</button>
+      <div class="file-info" style="color: var(--text-color);">
+        <div class="file-name font-semibold mb-1">${file.name}</div>
+        <div class="file-meta text-sm opacity-70">
+          Size: ${formatFileSize(file.size)} · Pages: ${pageInfo}
+        </div>
+      </div>
+      <button class="icon-btn btn-danger" data-file-index="${index}" title="Remove">🗑️</button>
     `;
     
     // Add click listener to remove button
@@ -397,6 +402,8 @@ function clearFiles() {
   state.pageCount = 0;
   state.selectedPages.clear();
   state.pageOrder = [];
+  state.pageRotations.clear();
+  state.thumbnailImages.clear();
   elements.fileInput.value = '';
   if (elements.pageFrom) elements.pageFrom.value = '';
   if (elements.pageTo) elements.pageTo.value = '';
@@ -417,6 +424,14 @@ async function loadPageInfo() {
     // Initialize page order for reorder tool
     if (state.currentTool === 'reorder') {
       state.pageOrder = Array.from({ length: state.pageCount }, (_, i) => i + 1);
+    }
+
+    // Initialize page rotations for rotate tool
+    if (state.currentTool === 'rotate') {
+      state.pageRotations.clear();
+      for (let i = 1; i <= state.pageCount; i++) {
+        state.pageRotations.set(i, 0);
+      }
     }
   } catch (error) {
     showStatus(`Error loading PDF: ${error.message}`, 'error');
@@ -468,6 +483,8 @@ function renderPageSelector(containerId) {
   const container = document.getElementById(containerId);
   container.innerHTML = '';
 
+  state.thumbnailImages = new Map(); // Reset thumbnail images
+
   const grid = document.createElement('div');
   grid.className = 'page-grid';
 
@@ -507,16 +524,38 @@ function renderPageSelector(containerId) {
     pageItem.appendChild(thumbnailContainer);
     pageItem.appendChild(pageNumber);
 
-    // Add click handler
-    pageItem.addEventListener('click', () => {
-      if (state.selectedPages.has(i)) {
-        state.selectedPages.delete(i);
-        pageItem.classList.remove('selected');
-      } else {
-        state.selectedPages.add(i);
-        pageItem.classList.add('selected');
-      }
-    });
+    if (state.currentTool === 'rotate') {
+      // Add rotation controls
+      const rotationControls = document.createElement('div');
+      rotationControls.className = 'rotation-controls flex gap-1 mt-2 justify-center';
+
+      const currentRotation = state.pageRotations.get(i) || 0;
+
+      const rotateBtn = document.createElement('button');
+      rotateBtn.className = 'rotate-btn';
+      rotateBtn.textContent = `${currentRotation}°`;
+      rotateBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const newRotation = (state.pageRotations.get(i) + 90) % 360;
+        state.pageRotations.set(i, newRotation);
+        rotateBtn.textContent = `${newRotation}°`;
+        redrawThumbnail(canvas, i, newRotation);
+      });
+      rotationControls.appendChild(rotateBtn);
+
+      pageItem.appendChild(rotationControls);
+    } else {
+      // Add click handler for selection
+      pageItem.addEventListener('click', () => {
+        if (state.selectedPages.has(i)) {
+          state.selectedPages.delete(i);
+          pageItem.classList.remove('selected');
+        } else {
+          state.selectedPages.add(i);
+          pageItem.classList.add('selected');
+        }
+      });
+    }
 
     grid.appendChild(pageItem);
 
@@ -542,16 +581,20 @@ function renderPageSelector(containerId) {
         const dataUrl = await pdfService.renderPageThumbnail(state.selectedFiles[0], i - 1, 120, 160);
         const img = new Image();
         img.onload = () => {
+          state.thumbnailImages.set(i, img); // Store for redrawing
           const ctx = canvas.getContext('2d');
           ctx.clearRect(0, 0, 120, 160);
+          // Apply rotation
+          const rotation = state.pageRotations.get(i) || 0;
+          ctx.save();
+          ctx.translate(60, 80); // center
+          ctx.rotate(rotation * Math.PI / 180);
           // Calculate scaling to fit the canvas while maintaining aspect ratio
           const scale = Math.min(120 / img.width, 160 / img.height);
           const scaledWidth = img.width * scale;
           const scaledHeight = img.height * scale;
-          const x = (120 - scaledWidth) / 2;
-          const y = (160 - scaledHeight) / 2;
-
-          ctx.drawImage(img, x, y, scaledWidth, scaledHeight);
+          ctx.drawImage(img, -scaledWidth/2, -scaledHeight/2, scaledWidth, scaledHeight);
+          ctx.restore();
         };
         img.src = dataUrl;
       } catch (error) {
@@ -579,6 +622,23 @@ function renderPageSelector(containerId) {
       console.warn(`${failedCount} page thumbnails failed to render`);
     }
   });
+}
+
+// Redraw thumbnail with new rotation
+function redrawThumbnail(canvas, pageNum, rotation) {
+  const img = state.thumbnailImages.get(pageNum);
+  if (!img) return;
+
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, 120, 160);
+  ctx.save();
+  ctx.translate(60, 80);
+  ctx.rotate(rotation * Math.PI / 180);
+  const scale = Math.min(120 / img.width, 160 / img.height);
+  const scaledWidth = img.width * scale;
+  const scaledHeight = img.height * scale;
+  ctx.drawImage(img, -scaledWidth/2, -scaledHeight/2, scaledWidth, scaledHeight);
+  ctx.restore();
 }
 
 // Reorder List
@@ -734,14 +794,14 @@ async function processFiles() {
     switch (state.currentTool) {
       case 'merge':
         result = await pdfService.mergePDFs(state.selectedFiles);
-        await downloadPDF(result, generateTimestampedFilename('merged'));
+        await downloadPDF(result, generateActionFilename(state.selectedFiles[0].name, 'merged'));
         showStatus('PDFs merged successfully!', 'success');
         break;
 
       case 'split':
         const rangeString = getSplitRangeString();
         result = await pdfService.splitPDF(state.selectedFiles[0], rangeString);
-        await downloadPDF(result, generateTimestampedFilename('split'));
+        await downloadPDF(result, generateActionFilename(state.selectedFiles[0].name, 'split'));
         showStatus('PDF split successfully!', 'success');
         break;
 
@@ -750,17 +810,18 @@ async function processFiles() {
           throw new Error('Please select pages to extract');
         }
         result = await pdfService.extractPages(state.selectedFiles[0], Array.from(state.selectedPages));
-        await downloadPDF(result, generateTimestampedFilename('extracted'));
+        await downloadPDF(result, generateActionFilename(state.selectedFiles[0].name, 'extracted'));
         showStatus('Pages extracted successfully!', 'success');
         break;
 
       case 'rotate':
-        if (state.selectedPages.size === 0) {
-          throw new Error('Please select pages to rotate');
+        // Check if any pages have rotation set
+        const hasRotations = Array.from(state.pageRotations.values()).some(rot => rot > 0);
+        if (!hasRotations) {
+          throw new Error('No pages have rotation set');
         }
-        const rotation = parseInt(document.querySelector('input[name="rotation"]:checked').value);
-        result = await pdfService.rotatePages(state.selectedFiles[0], Array.from(state.selectedPages), rotation);
-        await downloadPDF(result, generateTimestampedFilename('rotated'));
+        result = await pdfService.rotatePagesPerPage(state.selectedFiles[0], state.pageRotations);
+        await downloadPDF(result, generateActionFilename(state.selectedFiles[0].name, 'rotated'));
         showStatus('Pages rotated successfully!', 'success');
         break;
 
@@ -769,13 +830,13 @@ async function processFiles() {
           throw new Error('Please select pages to delete');
         }
         result = await pdfService.deletePages(state.selectedFiles[0], Array.from(state.selectedPages));
-        await downloadPDF(result, generateTimestampedFilename('modified'));
+        await downloadPDF(result, generateActionFilename(state.selectedFiles[0].name, 'pages_deleted'));
         showStatus('Pages deleted successfully!', 'success');
         break;
 
       case 'reorder':
         result = await pdfService.reorderPages(state.selectedFiles[0], state.pageOrder);
-        await downloadPDF(result, generateTimestampedFilename('reordered'));
+        await downloadPDF(result, generateActionFilename(state.selectedFiles[0].name, 'reordered'));
         showStatus('Pages reordered successfully!', 'success');
         break;
     }

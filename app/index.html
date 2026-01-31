@@ -140,7 +140,7 @@
             <button class="tool-help-btn" data-target="extractDescription" style="background: none; border: none; font-size: 20px; cursor: pointer; padding: 0 8px; color: var(--text-color);">❓</button>
           </div>
           <p id="extractDescription" class="text-sm mb-4 hidden" style="color: var(--text-color); opacity: 0.7;">Click on pages to include them in the extracted PDF</p>
-          <div id="extractPageSelector" class="max-h-96 overflow-y-auto custom-scrollbar" style="padding: 5px 0;"></div>
+          <div id="extractPageSelector" class="max-h-96 overflow-y-auto custom-scrollbar" style="padding: 5px;"></div>
         </div>
 
         <!-- Rotate Options -->
@@ -154,45 +154,9 @@
             </div>
             <button class="tool-help-btn" data-target="rotateDescription" style="background: none; border: none; font-size: 20px; cursor: pointer; padding: 0 8px; color: var(--text-color);">❓</button>
           </div>
-          <p id="rotateDescription" class="text-sm mb-4 hidden" style="color: var(--text-color); opacity: 0.7;">Choose rotation angle and select pages to rotate</p>
-          <div class="mb-6">
-            <label class="block text-sm font-semibold mb-3" style="color: var(--text-color);">Rotation Angle</label>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-              <label class="radio-card selected">
-                <input type="radio" name="rotation" value="90" checked class="hidden">
-                <div class="flex items-center gap-3">
-                  <div class="text-2xl">↻</div>
-                  <div>
-                    <div class="font-semibold" style="color: var(--text-color);">90° Clockwise</div>
-                    <div class="text-xs" style="opacity: 0.6;">Right turn</div>
-                  </div>
-                </div>
-              </label>
-              <label class="radio-card">
-                <input type="radio" name="rotation" value="180" class="hidden">
-                <div class="flex items-center gap-3">
-                  <div class="text-2xl">⟲</div>
-                  <div>
-                    <div class="font-semibold" style="color: var(--text-color);">180°</div>
-                    <div class="text-xs" style="opacity: 0.6;">Upside down</div>
-                  </div>
-                </div>
-              </label>
-              <label class="radio-card">
-                <input type="radio" name="rotation" value="270" class="hidden">
-                <div class="flex items-center gap-3">
-                  <div class="text-2xl">↺</div>
-                  <div>
-                    <div class="font-semibold" style="color: var(--text-color);">90° Counter-CW</div>
-                    <div class="text-xs" style="opacity: 0.6;">Left turn</div>
-                  </div>
-                </div>
-              </label>
-            </div>
-          </div>
+          <p id="rotateDescription" class="text-sm mb-4 hidden" style="color: var(--text-color); opacity: 0.7;">Click the rotation button on each page to cycle through 0°, 90°, 180°, 270° rotations</p>
           <div>
-            <label class="block text-sm font-semibold mb-3" style="color: var(--text-color);">Select Pages</label>
-            <div id="rotatePageSelector" class="max-h-64 overflow-y-auto custom-scrollbar"></div>
+            <div id="rotatePageSelector" class="max-h-96 overflow-y-auto custom-scrollbar" style="padding: 5px;"></div>
           </div>
         </div>
 
@@ -208,7 +172,7 @@
             <button class="tool-help-btn" data-target="deleteDescription" style="background: none; border: none; font-size: 20px; cursor: pointer; padding: 0 8px; color: var(--text-color);">❓</button>
           </div>
           <p id="deleteDescription" class="text-sm mb-4 hidden" style="color: var(--text-color); opacity: 0.7;">Click on pages you want to remove from the PDF</p>
-          <div id="deletePageSelector" class="max-h-96 overflow-y-auto custom-scrollbar"></div>
+          <div id="deletePageSelector" class="max-h-96 overflow-y-auto custom-scrollbar" style="padding: 5px;"></div>
         </div>
 
         <!-- Reorder Options -->
@@ -223,7 +187,7 @@
             <button class="tool-help-btn" data-target="reorderDescription" style="background: none; border: none; font-size: 20px; cursor: pointer; padding: 0 8px; color: var(--text-color);">❓</button>
           </div>
           <p id="reorderDescription" class="text-sm mb-4 hidden" style="color: var(--text-color); opacity: 0.7;">Drag and drop pages to change their order</p>
-          <div id="reorderPageSelector" class="max-h-96 overflow-y-auto custom-scrollbar"></div>
+          <div id="reorderPageSelector" class="max-h-96 overflow-y-auto custom-scrollbar" style="padding: 5px;"></div>
         </div>
           </section>
         </div>
@@ -239,11 +203,11 @@
                   <span id="fileCount" class="px-3 py-1 rounded-full text-sm font-semibold" style="background-color: var(--secondary-color); color: var(--text-color);">0</span>
                 </div>
                 <div class="flex items-center gap-2">
-                  <button id="addMoreFiles" class="px-4 py-2 rounded-lg text-sm font-semibold transition hover:opacity-80" style="background-color: var(--secondary-color); color: var(--text-color);">
-                    Add More
+                  <button id="addMoreFiles" class="icon-btn px-3 py-2 rounded-lg text-sm font-semibold" title="Add More Files">
+                    <span class="text-lg">➕</span>
                   </button>
-                  <button id="clearFiles" class="px-4 py-2 rounded-lg text-sm font-semibold transition hover:opacity-80" style="background-color: var(--secondary-color); color: var(--text-color);">
-                    Clear All
+                  <button id="clearFiles" class="icon-btn px-3 py-2 rounded-lg text-sm font-semibold" title="Clear All Files">
+                    <span class="text-lg">🗑️</span>
                   </button>
                 </div>
               </div>

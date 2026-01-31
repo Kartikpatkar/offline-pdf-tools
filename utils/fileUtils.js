@@ -116,16 +116,15 @@ export function readFileAsArrayBuffer(file) {
 }
 
 /**
- * Sanitize filename (remove unsafe characters)
- * @param {string} filename - Original filename
- * @returns {string} - Sanitized filename
+ * Generate a filename based on original file with action prefix
+ * @param {string} originalFilename - Original file name
+ * @param {string} action - Action performed (e.g., "rotated", "split")
+ * @returns {string} - Filename with action prefix
  */
-export function sanitizeFilename(filename) {
-  if (!filename) return 'document.pdf';
+export function generateActionFilename(originalFilename, action) {
+  if (!originalFilename) return generateTimestampedFilename(action);
   
-  // Remove path separators and unsafe characters
-  return filename
-    .replace(/[/\\?%*:|"<>]/g, '-')
-    .replace(/\s+/g, '_')
-    .substring(0, 255); // Limit length
+  const baseName = originalFilename.replace(/\.pdf$/i, '');
+  const timestamp = new Date().toISOString().replace(/:/g, '-').replace(/\..+/, '').replace('T', '_');
+  return `${baseName}_${action}_${timestamp}.pdf`;
 }

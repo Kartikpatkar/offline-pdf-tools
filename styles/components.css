@@ -1,6 +1,53 @@
-/* Component Styles */
+/* Page Selector */
+.page-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 16px;
+  padding: 16px 0;
+}
 
-/* Card Component */
+.page-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px;
+  border-radius: 12px;
+  background-color: var(--secondary-color);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+}
+
+.page-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.page-item.selected {
+  border-color: var(--primary-color);
+  background-color: rgba(124, 58, 237, 0.1);
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.2);
+}
+
+.page-thumbnail-container {
+  position: relative;
+  margin-bottom: 8px;
+}
+
+.page-thumbnail {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  pointer-events: none;
+}
+
+.page-number {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-color);
+  text-align: center;
+}
 .card {
   background: var(--surface-color);
   border-radius: 20px;
@@ -70,6 +117,70 @@
 .btn-primary:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+/* Icon Buttons */
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: 2px solid transparent;
+  background-color: var(--secondary-color);
+  color: var(--text-color);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  padding: 6px;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.icon-btn:hover {
+  border-color: var(--primary-color);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.btn-danger:hover {
+  border-color: #ff6b6b;
+  background-color: #ff6b6b;
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+}
+
+.icon-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.icon-btn:focus {
+  outline: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1), 0 0 0 3px rgba(124, 58, 237, 0.3);
+}
+
+/* Rotate Buttons */
+.rotate-btn {
+  cursor: pointer;
+  border: 1px solid var(--secondary-color);
+  background-color: var(--secondary-color);
+  color: var(--text-color);
+  transition: all 0.2s ease;
+  font-size: 14px;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.rotate-btn:hover {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+  color: white;
+  transform: scale(1.05);
+}
+
+.rotate-btn:active {
+  transform: scale(0.95);
 }
 
 /* Help Button */
