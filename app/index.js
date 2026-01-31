@@ -159,32 +159,32 @@ function selectTool(tool) {
     merge: {
       title: 'How it works',
       desc: 'Combine multiple PDF files into a single document. Simply upload your files and click merge!',
-      icon: 'ℹ️'
+      icon: '<svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="../assets/icons/icons.svg#icon-help"></use></svg>'
     },
     split: {
       title: 'How it works',
       desc: 'Extract specific page ranges into a new PDF. Use commas for individual pages and dashes for ranges.',
-      icon: 'ℹ️'
+      icon: '<svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="../assets/icons/icons.svg#icon-help"></use></svg>'
     },
     extract: {
       title: 'How it works',
       desc: 'Select individual pages to create a new PDF. Click on pages to toggle selection.',
-      icon: 'ℹ️'
+      icon: '<svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="../assets/icons/icons.svg#icon-help"></use></svg>'
     },
     rotate: {
       title: 'How it works',
       desc: 'Click the rotation button on each page to cycle through 0°, 90°, 180°, 270° rotations.',
-      icon: 'ℹ️'
+      icon: '<svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="../assets/icons/icons.svg#icon-help"></use></svg>'
     },
     delete: {
       title: 'How it works',
       desc: 'Remove unwanted pages from your PDF. Select the pages you want to delete.',
-      icon: 'ℹ️'
+      icon: '<svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="../assets/icons/icons.svg#icon-help"></use></svg>'
     },
     reorder: {
       title: 'How it works',
       desc: 'Drag and drop pages to rearrange their order in the PDF document.',
-      icon: 'ℹ️'
+      icon: '<svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="../assets/icons/icons.svg#icon-help"></use></svg>'
     }
   };
 
@@ -361,7 +361,7 @@ function displayFileList() {
           Size: ${formatFileSize(file.size)} · Pages: ${pageInfo}
         </div>
       </div>
-      <button class="icon-btn btn-danger" data-file-index="${index}" title="Remove">🗑️</button>
+      <button class="icon-btn btn-danger" data-file-index="${index}" title="Remove"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="../assets/icons/icons.svg#icon-delete"></use></svg></button>
     `;
     
     // Add click listener to remove button
@@ -855,11 +855,17 @@ function showStatus(message, type = 'info') {
   toast.className = 'card p-4 mb-3';
   toast.style.minWidth = '250px';
   
-  const icon = type === 'error' ? '❌' : type === 'warning' ? '⚠️' : type === 'success' ? '✅' : 'ℹ️';
+  const iconSvg = type === 'error' ? 
+    '<svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>' :
+    type === 'warning' ? 
+    '<svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>' :
+    type === 'success' ? 
+    '<svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22,4 12,14.01 9,11.01"></polyline></svg>' :
+    '<svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>';
   
   toast.innerHTML = `
     <div class="flex items-center gap-3">
-      <span class="text-xl">${icon}</span>
+      <span class="text-xl">${iconSvg}</span>
       <span style="color: var(--text-color);">${message}</span>
     </div>
   `;
