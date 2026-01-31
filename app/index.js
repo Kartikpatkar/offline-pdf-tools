@@ -60,6 +60,12 @@ async function init() {
   setupEventListeners();
   // Set default tool to merge (matches the active tab in HTML)
   selectTool('merge');
+  // Set current year in footer
+  const currentYear = new Date().getFullYear();
+  const yearElement = document.getElementById('current-year');
+  if (yearElement) {
+    yearElement.textContent = currentYear;
+  }
   console.log('Offline PDF Tools initialized - 100% private, 100% offline');
 }
 

@@ -7,15 +7,15 @@
     "downloads"
   ],
   "icons": {
-    "16": "assets/icons/icon16.jpg",
-    "48": "assets/icons/icon16.jpg",
-    "128": "assets/icons/icon16.jpg"
+    "16": "assets/icons/icon16.png",
+    "48": "assets/icons/icon16.png",
+    "128": "assets/icons/icon16.png"
   },
   "action": {
     "default_title": "Open Offline PDF Tools"
   },
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "/services/background.js"
   },
   "web_accessible_resources": [
     {

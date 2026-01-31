@@ -1,181 +1,157 @@
-# Contributing to Offline PDF Tools
+# 🤝 Contributing to Offline PDF Tools
 
-Thank you for considering contributing to Offline PDF Tools! This document provides guidelines and instructions for contributing.
+Thank you for your interest in contributing to **Offline PDF Tools**!
+We welcome bug reports, feature requests, code improvements, UI/UX enhancements, documentation updates, and more.
 
----
-
-## 🎯 How Can I Contribute?
-
-### Reporting Bugs
-1. Check if the bug has already been reported in [Issues](https://github.com/yourusername/offline-pdf-tools/issues)
-2. If not, create a new issue with:
-   - Clear title
-   - Detailed description
-   - Steps to reproduce
-   - Expected vs actual behavior
-   - Chrome version and OS
-   - Screenshots if applicable
-
-### Suggesting Features
-1. Check [ROADMAP.md](ROADMAP.md) to see if feature is planned
-2. Search existing issues for similar suggestions
-3. Create a new issue with:
-   - Clear feature description
-   - Use case / problem it solves
-   - Proposed implementation (if any)
-
-### Code Contributions
-1. Fork the repository
-2. Create a feature branch (`feature/your-feature-name`)
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
+Offline PDF Tools is a **privacy-first, offline Chrome Extension**, so **security, performance, and user trust** are top priorities.
 
 ---
 
-## 💻 Development Setup
+## 🧩 Ways to Contribute
 
-### Prerequisites
-- Chrome 88 or higher
-- Git
-- Text editor (VS Code recommended)
+### 🐞 Report Bugs
 
-### Local Setup
+If you encounter a bug, please open an issue with:
+
+* A clear description of the issue
+* Steps to reproduce the problem
+* Expected behavior vs actual behavior
+* Screenshots or screen recordings (if applicable)
+* Browser and OS details (Chrome version, OS)
+* PDF details if relevant (file size, page count — **do not upload files**)
+
+This helps us diagnose issues while respecting user privacy.
+
+---
+
+### 💡 Suggest Enhancements
+
+Have an idea to improve Offline PDF Tools?
+Open a feature request issue and explain:
+
+* What problem it solves
+* Why it improves usability or privacy
+* How it fits an **offline-first workflow**
+* Any references (other tools, UX patterns)
+* Mockups or screenshots (optional)
+
+We especially welcome ideas related to:
+
+* PDF page operations
+* Performance improvements
+* Accessibility enhancements
+* UI/UX clarity
+* Offline reliability
+* Chrome Web Store compliance
+
+---
+
+### 💻 Submit Code
+
+We accept pull requests for:
+
+* Bug fixes
+* New PDF tools or enhancements
+* UI/UX improvements
+* Performance optimizations
+* Refactoring and cleanup
+* Documentation updates
+
+**Please follow the existing project structure and coding style.**
+All changes must remain **100% offline** and **privacy-safe**.
+
+---
+
+## 🚀 Getting Started
+
+To set up Offline PDF Tools locally:
+
 ```bash
-# Clone your fork
-git clone https://github.com/YOUR-USERNAME/offline-pdf-tools.git
+git clone https://github.com/Kartikpatkar/offline-pdf-tools.git
 cd offline-pdf-tools
-
-# Create a feature branch
-git checkout -b feature/my-feature
-
-# Load extension in Chrome
-# 1. Open chrome://extensions/
-# 2. Enable "Developer mode"
-# 3. Click "Load unpacked"
-# 4. Select the offline-pdf-tools folder
 ```
 
----
+### Load the Extension in Chrome
 
-## 📝 Code Style
+1. Open Chrome and go to:
 
-### JavaScript
-- Use ES6+ features
-- Prefer `const` over `let`
-- Use descriptive variable names
-- Add JSDoc comments for functions
-- Keep functions small and focused
+   ```
+   chrome://extensions/
+   ```
+2. Enable **Developer Mode** (top-right)
+3. Click **Load unpacked**
+4. Select the project root folder (where `manifest.json` exists)
 
-Example:
-```javascript
-/**
- * Parse page range string into array of indices
- * @param {string} rangeString - Range like "1-3,5"
- * @param {number} totalPages - Total pages in PDF
- * @returns {number[]} Array of 0-indexed page numbers
- */
-function parsePageRange(rangeString, totalPages) {
-  // Implementation...
-}
-```
-
-### HTML/CSS
-- Use semantic HTML
-- Mobile-first responsive design
-- CSS custom properties for theming
-- Accessible markup (ARIA labels)
+Offline PDF Tools will now open as a **full-page Chrome extension**.
 
 ---
 
-## 🧪 Testing
+## ✅ Before Submitting a Pull Request
 
-Before submitting a PR:
-- [ ] Test all modified features manually
-- [ ] Test on Chrome (latest version)
-- [ ] Test edge cases (empty inputs, large files, etc.)
-- [ ] Check console for errors
-- [ ] Verify no new permissions needed
+1. Fork the repository and create a feature branch:
 
----
+   ```bash
+   git checkout -b feature/your-feature-name
+   ```
 
-## 🔒 Privacy Guidelines
+2. Make focused, well-scoped changes with clear commits.
 
-**CRITICAL**: All contributions must maintain our privacy guarantees:
-- ❌ No network requests (except loading pdf-lib from CDN)
-- ❌ No data collection
-- ❌ No analytics
-- ❌ No third-party services
-- ❌ No persistent storage (except downloads)
+3. Test your changes locally:
 
-If your feature requires any of the above, it will be rejected.
+   * Merge multiple PDFs
+   * Split PDFs using page ranges
+   * Extract, rotate, delete, and reorder pages
+   * Test both light and dark themes
+   * Verify exports via Chrome Downloads
 
----
+4. Submit a pull request with:
 
-## 📋 Pull Request Process
-
-1. **Update Documentation**
-   - Update README.md if adding features
-   - Update ARCHITECTURE.md for technical changes
-   - Add comments to complex code
-
-2. **Test Thoroughly**
-   - Test in Chrome
-   - Test edge cases
-   - Check for console errors
-
-3. **Submit PR**
-   - Clear title describing change
-   - Detailed description of what/why
-   - Reference related issues
-   - Screenshots for UI changes
-
-4. **Code Review**
-   - Respond to feedback
-   - Make requested changes
-   - Re-test after changes
-
-5. **Merge**
-   - Maintainers will merge when approved
-   - Delete your feature branch after merge
+   * A clear title and description
+   * Screenshots or screen recordings for UI changes
+   * References to related issues (e.g. `Closes #12`)
 
 ---
 
-## 🎨 UI/UX Guidelines
+## 🧪 Testing Guidelines
 
-- **Simplicity**: Keep UI clean and uncluttered
-- **Accessibility**: Support keyboard navigation
-- **Consistency**: Follow existing design patterns
-- **Performance**: Fast load times, smooth interactions
-- **Responsive**: Work on all screen sizes
+If your change affects PDF processing or previews, please test with:
 
----
+* Small and large PDF files
+* PDFs with different page counts
+* Page range edge cases (invalid ranges, boundaries)
+* Rotations and reordering combinations
+* Light and dark modes
+* Browser refresh and reload scenarios
 
-## 🚫 What We Don't Accept
-
-- Features that require internet connectivity
-- Features that collect user data
-- Features that add unnecessary permissions
-- Obfuscated code
-- Code without proper documentation
-- Breaking changes without discussion
+⚠️ Avoid adding tests that require external services or internet access.
 
 ---
 
-## 📞 Questions?
+## 📚 Code Style Guide
 
-- Open a [Discussion](https://github.com/yourusername/offline-pdf-tools/discussions)
-- Email: [your-email@example.com]
+* Keep JavaScript **modular and readable**
+* Avoid inline scripts (Chrome Extension CSP)
+* Use clear, semantic naming for variables and functions
+* Keep PDF logic isolated inside `services/`
+* Ensure new UI elements:
 
----
-
-## 📜 Code of Conduct
-
-- Be respectful and inclusive
-- Constructive criticism only
-- No harassment or discrimination
-- Focus on the code, not the person
+  * Work offline
+  * Support dark mode
+  * Are keyboard accessible where possible
 
 ---
 
-Thank you for contributing to Offline PDF Tools! 🙏
+## 🙌 Code of Conduct
+
+Please be respectful and inclusive.
+We follow the [Contributor Covenant](https://www.contributor-covenant.org/version/2/1/code_of_conduct/) to foster a welcoming and collaborative environment.
+
+---
+
+## 📬 Questions or Discussions?
+
+* Open an issue for questions or ideas
+* GitHub Discussions may be enabled in the future
+
+Thanks for contributing to **Offline PDF Tools** 🚀
+Your contributions help make private, offline PDF editing accessible to everyone.
