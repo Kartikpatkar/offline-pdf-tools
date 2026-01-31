@@ -237,6 +237,17 @@ function selectTool(tool) {
   };
   elements.btnText.textContent = buttonTexts[tool];
 
+  // Adjust layout for merge tool (no options needed)
+  const toolOptionsContainer = elements.toolOptions.parentElement;
+  const fileListContainer = elements.fileListSection.parentElement;
+  if (tool === 'merge') {
+    toolOptionsContainer.style.display = 'none';
+    fileListContainer.style.flex = '1';
+  } else {
+    toolOptionsContainer.style.display = 'block';
+    fileListContainer.style.flex = '0 0 33.3333%';
+  }
+
   // Reset state
   clearFiles();
 }
@@ -352,11 +363,16 @@ function displayFileList() {
     li.style.backgroundColor = 'var(--secondary-color)';
     
     const metadata = state.fileMetadata.get(file);
-    const pageInfo = metadata ? ` · ${metadata.pageCount} pages` : '';
+    const pageInfo = metadata ? metadata.pageCount : '?';
     
     li.innerHTML = `
-      <span style="color: var(--text-color);">${file.name} (${formatFileSize(file.size)}${pageInfo})</span>
-      <button class="btn-secondary" data-file-index="${index}">Remove</button>
+      <div class="file-info" style="color: var(--text-color);">
+        <div class="file-name font-semibold mb-1">${file.name}</div>
+        <div class="file-meta text-sm opacity-70">
+          Size: ${formatFileSize(file.size)} · Pages: ${pageInfo}
+        </div>
+      </div>
+      <button class="icon-btn btn-danger" data-file-index="${index}" title="Remove">🗑️</button>
     `;
     
     // Add click listener to remove button
