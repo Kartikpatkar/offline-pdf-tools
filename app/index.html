@@ -6,6 +6,8 @@
   <title>Offline PDF Tools</title>
   <link rel="stylesheet" href="index.css">
   <link rel="preload" href="../assets/icons/icons.svg" as="image" type="image/svg+xml">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
 </head>
 <body class="h-full m-0 overflow-auto" style="background-color: var(--bg-color);">
   <div class="min-h-full">
@@ -341,6 +343,49 @@
 
   <!-- Toast Container -->
   <div id="toastContainer" class="fixed bottom-6 right-6 z-index-overlay space-y-3"></div>
+
+  <!-- Footer starts here -->
+  <footer class="footer">
+    <div class="footer-content">
+
+      <!-- Website name or logo -->
+      <div class="footer-logo" id="footerTitle">Offline PDF Tools</div>
+
+      <!-- Short description or tagline -->
+      <p class="footer-text" id="tagline">100% Offline PDF Modification Tools</p>
+
+      <!-- Author name and credit -->
+      <div class="footer-info-row">
+        <div class="footer-author">
+          <i class="fas fa-code"></i> Created with ❤️ by <span id="authorDisplay">Kartik Patkar</span>
+        </div>
+      </div>
+
+      <!-- Social media and contact links -->
+      <div class="footer-links">
+        <a href="https://github.com/Kartikpatkar/offline-pdf-tools" class="footer-link github" target="_blank">
+          <i class="fab fa-github"></i> GitHub
+        </a>
+        <a href="https://www.linkedin.com/in/kartik-patkar" class="footer-link linkedin" target="_blank">
+          <i class="fab fa-linkedin"></i> LinkedIn
+        </a>
+        <a href="https://www.salesforce.com/trailblazer/kpatkar1" class="footer-link trailhead" target="_blank">
+          <i class="fab fa-salesforce"></i> Trailhead
+        </a>
+        <a href="mailto:kartikkp.assets@gmail.com" class="footer-link email">
+          <i class="fas fa-envelope"></i> Email
+        </a>
+      </div>
+
+      <!-- Horizontal divider line -->
+      <div class="footer-divider"></div>
+
+      <!-- Copyright text -->
+      <div class="footer-copyright">
+        &copy; <span id="currentYear"></span> <span id="copyright">Offline PDF Tools</span>
+      </div>
+    </div>
+  </footer>
 
   <script type="module" src="index.js"></script>
 </body>

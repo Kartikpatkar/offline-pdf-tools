@@ -533,3 +533,102 @@ html.dark-theme .theme-toggle-label {
 .page-selector-padding {
   padding: 5px;
 }
+
+/* -------------------------------
+   Footer Styles
+------------------------------- */
+.footer {
+    background: var(--secondary-color);
+    color: var(--text-color);
+    padding: 15px 20px;
+    text-align: center;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    transition: all 0.3s ease;
+}
+
+.footer a {
+    color: inherit;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.footer a:hover {
+    color: var(--primary-color);
+}
+
+.footer-logo {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: var(--primary-color);
+}
+
+.footer-text {
+    font-size: 0.95rem;
+    margin-bottom: 15px;
+    opacity: 0.7;
+}
+
+.footer-info-row {
+    margin-bottom: 15px;
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+.footer-info-row i {
+    margin-right: 5px;
+}
+
+.footer-links {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.footer-link i {
+    margin-right: 5px;
+}
+
+.footer-divider {
+    height: 1px;
+    background: rgba(255, 255, 255, 0.1);
+    margin: 15px 0;
+}
+
+.footer-copyright {
+    font-size: 0.85rem;
+    opacity: 0.6;
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+    .footer-links {
+        flex-direction: column;
+        gap: 10px;
+    }
+}
+
+/* -------------------------------
+   Dark Theme Footer
+------------------------------- */
+html.dark-theme .footer {
+    background: #1e293b;
+}
+
+html.dark-theme .footer-text {
+    opacity: 0.6;
+}
+
+html.dark-theme .footer-info-row {
+    opacity: 0.7;
+}
+
+html.dark-theme .footer-divider {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+html.dark-theme .footer-copyright {
+    opacity: 0.5;
+}
