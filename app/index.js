@@ -615,3 +615,49 @@ function reset() {
 
 // Initialize on load
 init();
+
+// Theme toggle logic — robust and accessible
+(function(){
+  function ready(fn) {
+    if (document.readyState !== 'loading') fn();
+    else document.addEventListener('DOMContentLoaded', fn);
+  }
+  ready(function() {
+    const checkbox = document.getElementById('themeToggle');
+    const root = document.documentElement;
+    function safeSetStorage(key, value) {
+      try { localStorage.setItem(key, value); } catch (e) { /* ignore */ }
+    }
+    function applyTheme(theme) {
+      if (theme === 'dark') {
+        root.classList.add('dark-theme');
+        root.classList.remove('light-theme');
+        if (checkbox) checkbox.checked = true;
+      } else {
+        root.classList.add('light-theme');
+        root.classList.remove('dark-theme');
+        if (checkbox) checkbox.checked = false;
+      }
+      safeSetStorage('theme', theme);
+    }
+    function toggleTheme() {
+      const isDark = root.classList.contains('dark-theme');
+      applyTheme(isDark ? 'light' : 'dark');
+    }
+    (function init() {
+      let saved = null;
+      try { saved = localStorage.getItem('theme'); } catch (e) {}
+      if (saved) {
+        applyTheme(saved);
+        return;
+      }
+      const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      applyTheme(prefersDark ? 'dark' : 'light');
+    })();
+    if (!checkbox) {
+      console.warn('Theme toggle checkbox not found');
+      return;
+    }
+    checkbox.addEventListener('change', toggleTheme);
+  });
+})();
