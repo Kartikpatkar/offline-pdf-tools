@@ -1,6 +1,53 @@
-/* Component Styles */
+/* Page Selector */
+.page-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 16px;
+  padding: 16px 0;
+}
 
-/* Card Component */
+.page-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px;
+  border-radius: 12px;
+  background-color: var(--secondary-color);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+}
+
+.page-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.page-item.selected {
+  border-color: var(--primary-color);
+  background-color: rgba(124, 58, 237, 0.1);
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.2);
+}
+
+.page-thumbnail-container {
+  position: relative;
+  margin-bottom: 8px;
+}
+
+.page-thumbnail {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  pointer-events: none;
+}
+
+.page-number {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-color);
+  text-align: center;
+}
 .card {
   background: var(--surface-color);
   border-radius: 20px;

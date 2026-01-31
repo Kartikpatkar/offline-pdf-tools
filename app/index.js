@@ -4,7 +4,7 @@
  */
 
 import pdfService from '../services/pdfService.js';
-import { downloadPDF, generateTimestampedFilename, isPDF, areAllPDFs, formatFileSize } from '../utils/fileUtils.js';
+import { downloadPDF, generateTimestampedFilename, generateActionFilename, isPDF, areAllPDFs, formatFileSize } from '../utils/fileUtils.js';
 import { parsePageRange, isValidRangeSyntax } from '../utils/rangeParser.js';
 
 // Application State
@@ -67,39 +67,26 @@ async function init() {
 function loadPDFJS() {
   return new Promise((resolve, reject) => {
     if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.getURL) {
-      // Load worker first
-      fetch(chrome.runtime.getURL('lib/pdf.worker.min.js'))
-        .then(response => response.text())
-        .then(workerCode => {
-          // Create blob URL for worker
-          const workerBlob = new Blob([workerCode], { type: 'application/javascript' });
-          const workerUrl = URL.createObjectURL(workerBlob);
-          
-          const pdfjsScript = document.createElement('script');
-          pdfjsScript.src = chrome.runtime.getURL('lib/pdf.min.js');
-          pdfjsScript.onload = function() {
-            console.log('PDF.js script loaded');
-            // Configure PDF.js worker after PDF.js loads
-            if (typeof pdfjsLib !== 'undefined') {
-              pdfjsLib.GlobalWorkerOptions.workerSrc = workerUrl;
-              console.log('PDF.js configured successfully, version:', pdfjsLib.version);
-              window.pdfjsReady = true;
-              resolve();
-            } else {
-              console.error('pdfjsLib not available after script load');
-              reject(new Error('pdfjsLib not available after script load'));
-            }
-          };
-          pdfjsScript.onerror = function(e) {
-            console.error('Failed to load PDF.js script:', e);
-            reject(new Error('Failed to load PDF.js script'));
-          };
-          document.head.appendChild(pdfjsScript);
-        })
-        .catch(error => {
-          console.error('Failed to load PDF.js worker:', error);
-          reject(error);
-        });
+      const pdfjsScript = document.createElement('script');
+      pdfjsScript.src = chrome.runtime.getURL('lib/pdf.min.js');
+      pdfjsScript.onload = function() {
+        console.log('PDF.js script loaded');
+        // Configure PDF.js worker after PDF.js loads
+        if (typeof pdfjsLib !== 'undefined') {
+          pdfjsLib.GlobalWorkerOptions.workerSrc = chrome.runtime.getURL('lib/pdf.worker.min.js');
+          console.log('PDF.js configured successfully, version:', pdfjsLib.version);
+          window.pdfjsReady = true;
+          resolve();
+        } else {
+          console.error('pdfjsLib not available after script load');
+          reject(new Error('pdfjsLib not available after script load'));
+        }
+      };
+      pdfjsScript.onerror = function(e) {
+        console.error('Failed to load PDF.js script:', e);
+        reject(new Error('Failed to load PDF.js script'));
+      };
+      document.head.appendChild(pdfjsScript);
     } else {
       console.error('Chrome runtime not available');
       reject(new Error('Chrome runtime not available'));
@@ -807,14 +794,14 @@ async function processFiles() {
     switch (state.currentTool) {
       case 'merge':
         result = await pdfService.mergePDFs(state.selectedFiles);
-        await downloadPDF(result, generateTimestampedFilename('merged'));
+        await downloadPDF(result, generateActionFilename(state.selectedFiles[0].name, 'merged'));
         showStatus('PDFs merged successfully!', 'success');
         break;
 
       case 'split':
         const rangeString = getSplitRangeString();
         result = await pdfService.splitPDF(state.selectedFiles[0], rangeString);
-        await downloadPDF(result, generateTimestampedFilename('split'));
+        await downloadPDF(result, generateActionFilename(state.selectedFiles[0].name, 'split'));
         showStatus('PDF split successfully!', 'success');
         break;
 
@@ -823,7 +810,7 @@ async function processFiles() {
           throw new Error('Please select pages to extract');
         }
         result = await pdfService.extractPages(state.selectedFiles[0], Array.from(state.selectedPages));
-        await downloadPDF(result, generateTimestampedFilename('extracted'));
+        await downloadPDF(result, generateActionFilename(state.selectedFiles[0].name, 'extracted'));
         showStatus('Pages extracted successfully!', 'success');
         break;
 
@@ -834,7 +821,7 @@ async function processFiles() {
           throw new Error('No pages have rotation set');
         }
         result = await pdfService.rotatePagesPerPage(state.selectedFiles[0], state.pageRotations);
-        await downloadPDF(result, generateTimestampedFilename('rotated'));
+        await downloadPDF(result, generateActionFilename(state.selectedFiles[0].name, 'rotated'));
         showStatus('Pages rotated successfully!', 'success');
         break;
 
@@ -843,13 +830,13 @@ async function processFiles() {
           throw new Error('Please select pages to delete');
         }
         result = await pdfService.deletePages(state.selectedFiles[0], Array.from(state.selectedPages));
-        await downloadPDF(result, generateTimestampedFilename('modified'));
+        await downloadPDF(result, generateActionFilename(state.selectedFiles[0].name, 'pages_deleted'));
         showStatus('Pages deleted successfully!', 'success');
         break;
 
       case 'reorder':
         result = await pdfService.reorderPages(state.selectedFiles[0], state.pageOrder);
-        await downloadPDF(result, generateTimestampedFilename('reordered'));
+        await downloadPDF(result, generateActionFilename(state.selectedFiles[0].name, 'reordered'));
         showStatus('Pages reordered successfully!', 'success');
         break;
     }
