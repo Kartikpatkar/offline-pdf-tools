@@ -105,6 +105,15 @@ Offline PDF Tools is designed with:
 
 ## 📦 Installation
 
+### 🌐 Install from Chrome Web Store (Recommended)
+
+**[📥 Get it on Chrome Web Store](https://chromewebstore.google.com/detail/lkokanmnglecjkgabbhincgaiceedolc?utm_source=item-share-cb)**
+
+1. Click the link above or visit the Chrome Web Store
+2. Click **"Add to Chrome"**
+3. Confirm the installation
+4. Navigate to any Salesforce org and click the extension icon
+
 ### 🔧 Load Offline PDF Tools Manually (Developer Mode)
 
 1. **Clone or Download this Repository**
