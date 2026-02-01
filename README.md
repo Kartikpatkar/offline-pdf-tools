@@ -82,12 +82,13 @@ Offline PDF Tools is designed with:
 
 ### 🔷 Light Mode
 
-![Light Mode - Home](./assets/screenshots/light-home.png)
-![Light Mode - Page Tools](./assets/screenshots/light-pages.png)
+![Light Mode - Home](./assets/screenshots/Main%20Page%20-%20Light%20Theme.png)
+![Light Mode - Page Tools](./assets/screenshots/Feature%20screen%20-%20Light%20Theme.png)
 
 ### 🌑 Dark Mode
 
-![Dark Mode - Page Tools](./assets/screenshots/dark-pages.png)
+![Dark Mode - Home](./assets/screenshots/Main%20Screen%20-%20Dark%20Theme.png)
+![Dark Mode - Page Tools](./assets/screenshots/Feature%20Screen%20-%20Dark%20Theme.png)
 
 ---
 
