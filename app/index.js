@@ -16,7 +16,8 @@ const state = {
   selectedPages: new Set(),
   pageOrder: [],
   pageRotations: new Map(), // pageIndex -> rotation (0, 90, 180, 270)
-  thumbnailImages: new Map() // pageIndex -> Image object for redrawing
+  thumbnailImages: new Map(), // pageIndex -> Image object for redrawing
+  keyboardSelectedReorderIndex: null
 };
 
 // DOM Elements
@@ -509,6 +510,7 @@ function clearFiles() {
   state.pageOrder = [];
   state.pageRotations.clear();
   state.thumbnailImages.clear();
+  state.keyboardSelectedReorderIndex = null;
   elements.fileInput.value = '';
   if (elements.pageRangeInput) elements.pageRangeInput.value = '';
   pdfService.clearCache();
@@ -636,28 +638,46 @@ function renderPageSelector(containerId) {
 
       const currentRotation = state.pageRotations.get(i) || 0;
 
-      const rotateBtn = document.createElement('button');
-      rotateBtn.className = 'rotate-btn';
-      rotateBtn.textContent = `${currentRotation}°`;
+      rotateBtn.setAttribute('aria-label', `Rotate page ${i}. Current rotation: ${currentRotation} degrees`);
       rotateBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         const newRotation = (state.pageRotations.get(i) + 90) % 360;
         state.pageRotations.set(i, newRotation);
         rotateBtn.textContent = `${newRotation}°`;
+        rotateBtn.setAttribute('aria-label', `Rotate page ${i}. Current rotation: ${newRotation} degrees`);
         redrawThumbnail(canvas, i, newRotation);
       });
       rotationControls.appendChild(rotateBtn);
 
       pageItem.appendChild(rotationControls);
     } else {
-      // Add click handler for selection
-      pageItem.addEventListener('click', () => {
+      // Add keyboard accessibility
+      pageItem.tabIndex = 0;
+      pageItem.setAttribute('role', 'checkbox');
+      const isSelected = state.selectedPages.has(i);
+      pageItem.setAttribute('aria-checked', isSelected ? 'true' : 'false');
+      pageItem.setAttribute('aria-label', `Page ${i}`);
+      if (isSelected) {
+        pageItem.classList.add('selected');
+      }
+
+      const toggleSelection = () => {
         if (state.selectedPages.has(i)) {
           state.selectedPages.delete(i);
           pageItem.classList.remove('selected');
+          pageItem.setAttribute('aria-checked', 'false');
         } else {
           state.selectedPages.add(i);
           pageItem.classList.add('selected');
+          pageItem.setAttribute('aria-checked', 'true');
+        }
+      };
+
+      pageItem.addEventListener('click', toggleSelection);
+      pageItem.addEventListener('keydown', (e) => {
+        if (e.key === ' ' || e.key === 'Enter') {
+          e.preventDefault();
+          toggleSelection();
         }
       });
     }
@@ -754,8 +774,10 @@ function updateSelectionUI(containerId) {
     const pageNum = parseInt(item.dataset.page, 10);
     if (state.selectedPages.has(pageNum)) {
       item.classList.add('selected');
+      item.setAttribute('aria-checked', 'true');
     } else {
       item.classList.remove('selected');
+      item.setAttribute('aria-checked', 'false');
     }
   });
 }
@@ -825,6 +847,71 @@ function renderReorderList() {
     pageItem.addEventListener('dragover', handleReorderDragOver);
     pageItem.addEventListener('drop', handleReorderDrop);
     pageItem.addEventListener('dragend', handleReorderDragEnd);
+
+    // Add keyboard accessibility
+    pageItem.tabIndex = 0;
+    pageItem.setAttribute('role', 'listitem');
+    pageItem.setAttribute('aria-describedby', 'reorderInstructions');
+
+    const isSelectedForMove = state.keyboardSelectedReorderIndex === index;
+    if (isSelectedForMove) {
+      pageItem.classList.add('keyboard-selected');
+      pageItem.setAttribute('aria-selected', 'true');
+      pageItem.setAttribute('aria-label', `Moving Page ${pageNum}. Position ${index + 1} of ${state.pageOrder.length}. Use Left/Right Arrow keys to move, Space/Enter to place.`);
+    } else {
+      pageItem.setAttribute('aria-selected', 'false');
+      pageItem.setAttribute('aria-label', `Page ${pageNum}. Position ${index + 1} of ${state.pageOrder.length}. Press Space or Enter to start moving.`);
+    }
+
+    pageItem.addEventListener('keydown', (e) => {
+      const idx = parseInt(pageItem.dataset.index, 10);
+      if (e.key === ' ' || e.key === 'Enter') {
+        e.preventDefault();
+        if (state.keyboardSelectedReorderIndex === null) {
+          state.keyboardSelectedReorderIndex = idx;
+          renderReorderList();
+          focusReorderItem(idx);
+        } else if (state.keyboardSelectedReorderIndex === idx) {
+          state.keyboardSelectedReorderIndex = null;
+          renderReorderList();
+          focusReorderItem(idx);
+        }
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        if (state.keyboardSelectedReorderIndex !== null) {
+          if (idx > 0) {
+            const temp = state.pageOrder[idx];
+            state.pageOrder[idx] = state.pageOrder[idx - 1];
+            state.pageOrder[idx - 1] = temp;
+            state.keyboardSelectedReorderIndex = idx - 1;
+            renderReorderList();
+            focusReorderItem(idx - 1);
+          }
+        } else {
+          if (idx > 0) focusReorderItem(idx - 1);
+        }
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        if (state.keyboardSelectedReorderIndex !== null) {
+          if (idx < state.pageOrder.length - 1) {
+            const temp = state.pageOrder[idx];
+            state.pageOrder[idx] = state.pageOrder[idx + 1];
+            state.pageOrder[idx + 1] = temp;
+            state.keyboardSelectedReorderIndex = idx + 1;
+            renderReorderList();
+            focusReorderItem(idx + 1);
+          }
+        } else {
+          if (idx < state.pageOrder.length - 1) focusReorderItem(idx + 1);
+        }
+      } else if (e.key === 'Escape') {
+        if (state.keyboardSelectedReorderIndex !== null) {
+          state.keyboardSelectedReorderIndex = null;
+          renderReorderList();
+          focusReorderItem(idx);
+        }
+      }
+    });
 
     container.appendChild(pageItem);
 
@@ -1100,6 +1187,16 @@ function reset() {
   elements.toolTabs.forEach(tab => tab.classList.remove('active'));
   elements.uploadTitle.textContent = 'Drop PDF files here or click to browse';
   hideStatus();
+}
+
+function focusReorderItem(index) {
+  setTimeout(() => {
+    const container = document.getElementById('reorderPageSelector');
+    if (!container) return;
+    const items = container.querySelectorAll('.page-item');
+    const target = items[index];
+    if (target) target.focus();
+  }, 50);
 }
 
 // Initialize on load

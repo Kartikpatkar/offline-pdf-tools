@@ -28,7 +28,7 @@
           </span>
           <span>100% Private · Offline · No Uploads</span>
         </span>
-        <input type="checkbox" class="theme-checkbox" id="themeToggle">
+        <input type="checkbox" class="theme-checkbox" id="themeToggle" aria-label="Toggle dark mode theme">
         <label for="themeToggle" class="theme-toggle-label">
           <span class="theme-icon">
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
@@ -52,7 +52,7 @@
       <section class="mb-6">
         <div class="flex items-center justify-between mb-3">
           <h2 class="text-xl font-bold text-primary">Choose Your Tool</h2>
-          <button class="tool-help-btn" data-target="toolDescription">
+          <button class="tool-help-btn" data-target="toolDescription" aria-label="Toggle general tool description help">
             <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <use href="../assets/icons/icons.svg#icon-help"></use>
             </svg>
@@ -157,7 +157,7 @@
                 <h3 class="text-xl font-bold mb-1 text-primary">Split Configuration</h3>
               </div>
             </div>
-            <button class="tool-help-btn" data-target="splitDescription">
+            <button class="tool-help-btn" data-target="splitDescription" aria-label="Toggle split tool help description">
               <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <use href="../assets/icons/icons.svg#icon-help"></use>
               </svg>
@@ -194,7 +194,7 @@
                 <h3 class="text-xl font-bold mb-1 text-primary">Select Pages</h3>
               </div>
             </div>
-            <button class="tool-help-btn" data-target="extractDescription">
+            <button class="tool-help-btn" data-target="extractDescription" aria-label="Toggle page extraction help description">
               <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <use href="../assets/icons/icons.svg#icon-help"></use>
               </svg>
@@ -222,7 +222,7 @@
                 <h3 class="text-xl font-bold mb-1 text-primary">Rotate Pages</h3>
               </div>
             </div>
-            <button class="tool-help-btn" data-target="rotateDescription">
+            <button class="tool-help-btn" data-target="rotateDescription" aria-label="Toggle page rotation help description">
               <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <use href="../assets/icons/icons.svg#icon-help"></use>
               </svg>
@@ -252,7 +252,7 @@
                 <h3 class="text-xl font-bold mb-1 text-primary">Delete Pages</h3>
               </div>
             </div>
-            <button class="tool-help-btn" data-target="deleteDescription">
+            <button class="tool-help-btn" data-target="deleteDescription" aria-label="Toggle page deletion help description">
               <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <use href="../assets/icons/icons.svg#icon-help"></use>
               </svg>
@@ -280,13 +280,14 @@
                 <h3 class="text-xl font-bold mb-1 text-primary">Reorder Pages</h3>
               </div>
             </div>
-            <button class="tool-help-btn" data-target="reorderDescription">
+            <button class="tool-help-btn" data-target="reorderDescription" aria-label="Toggle page reordering help description">
               <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <use href="../assets/icons/icons.svg#icon-help"></use>
               </svg>
             </button>
           </div>
           <p id="reorderDescription" class="text-sm mb-4 hidden text-secondary">Drag and drop pages to change their order</p>
+          <div id="reorderInstructions" class="sr-only">Use Left and Right arrow keys to change the position of the selected page in the document.</div>
           <div id="reorderPageSelector" class="max-h-96 overflow-y-auto custom-scrollbar page-selector-padding"></div>
         </div>
           </section>
@@ -307,12 +308,12 @@
                   <span id="fileCount" class="px-3 py-1 rounded-full text-sm font-semibold bg-secondary-text">0</span>
                 </div>
                 <div class="flex items-center gap-2">
-                  <button id="addMoreFiles" class="icon-btn px-3 py-2 rounded-lg text-sm font-semibold" title="Add More Files">
+                  <button id="addMoreFiles" class="icon-btn px-3 py-2 rounded-lg text-sm font-semibold" title="Add More Files" aria-label="Add more PDF files">
                     <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                       <use href="../assets/icons/icons.svg#icon-plus"></use>
                     </svg>
                   </button>
-                  <button id="clearFiles" class="icon-btn px-3 py-2 rounded-lg text-sm font-semibold" title="Clear All Files">
+                  <button id="clearFiles" class="icon-btn px-3 py-2 rounded-lg text-sm font-semibold" title="Clear All Files" aria-label="Clear all uploaded files">
                     <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                       <use href="../assets/icons/icons.svg#icon-delete"></use>
                     </svg>
