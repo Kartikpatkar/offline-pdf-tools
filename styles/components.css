@@ -630,3 +630,20 @@ html.dark-theme .footer-divider {
 html.dark-theme .footer-copyright {
     opacity: 0.5;
 }
+
+/* Draggable file items in Merge view */
+.draggable-file-item {
+  cursor: grab;
+  position: relative;
+  user-select: none;
+}
+
+.draggable-file-item:active {
+  cursor: grabbing;
+}
+
+.draggable-file-item.dragging {
+  opacity: 0.5;
+  transform: scale(0.98);
+  border: 2px dashed var(--primary-color);
+}

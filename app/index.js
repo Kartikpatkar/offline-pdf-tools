@@ -49,8 +49,7 @@ const elements = {
   btnText: document.getElementById('btnText'),
   processingOverlay: document.getElementById('processingOverlay'),
   toastContainer: document.getElementById('toastContainer'),
-  pageFrom: document.getElementById('pageFrom'),
-  pageTo: document.getElementById('pageTo'),
+  pageRangeInput: document.getElementById('pageRangeInput'),
   totalPages: document.getElementById('totalPages')
 };
 
@@ -325,23 +324,25 @@ async function addFiles(files) {
 }
 
 function getSplitRangeString() {
-  const from = parseInt(elements.pageFrom?.value, 10);
-  const to = parseInt(elements.pageTo?.value, 10);
-
-  if (Number.isNaN(from) || Number.isNaN(to)) {
-    throw new Error('Please enter both From and To pages');
-  }
-  if (from < 1 || to < 1) {
-    throw new Error('Page numbers must be 1 or higher');
-  }
-  if (state.pageCount && (from > state.pageCount || to > state.pageCount)) {
-    throw new Error(`Page numbers must be between 1 and ${state.pageCount}`);
-  }
-  if (from > to) {
-    throw new Error('From page cannot be greater than To page');
+  const rangeInput = elements.pageRangeInput?.value?.trim();
+  if (!rangeInput) {
+    throw new Error('Please enter a page range');
   }
 
-  return `${from}-${to}`;
+  if (!isValidRangeSyntax(rangeInput)) {
+    throw new Error('Invalid range syntax. Use numbers, commas, and hyphens (e.g., 1-3, 5).');
+  }
+
+  try {
+    const indices = parsePageRange(rangeInput, state.pageCount);
+    if (indices.length === 0) {
+      throw new Error('No valid pages found in the range');
+    }
+  } catch (error) {
+    throw new Error(`Range validation failed: ${error.message}`);
+  }
+
+  return rangeInput;
 }
 
 function displayFileList() {
@@ -357,14 +358,32 @@ function displayFileList() {
     li.className = 'flex items-center justify-between p-3 rounded-lg';
     li.style.backgroundColor = 'var(--secondary-color)';
     
+    // Add drag capabilities for Merge tool
+    if (state.currentTool === 'merge') {
+      li.draggable = true;
+      li.classList.add('draggable-file-item');
+      li.dataset.index = index;
+      li.addEventListener('dragstart', handleFileDragStart);
+      li.addEventListener('dragover', handleFileDragOver);
+      li.addEventListener('drop', handleFileDrop);
+      li.addEventListener('dragend', handleFileDragEnd);
+    }
+    
     const metadata = state.fileMetadata.get(file);
     const pageInfo = metadata ? metadata.pageCount : '?';
     
+    const dragHandle = state.currentTool === 'merge'
+      ? `<div class="drag-handle" style="cursor: grab; margin-right: 12px; font-weight: bold; opacity: 0.5;">⋮⋮</div>`
+      : '';
+
     li.innerHTML = `
-      <div class="file-info" style="color: var(--text-color);">
-        <div class="file-name font-semibold mb-1">${file.name}</div>
-        <div class="file-meta text-sm opacity-70">
-          Size: ${formatFileSize(file.size)} · Pages: ${pageInfo}
+      <div class="flex items-center flex-1">
+        ${dragHandle}
+        <div class="file-info" style="color: var(--text-color);">
+          <div class="file-name font-semibold mb-1">${file.name}</div>
+          <div class="file-meta text-sm opacity-70">
+            Size: ${formatFileSize(file.size)} · Pages: ${pageInfo}
+          </div>
         </div>
       </div>
       <button class="icon-btn btn-danger" data-file-index="${index}" title="Remove"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="../assets/icons/icons.svg#icon-delete"></use></svg></button>
@@ -411,8 +430,8 @@ function clearFiles() {
   state.pageRotations.clear();
   state.thumbnailImages.clear();
   elements.fileInput.value = '';
-  if (elements.pageFrom) elements.pageFrom.value = '';
-  if (elements.pageTo) elements.pageTo.value = '';
+  if (elements.pageRangeInput) elements.pageRangeInput.value = '';
+  pdfService.clearCache();
   displayFileList();
   hideToolOptions();
   hideStatus();
@@ -759,8 +778,10 @@ function renderReorderList() {
 let draggedIndex = null;
 
 function handleReorderDragStart(event) {
-  draggedIndex = parseInt(event.target.dataset.index);
-  event.target.classList.add('dragging');
+  const targetItem = event.target.closest('.reorder-item');
+  if (!targetItem) return;
+  draggedIndex = parseInt(targetItem.dataset.index, 10);
+  targetItem.classList.add('dragging');
 }
 
 function handleReorderDragOver(event) {
@@ -769,7 +790,9 @@ function handleReorderDragOver(event) {
 
 function handleReorderDrop(event) {
   event.preventDefault();
-  const dropIndex = parseInt(event.target.dataset.index);
+  const targetItem = event.target.closest('.reorder-item');
+  if (!targetItem) return;
+  const dropIndex = parseInt(targetItem.dataset.index, 10);
 
   if (draggedIndex !== null && draggedIndex !== dropIndex) {
     // Reorder array
@@ -780,8 +803,45 @@ function handleReorderDrop(event) {
 }
 
 function handleReorderDragEnd(event) {
-  event.target.classList.remove('dragging');
+  const targetItem = event.target.closest('.reorder-item');
+  if (targetItem) {
+    targetItem.classList.remove('dragging');
+  }
   draggedIndex = null;
+}
+
+let draggedFileIndex = null;
+
+function handleFileDragStart(event) {
+  const targetItem = event.target.closest('.draggable-file-item');
+  if (!targetItem) return;
+  draggedFileIndex = parseInt(targetItem.dataset.index, 10);
+  targetItem.classList.add('dragging');
+}
+
+function handleFileDragOver(event) {
+  event.preventDefault();
+}
+
+function handleFileDrop(event) {
+  event.preventDefault();
+  const targetItem = event.target.closest('.draggable-file-item');
+  if (!targetItem) return;
+  const dropIndex = parseInt(targetItem.dataset.index, 10);
+
+  if (draggedFileIndex !== null && draggedFileIndex !== dropIndex) {
+    const [removed] = state.selectedFiles.splice(draggedFileIndex, 1);
+    state.selectedFiles.splice(dropIndex, 0, removed);
+    displayFileList();
+  }
+}
+
+function handleFileDragEnd(event) {
+  const targetItem = event.target.closest('.draggable-file-item');
+  if (targetItem) {
+    targetItem.classList.remove('dragging');
+  }
+  draggedFileIndex = null;
 }
 
 // Process Files

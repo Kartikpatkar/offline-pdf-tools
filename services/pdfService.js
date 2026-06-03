@@ -13,6 +13,23 @@
 import { PDFDocument, degrees } from '../lib/pdf-lib.esm.js';
 
 class PDFService {
+  constructor() {
+    this._cachedPdfjsDoc = null;
+    this._cachedFile = null;
+  }
+
+  clearCache() {
+    if (this._cachedPdfjsDoc) {
+      try {
+        this._cachedPdfjsDoc.destroy();
+      } catch (e) {
+        console.error('Error destroying cached PDF.js doc:', e);
+      }
+      this._cachedPdfjsDoc = null;
+    }
+    this._cachedFile = null;
+  }
+
   /**
    * Merge multiple PDFs into a single PDF
    * @param {File[]} files - Array of PDF File objects
@@ -277,9 +294,16 @@ class PDFService {
     }
 
     try {
-      // Use PDF.js to render the page
-      const arrayBuffer = await file.arrayBuffer();
-      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      let pdf;
+      if (this._cachedFile === file && this._cachedPdfjsDoc) {
+        pdf = this._cachedPdfjsDoc;
+      } else {
+        this.clearCache();
+        const arrayBuffer = await file.arrayBuffer();
+        pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        this._cachedPdfjsDoc = pdf;
+        this._cachedFile = file;
+      }
       const page = await pdf.getPage(pageIndex + 1); // PDF.js uses 1-based indexing
 
       const viewport = page.getViewport({ scale: 1 });
