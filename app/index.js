@@ -116,7 +116,15 @@ function setupEventListeners() {
   elements.uploadZone.addEventListener('drop', handleDrop);
 
   // Clear files
-  elements.clearFiles.addEventListener('click', clearFiles);
+  elements.clearFiles.addEventListener('click', () => {
+    if (state.selectedFiles.length > 0) {
+      showConfirmModal(() => {
+        clearFiles();
+      });
+    } else {
+      clearFiles();
+    }
+  });
 
   // Add more files
   elements.addMoreFiles.addEventListener('click', () => elements.fileInput.click());
@@ -147,6 +155,68 @@ function setupEventListeners() {
         descElement.classList.toggle('hidden');
       }
     }
+  });
+
+  // Batch selection - Extract
+  document.getElementById('extractSelectAll').addEventListener('click', () => {
+    for (let i = 1; i <= state.pageCount; i++) state.selectedPages.add(i);
+    updateSelectionUI('extractPageSelector');
+  });
+  document.getElementById('extractDeselectAll').addEventListener('click', () => {
+    state.selectedPages.clear();
+    updateSelectionUI('extractPageSelector');
+  });
+  document.getElementById('extractInvert').addEventListener('click', () => {
+    for (let i = 1; i <= state.pageCount; i++) {
+      if (state.selectedPages.has(i)) {
+        state.selectedPages.delete(i);
+      } else {
+        state.selectedPages.add(i);
+      }
+    }
+    updateSelectionUI('extractPageSelector');
+  });
+
+  // Batch selection - Delete
+  document.getElementById('deleteSelectAll').addEventListener('click', () => {
+    for (let i = 1; i <= state.pageCount; i++) state.selectedPages.add(i);
+    updateSelectionUI('deletePageSelector');
+  });
+  document.getElementById('deleteDeselectAll').addEventListener('click', () => {
+    state.selectedPages.clear();
+    updateSelectionUI('deletePageSelector');
+  });
+  document.getElementById('deleteInvert').addEventListener('click', () => {
+    for (let i = 1; i <= state.pageCount; i++) {
+      if (state.selectedPages.has(i)) {
+        state.selectedPages.delete(i);
+      } else {
+        state.selectedPages.add(i);
+      }
+    }
+    updateSelectionUI('deletePageSelector');
+  });
+
+  // Batch rotation
+  document.getElementById('rotateAllCW').addEventListener('click', () => {
+    for (let i = 1; i <= state.pageCount; i++) {
+      const current = state.pageRotations.get(i) || 0;
+      state.pageRotations.set(i, (current + 90) % 360);
+    }
+    updateRotationUI();
+  });
+  document.getElementById('rotateAllCCW').addEventListener('click', () => {
+    for (let i = 1; i <= state.pageCount; i++) {
+      const current = state.pageRotations.get(i) || 0;
+      state.pageRotations.set(i, (current - 90 + 360) % 360);
+    }
+    updateRotationUI();
+  });
+  document.getElementById('rotateReset').addEventListener('click', () => {
+    for (let i = 1; i <= state.pageCount; i++) {
+      state.pageRotations.set(i, 0);
+    }
+    updateRotationUI();
   });
 }
 
@@ -199,8 +269,8 @@ function selectTool(tool) {
     <div class="flex items-start gap-3">
       <div class="text-2xl">${info.icon}</div>
       <div>
-        <h3 class="font-semibold text-lg mb-1" style="color: var(--text-color);">${info.title}</h3>
-        <p class="text-sm" style="color: var(--text-color); opacity: 0.7;">${info.desc}</p>
+        <h3 class="font-semibold text-lg mb-1 text-primary">${info.title}</h3>
+        <p class="text-sm text-secondary">${info.desc}</p>
       </div>
     </div>
   `;
@@ -355,8 +425,7 @@ function displayFileList() {
   state.selectedFiles.forEach((file, index) => {
     console.log('Creating list item for:', file.name);
     const li = document.createElement('li');
-    li.className = 'flex items-center justify-between p-3 rounded-lg';
-    li.style.backgroundColor = 'var(--secondary-color)';
+    li.className = 'file-item flex items-center justify-between p-3 rounded-lg';
     
     // Add drag capabilities for Merge tool
     if (state.currentTool === 'merge') {
@@ -379,7 +448,7 @@ function displayFileList() {
     li.innerHTML = `
       <div class="flex items-center flex-1">
         ${dragHandle}
-        <div class="file-info" style="color: var(--text-color);">
+        <div class="file-info">
           <div class="file-name font-semibold mb-1">${file.name}</div>
           <div class="file-meta text-sm opacity-70">
             Size: ${formatFileSize(file.size)} · Pages: ${pageInfo}
@@ -664,6 +733,38 @@ function redrawThumbnail(canvas, pageNum, rotation) {
   const scaledHeight = img.height * scale;
   ctx.drawImage(img, -scaledWidth/2, -scaledHeight/2, scaledWidth, scaledHeight);
   ctx.restore();
+}
+
+function updateSelectionUI(containerId) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  const items = container.querySelectorAll('.page-item');
+  items.forEach(item => {
+    const pageNum = parseInt(item.dataset.page, 10);
+    if (state.selectedPages.has(pageNum)) {
+      item.classList.add('selected');
+    } else {
+      item.classList.remove('selected');
+    }
+  });
+}
+
+function updateRotationUI() {
+  const container = document.getElementById('rotatePageSelector');
+  if (!container) return;
+  const items = container.querySelectorAll('.page-item');
+  items.forEach(item => {
+    const pageNum = parseInt(item.dataset.page, 10);
+    const rotation = state.pageRotations.get(pageNum) || 0;
+    const rotateBtn = item.querySelector('.rotate-btn');
+    if (rotateBtn) {
+      rotateBtn.textContent = `${rotation}°`;
+    }
+    const canvas = item.querySelector('canvas');
+    if (canvas) {
+      redrawThumbnail(canvas, pageNum, rotation);
+    }
+  });
 }
 
 // Reorder List
@@ -955,6 +1056,30 @@ function showProgress() {
 
 function hideProgress() {
   elements.processingOverlay.classList.add('hidden');
+}
+
+function showConfirmModal(onConfirm) {
+  const modal = document.getElementById('confirmModal');
+  if (!modal) return;
+  const cancelBtn = document.getElementById('confirmCancelBtn');
+  const clearBtn = document.getElementById('confirmClearBtn');
+  
+  modal.classList.remove('hidden');
+  
+  const close = () => {
+    modal.classList.add('hidden');
+    cancelBtn.removeEventListener('click', handleCancel);
+    clearBtn.removeEventListener('click', handleClear);
+  };
+  
+  const handleCancel = () => close();
+  const handleClear = () => {
+    onConfirm();
+    close();
+  };
+  
+  cancelBtn.addEventListener('click', handleCancel);
+  clearBtn.addEventListener('click', handleClear);
 }
 
 // Reset

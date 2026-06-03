@@ -256,6 +256,9 @@
 /* File Item */
 .file-item {
   animation: slideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  background-color: var(--secondary-color);
+  color: var(--text-color);
+  transition: all 0.3s ease;
 }
 
 @keyframes slideIn {
@@ -646,4 +649,44 @@ html.dark-theme .footer-copyright {
   opacity: 0.5;
   transform: scale(0.98);
   border: 2px dashed var(--primary-color);
+}
+
+/* Custom Confirmation Modal Overlay */
+.confirm-modal-bg {
+  background-color: rgba(0, 0, 0, 0.4);
+}
+
+/* Sleek Compact Batch Control Buttons */
+.btn-batch {
+  background: var(--secondary-color);
+  color: var(--text-color);
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-batch:hover {
+  background-color: var(--primary-color);
+  color: white;
+  transform: translateY(-1px);
+}
+
+.btn-batch:active {
+  transform: translateY(0);
+}
+
+/* Dark Mode soft filter to dim glaring white PDF pages */
+html.dark-theme .page-thumbnail {
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  filter: brightness(0.9) contrast(1.05);
+  transition: filter 0.2s ease;
+}
+
+html.dark-theme .page-item:hover .page-thumbnail {
+  filter: brightness(1) contrast(1);
 }

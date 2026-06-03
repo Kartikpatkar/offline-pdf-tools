@@ -201,6 +201,11 @@
             </button>
           </div>
           <p id="extractDescription" class="text-sm mb-4 hidden text-secondary">Click on pages to include them in the extracted PDF</p>
+          <div class="flex gap-2 mb-4">
+            <button id="extractSelectAll" class="btn-batch">Select All</button>
+            <button id="extractDeselectAll" class="btn-batch">Deselect All</button>
+            <button id="extractInvert" class="btn-batch">Invert Selection</button>
+          </div>
           <div id="extractPageSelector" class="max-h-96 overflow-y-auto custom-scrollbar page-selector-padding"></div>
         </div>
 
@@ -224,6 +229,11 @@
             </button>
           </div>
           <p id="rotateDescription" class="text-sm mb-4 hidden text-secondary">Click the rotation button on each page to cycle through 0°, 90°, 180°, 270° rotations</p>
+          <div class="flex gap-2 mb-4">
+            <button id="rotateAllCW" class="btn-batch">Rotate All +90°</button>
+            <button id="rotateAllCCW" class="btn-batch">Rotate All -90°</button>
+            <button id="rotateReset" class="btn-batch">Reset All</button>
+          </div>
           <div>
             <div id="rotatePageSelector" class="max-h-96 overflow-y-auto custom-scrollbar page-selector-padding"></div>
           </div>
@@ -249,6 +259,11 @@
             </button>
           </div>
           <p id="deleteDescription" class="text-sm mb-4 hidden text-secondary">Click on pages you want to remove from the PDF</p>
+          <div class="flex gap-2 mb-4">
+            <button id="deleteSelectAll" class="btn-batch">Select All</button>
+            <button id="deleteDeselectAll" class="btn-batch">Deselect All</button>
+            <button id="deleteInvert" class="btn-batch">Invert Selection</button>
+          </div>
           <div id="deletePageSelector" class="max-h-96 overflow-y-auto custom-scrollbar page-selector-padding"></div>
         </div>
 
@@ -393,6 +408,18 @@
       </div>
     </div>
   </footer>
+
+  <!-- Confirmation Modal -->
+  <div id="confirmModal" class="fixed inset-0 flex items-center justify-center hidden z-index-overlay backdrop-blur confirm-modal-bg">
+    <div class="card p-6 max-w-sm mx-4 text-center">
+      <h3 class="text-xl font-bold mb-2 text-primary">Clear All Files?</h3>
+      <p class="text-sm text-secondary mb-6">This will reset all your current selections and uploaded files. This action cannot be undone.</p>
+      <div class="flex gap-3 justify-center">
+        <button id="confirmCancelBtn" class="btn-secondary px-4 py-2">Cancel</button>
+        <button id="confirmClearBtn" class="btn-danger px-4 py-2" style="background-color: #ff6b6b; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; padding: 8px 16px;">Clear All</button>
+      </div>
+    </div>
+  </div>
 
   <script type="module" src="index.js"></script>
 </body>
