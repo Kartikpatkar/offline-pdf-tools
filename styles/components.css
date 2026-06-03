@@ -653,7 +653,19 @@ html.dark-theme .footer-copyright {
 
 /* Custom Confirmation Modal Overlay */
 .confirm-modal-bg {
-  background-color: rgba(0, 0, 0, 0.4);
+  background-color: rgba(0, 0, 0, 0.65);
+}
+
+#confirmModal .card {
+  background: var(--surface-color) !important;
+  border: 1px solid var(--secondary-color);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+}
+
+/* Ensure the card has solid background in dark mode */
+html.dark-theme #confirmModal .card {
+  background: var(--surface-color) !important;
+  border-color: rgba(255, 255, 255, 0.1);
 }
 
 /* Sleek Compact Batch Control Buttons */

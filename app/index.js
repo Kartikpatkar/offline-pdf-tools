@@ -366,18 +366,29 @@ async function addFiles(files) {
 
   console.log('Selected files:', state.selectedFiles);
 
-  // Load page counts for all files
-  for (const file of state.selectedFiles) {
+  // Load page counts for all files in parallel
+  const metadataPromises = state.selectedFiles.map(async (file) => {
     if (!state.fileMetadata.has(file)) {
       try {
         const pageCount = await pdfService.getPageCount(file);
         state.fileMetadata.set(file, { pageCount });
       } catch (error) {
         console.error('Error loading page count for', file.name, error);
+        
+        const isEncrypted = error.message?.toLowerCase().includes('encrypt') || 
+                            error.message?.toLowerCase().includes('password') || 
+                            error.name === 'PasswordException';
+                            
+        let errorMsg = isEncrypted 
+          ? `"${file.name}" is password-protected or encrypted. Because all processing happens locally inside your browser, encrypted PDFs are not supported.`
+          : `Error loading "${file.name}": ${error.message}`;
+        
+        showStatus(errorMsg, 'error');
         state.fileMetadata.set(file, { pageCount: '?' });
       }
     }
-  }
+  });
+  await Promise.all(metadataPromises);
 
   // Update UI
   displayFileList();

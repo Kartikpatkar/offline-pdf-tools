@@ -271,9 +271,16 @@ class PDFService {
       throw new Error('No file provided');
     }
 
-    const arrayBuffer = await file.arrayBuffer();
-    const pdfDoc = await PDFDocument.load(arrayBuffer);
-    return pdfDoc.getPageCount();
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const pdfDoc = await PDFDocument.load(arrayBuffer);
+      return pdfDoc.getPageCount();
+    } catch (error) {
+      if (error.message?.toLowerCase().includes('encrypt') || error.message?.toLowerCase().includes('password')) {
+        throw new Error('Document is encrypted/password-protected.');
+      }
+      throw error;
+    }
   }
   /**
    * Render a page thumbnail as a data URL
@@ -324,6 +331,9 @@ class PDFService {
       return canvas.toDataURL('image/jpeg', 0.8);
     } catch (error) {
       console.error('Error in renderPageThumbnail:', error);
+      if (error.name === 'PasswordException' || error.message?.toLowerCase().includes('password') || error.message?.toLowerCase().includes('encrypt')) {
+        throw new Error('Document is encrypted/password-protected.');
+      }
       throw error;
     }
   }}
