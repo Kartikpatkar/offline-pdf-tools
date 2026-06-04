@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Offline PDF Tools",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "100% offline PDF modification tools - merge, split, extract, rotate, delete pages. No uploads, complete privacy.",
   "permissions": [
     "downloads"
