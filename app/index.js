@@ -739,6 +739,7 @@ async function addFiles(files) {
 
   // Load page counts for all files in parallel (PDF tools only)
   if (state.currentTool !== 'imageToPdf') {
+    const rejectedFiles = [];
     const metadataPromises = state.selectedFiles.map(async (file) => {
       if (!state.fileMetadata.has(file)) {
         try {
@@ -765,17 +766,34 @@ async function addFiles(files) {
             state.fileMetadata.set(file, { pageCount: '?', encrypted: true });
             return;
           }
+
+          if (isEncrypted) {
+            const errorMsg = `"${file.name}" is password-protected or encrypted. Because all processing happens locally inside your browser, encrypted PDFs are not supported.`;
+            if (typeof alert !== 'undefined') {
+              alert(errorMsg);
+            } else {
+              console.warn(errorMsg);
+            }
+            rejectedFiles.push(file);
+            return;
+          }
                               
-          let errorMsg = isEncrypted 
-            ? `"${file.name}" is password-protected or encrypted. Because all processing happens locally inside your browser, encrypted PDFs are not supported.`
-            : `Error loading "${file.name}": ${error.message}`;
-          
+          let errorMsg = `Error loading "${file.name}": ${error.message}`;
           showStatus(errorMsg, 'error');
           state.fileMetadata.set(file, { pageCount: '?' });
         }
       }
     });
     await Promise.all(metadataPromises);
+
+    if (rejectedFiles.length > 0) {
+      state.selectedFiles = state.selectedFiles.filter(f => !rejectedFiles.includes(f));
+      rejectedFiles.forEach(f => state.fileMetadata.delete(f));
+      if (state.selectedFiles.length === 0 || state.currentTool !== 'merge') {
+        clearFiles();
+        return;
+      }
+    }
   }
 
   // Update UI
@@ -1118,6 +1136,9 @@ function renderPageSelector(containerId) {
 
       const currentRotation = state.pageRotations.get(i) || 0;
 
+      const rotateBtn = document.createElement('button');
+      rotateBtn.className = 'rotate-btn mt-2';
+      rotateBtn.textContent = `${currentRotation}°`;
       rotateBtn.setAttribute('aria-label', `Rotate page ${i}. Current rotation: ${currentRotation} degrees`);
       rotateBtn.addEventListener('click', (e) => {
         e.stopPropagation();

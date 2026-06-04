@@ -1068,3 +1068,86 @@ html.dark-theme .category-tab:hover {
 .tool-tab.hidden-filter {
   display: none !important;
 }
+
+/* -------------------------------
+   Blueprint Bar Custom Styles
+------------------------------- */
+.blueprint-select {
+  border: 1px solid var(--secondary-color);
+  border-radius: 8px;
+  padding: 6px 12px;
+  background-color: var(--surface-color);
+  color: var(--text-color);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%237c3aed' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 12px;
+  padding-right: 28px;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+html.dark-theme .blueprint-select {
+  background-color: #1e293b;
+  border-color: rgba(255, 255, 255, 0.08);
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238b5cf6' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+}
+
+.blueprint-select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+}
+
+.btn-save-preset {
+  background-color: var(--primary-color);
+  color: white !important;
+  border: none;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(124, 58, 237, 0.15);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-save-preset:hover {
+  background-color: #6d28d9;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(124, 58, 237, 0.25);
+}
+
+.btn-save-preset:active {
+  transform: translateY(0);
+}
+
+html.dark-theme .btn-save-preset {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.btn-delete-preset {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  border-radius: 8px;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  background-color: rgba(239, 68, 68, 0.05);
+  color: #ef4444;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-delete-preset:hover {
+  background-color: #ef4444;
+  color: white;
+  border-color: #ef4444;
+}
