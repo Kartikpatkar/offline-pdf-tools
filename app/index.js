@@ -51,7 +51,16 @@ const elements = {
   processingOverlay: document.getElementById('processingOverlay'),
   toastContainer: document.getElementById('toastContainer'),
   pageRangeInput: document.getElementById('pageRangeInput'),
-  totalPages: document.getElementById('totalPages')
+  totalPages: document.getElementById('totalPages'),
+  imageToPdfOptions: document.getElementById('imageToPdfOptions'),
+  pdfToImgOptions: document.getElementById('pdfToImgOptions'),
+  pdfToImgPageSelector: document.getElementById('pdfToImgPageSelector'),
+  imgPageSize: document.getElementById('imgPageSize'),
+  imgOrientation: document.getElementById('imgOrientation'),
+  imgMargin: document.getElementById('imgMargin'),
+  imgAlignment: document.getElementById('imgAlignment'),
+  pdfToImgFormat: document.getElementById('pdfToImgFormat'),
+  pdfToImgScale: document.getElementById('pdfToImgScale')
 };
 
 // Initialize App
@@ -219,6 +228,35 @@ function setupEventListeners() {
     }
     updateRotationUI();
   });
+
+  // Batch selection - PDF to Image
+  document.getElementById('pdfToImgSelectAll').addEventListener('click', () => {
+    for (let i = 1; i <= state.pageCount; i++) state.selectedPages.add(i);
+    updateSelectionUI('pdfToImgPageSelector');
+  });
+  document.getElementById('pdfToImgDeselectAll').addEventListener('click', () => {
+    state.selectedPages.clear();
+    updateSelectionUI('pdfToImgPageSelector');
+  });
+  document.getElementById('pdfToImgInvert').addEventListener('click', () => {
+    for (let i = 1; i <= state.pageCount; i++) {
+      if (state.selectedPages.has(i)) {
+        state.selectedPages.delete(i);
+      } else {
+        state.selectedPages.add(i);
+      }
+    }
+    updateSelectionUI('pdfToImgPageSelector');
+  });
+
+  // Image to PDF option constraints
+  if (elements.imgPageSize) {
+    elements.imgPageSize.addEventListener('change', () => {
+      const isFit = elements.imgPageSize.value === 'fit';
+      elements.imgOrientation.disabled = isFit;
+      elements.imgAlignment.disabled = isFit;
+    });
+  }
 }
 
 // Tool Selection
@@ -261,6 +299,16 @@ function selectTool(tool) {
       title: 'How it works',
       desc: 'Drag and drop pages to rearrange their order in the PDF document.',
       icon: '<svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="../assets/icons/icons.svg#icon-help"></use></svg>'
+    },
+    imageToPdf: {
+      title: 'How it works',
+      desc: 'Convert images (PNG, JPEG, WebP, GIF, BMP, SVG) to a single PDF document. Upload files, reorder if needed, and configure pages.',
+      icon: '<svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="../assets/icons/icons.svg#icon-help"></use></svg>'
+    },
+    pdfToImg: {
+      title: 'How it works',
+      desc: 'Convert and download pages of a PDF document as images (PNG or JPEG). Upload a PDF, choose the format and quality, and select pages.',
+      icon: '<svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="../assets/icons/icons.svg#icon-help"></use></svg>'
     }
   };
 
@@ -278,18 +326,20 @@ function selectTool(tool) {
 
   // Update upload section text
   const uploadTexts = {
-    merge: { title: 'Drop your PDF files here', multiple: true },
-    split: { title: 'Drop your PDF file here', multiple: false },
-    extract: { title: 'Drop your PDF file here', multiple: false },
-    rotate: { title: 'Drop your PDF file here', multiple: false },
-    delete: { title: 'Drop your PDF file here', multiple: false },
-    reorder: { title: 'Drop your PDF file here', multiple: false }
+    merge: { title: 'Drop your PDF files here', multiple: true, accept: '.pdf,application/pdf' },
+    split: { title: 'Drop your PDF file here', multiple: false, accept: '.pdf,application/pdf' },
+    extract: { title: 'Drop your PDF file here', multiple: false, accept: '.pdf,application/pdf' },
+    rotate: { title: 'Drop your PDF file here', multiple: false, accept: '.pdf,application/pdf' },
+    delete: { title: 'Drop your PDF file here', multiple: false, accept: '.pdf,application/pdf' },
+    reorder: { title: 'Drop your PDF file here', multiple: false, accept: '.pdf,application/pdf' },
+    imageToPdf: { title: 'Drop your image files here', multiple: true, accept: '.png,.jpg,.jpeg,.webp,.gif,.bmp,.svg,image/*' },
+    pdfToImg: { title: 'Drop your PDF file here', multiple: false, accept: '.pdf,application/pdf' }
   };
 
   const config = uploadTexts[tool];
   elements.uploadTitle.textContent = config.title;
   elements.fileInput.multiple = config.multiple;
-  elements.fileInput.multiple = config.multiple;
+  elements.fileInput.accept = config.accept;
 
   // Update process button text
   const buttonTexts = {
@@ -298,7 +348,9 @@ function selectTool(tool) {
     extract: 'Extract Pages',
     rotate: 'Rotate Pages',
     delete: 'Delete Pages',
-    reorder: 'Reorder & Export'
+    reorder: 'Reorder & Export',
+    imageToPdf: 'Convert to PDF',
+    pdfToImg: 'Convert Pages to Images'
   };
   elements.btnText.textContent = buttonTexts[tool];
 
@@ -345,21 +397,27 @@ async function addFiles(files) {
   console.log('addFiles called with:', files);
   console.log('Current tool:', state.currentTool);
   
-  // Validate PDFs
-  if (!areAllPDFs(files)) {
-    console.log('Files are not PDFs');
-    showStatus('Please select only PDF files', 'error');
-    return;
+  if (state.currentTool === 'imageToPdf') {
+    // Validate images
+    const areAllImages = files.every(file => file.type.startsWith('image/') || /\.(png|jpe?g|webp|gif|bmp|svg)$/i.test(file.name));
+    if (!areAllImages) {
+      showStatus('Please select only image files', 'error');
+      return;
+    }
+  } else {
+    // Validate PDFs
+    if (!areAllPDFs(files)) {
+      showStatus('Please select only PDF files', 'error');
+      return;
+    }
   }
 
-  console.log('All files are PDFs');
-
   // Check file count based on tool
-  if (state.currentTool === 'merge') {
+  if (state.currentTool === 'merge' || state.currentTool === 'imageToPdf') {
     state.selectedFiles = [...state.selectedFiles, ...files];
   } else {
     if (files.length > 1) {
-      showStatus('Please select only one PDF file', 'warning');
+      showStatus('Please select only one file', 'warning');
       return;
     }
     state.selectedFiles = files;
@@ -367,35 +425,37 @@ async function addFiles(files) {
 
   console.log('Selected files:', state.selectedFiles);
 
-  // Load page counts for all files in parallel
-  const metadataPromises = state.selectedFiles.map(async (file) => {
-    if (!state.fileMetadata.has(file)) {
-      try {
-        const pageCount = await pdfService.getPageCount(file);
-        state.fileMetadata.set(file, { pageCount });
-      } catch (error) {
-        console.error('Error loading page count for', file.name, error);
-        
-        const isEncrypted = error.message?.toLowerCase().includes('encrypt') || 
-                            error.message?.toLowerCase().includes('password') || 
-                            error.name === 'PasswordException';
-                            
-        let errorMsg = isEncrypted 
-          ? `"${file.name}" is password-protected or encrypted. Because all processing happens locally inside your browser, encrypted PDFs are not supported.`
-          : `Error loading "${file.name}": ${error.message}`;
-        
-        showStatus(errorMsg, 'error');
-        state.fileMetadata.set(file, { pageCount: '?' });
+  // Load page counts for all files in parallel (PDF tools only)
+  if (state.currentTool !== 'imageToPdf') {
+    const metadataPromises = state.selectedFiles.map(async (file) => {
+      if (!state.fileMetadata.has(file)) {
+        try {
+          const pageCount = await pdfService.getPageCount(file);
+          state.fileMetadata.set(file, { pageCount });
+        } catch (error) {
+          console.error('Error loading page count for', file.name, error);
+          
+          const isEncrypted = error.message?.toLowerCase().includes('encrypt') || 
+                              error.message?.toLowerCase().includes('password') || 
+                              error.name === 'PasswordException';
+                              
+          let errorMsg = isEncrypted 
+            ? `"${file.name}" is password-protected or encrypted. Because all processing happens locally inside your browser, encrypted PDFs are not supported.`
+            : `Error loading "${file.name}": ${error.message}`;
+          
+          showStatus(errorMsg, 'error');
+          state.fileMetadata.set(file, { pageCount: '?' });
+        }
       }
-    }
-  });
-  await Promise.all(metadataPromises);
+    });
+    await Promise.all(metadataPromises);
+  }
 
   // Update UI
   displayFileList();
   
   // For single-file tools, load page info
-  if (state.currentTool !== 'merge' && state.selectedFiles.length > 0) {
+  if (state.currentTool !== 'merge' && state.currentTool !== 'imageToPdf' && state.selectedFiles.length > 0) {
     await loadPageInfo();
   }
 
@@ -439,8 +499,8 @@ function displayFileList() {
     const li = document.createElement('li');
     li.className = 'file-item flex items-center justify-between p-3 rounded-lg';
     
-    // Add drag capabilities for Merge tool
-    if (state.currentTool === 'merge') {
+    // Add drag capabilities for Merge and Image to PDF tools
+    if (state.currentTool === 'merge' || state.currentTool === 'imageToPdf') {
       li.draggable = true;
       li.classList.add('draggable-file-item');
       li.dataset.index = index;
@@ -450,12 +510,19 @@ function displayFileList() {
       li.addEventListener('dragend', handleFileDragEnd);
     }
     
-    const metadata = state.fileMetadata.get(file);
-    const pageInfo = metadata ? metadata.pageCount : '?';
-    
-    const dragHandle = state.currentTool === 'merge'
+    const dragHandle = (state.currentTool === 'merge' || state.currentTool === 'imageToPdf')
       ? `<div class="drag-handle" style="cursor: grab; margin-right: 12px; font-weight: bold; opacity: 0.5;">⋮⋮</div>`
       : '';
+
+    const isImage = state.currentTool === 'imageToPdf';
+    let fileMetaText = '';
+    if (isImage) {
+      fileMetaText = `Size: ${formatFileSize(file.size)} · Image`;
+    } else {
+      const metadata = state.fileMetadata.get(file);
+      const pageInfo = metadata ? metadata.pageCount : '?';
+      fileMetaText = `Size: ${formatFileSize(file.size)} · Pages: ${pageInfo}`;
+    }
 
     li.innerHTML = `
       <div class="flex items-center flex-1">
@@ -463,11 +530,11 @@ function displayFileList() {
         <div class="file-info">
           <div class="file-name font-semibold mb-1">${file.name}</div>
           <div class="file-meta text-sm opacity-70">
-            Size: ${formatFileSize(file.size)} · Pages: ${pageInfo}
+            ${fileMetaText}
           </div>
         </div>
       </div>
-      <button class="icon-btn btn-danger" data-file-index="${index}" title="Remove"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="../assets/icons/icons.svg#icon-delete"></use></svg></button>
+      <button class="icon-btn btn-danger" data-file-index="${index}" title="Remove" aria-label="Remove file ${file.name}"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="../assets/icons/icons.svg#icon-delete"></use></svg></button>
     `;
     
     // Add click listener to remove button
@@ -553,7 +620,9 @@ function showToolOptions() {
     extract: elements.extractOptions,
     rotate: elements.rotateOptions,
     delete: elements.deleteOptions,
-    reorder: elements.reorderOptions
+    reorder: elements.reorderOptions,
+    imageToPdf: elements.imageToPdfOptions,
+    pdfToImg: elements.pdfToImgOptions
   };
 
   // Hide all panels
@@ -575,6 +644,16 @@ function showToolOptions() {
       renderPageSelector('deletePageSelector');
     } else if (state.currentTool === 'reorder') {
       renderReorderList();
+    } else if (state.currentTool === 'imageToPdf') {
+      elements.imgPageSize.value = 'fit';
+      elements.imgOrientation.value = 'auto';
+      elements.imgOrientation.disabled = true;
+      elements.imgMargin.value = '0';
+      elements.imgAlignment.value = 'center';
+      elements.imgAlignment.disabled = true;
+    } else if (state.currentTool === 'pdfToImg') {
+      state.selectedPages.clear();
+      renderPageSelector('pdfToImgPageSelector');
     }
   } else {
     elements.toolOptions.classList.add('hidden');
@@ -1104,6 +1183,58 @@ async function processFiles() {
         await downloadPDF(result, generateActionFilename(state.selectedFiles[0].name, 'reordered'));
         showStatus('Pages reordered successfully!', 'success');
         break;
+
+      case 'imageToPdf':
+        const imgOptions = {
+          pageSize: elements.imgPageSize.value,
+          orientation: elements.imgOrientation.value,
+          margin: elements.imgMargin.value,
+          alignment: elements.imgAlignment.value
+        };
+        result = await pdfService.imageToPDF(state.selectedFiles, imgOptions);
+        // Formulate output filename using the first file's name
+        await downloadPDF(result, generateActionFilename(state.selectedFiles[0].name, 'converted'));
+        showStatus('Images converted to PDF successfully!', 'success');
+        break;
+
+      case 'pdfToImg':
+        if (state.selectedPages.size === 0) {
+          throw new Error('Please select at least one page to export as an image');
+        }
+        
+        const selectedPagesArray = Array.from(state.selectedPages).sort((a, b) => a - b);
+        const imgFormat = elements.pdfToImgFormat.value;
+        const imgScale = parseFloat(elements.pdfToImgScale.value);
+        const extension = imgFormat === 'image/png' ? 'png' : 'jpg';
+        
+        showStatus(`Starting image export for ${selectedPagesArray.length} pages...`, 'info');
+        
+        const baseFileName = state.selectedFiles[0].name.replace(/\.pdf$/i, '');
+        
+        for (let idx = 0; idx < selectedPagesArray.length; idx++) {
+          const pageNum = selectedPagesArray[idx];
+          const imgDataUrl = await pdfService.renderPageToImage(state.selectedFiles[0], pageNum - 1, imgFormat, imgScale);
+          
+          // Convert data URL to bytes
+          const res = await fetch(imgDataUrl);
+          const blob = await res.blob();
+          const buffer = await blob.arrayBuffer();
+          const imgBytes = new Uint8Array(buffer);
+          
+          // Formulate filename
+          const outputName = `${baseFileName}_page_${pageNum}.${extension}`;
+          
+          // Download the file
+          await downloadImage(imgBytes, outputName, imgFormat);
+          
+          // Introduce a small 250ms delay between downloads to prevent chrome from blocking batch downloads
+          if (idx < selectedPagesArray.length - 1) {
+            await new Promise(resolve => setTimeout(resolve, 250));
+          }
+        }
+        
+        showStatus('Pages exported to images successfully!', 'success');
+        break;
     }
   } catch (error) {
     showStatus(`Error: ${error.message}`, 'error');
@@ -1111,6 +1242,30 @@ async function processFiles() {
   } finally {
     hideProgress();
     elements.processBtn.disabled = false;
+  }
+}
+
+/**
+ * Download image file
+ */
+async function downloadImage(imgBytes, filename, mimeType) {
+  const blob = new Blob([imgBytes], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+  try {
+    if (typeof chrome !== 'undefined' && chrome.downloads) {
+      await chrome.downloads.download({
+        url: url,
+        filename: filename,
+        saveAs: false
+      });
+    } else {
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      link.click();
+    }
+  } finally {
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 }
 

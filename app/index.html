@@ -95,6 +95,18 @@
             </svg>
             <span>Reorder</span>
           </button>
+          <button class="tool-tab px-4 py-2 rounded-lg font-medium text-sm flex items-center gap-2 transition" data-tool="imageToPdf">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <use href="../assets/icons/icons.svg#icon-image"></use>
+            </svg>
+            <span>Image to PDF</span>
+          </button>
+          <button class="tool-tab px-4 py-2 rounded-lg font-medium text-sm flex items-center gap-2 transition" data-tool="pdfToImg">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <use href="../assets/icons/icons.svg#icon-file-image"></use>
+            </svg>
+            <span>PDF to Image</span>
+          </button>
         </div>
       </section>
 
@@ -289,6 +301,117 @@
           <p id="reorderDescription" class="text-sm mb-4 hidden text-secondary">Drag and drop pages to change their order</p>
           <div id="reorderInstructions" class="sr-only">Use Left and Right arrow keys to change the position of the selected page in the document.</div>
           <div id="reorderPageSelector" class="max-h-96 overflow-y-auto custom-scrollbar page-selector-padding"></div>
+        </div>
+
+        <!-- Image to PDF Options -->
+        <div id="imageToPdfOptions" class="card p-6 hidden">
+          <div class="flex items-start justify-between mb-4">
+            <div class="flex items-start gap-3 flex-1">
+              <div class="text-2xl">
+                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <use href="../assets/icons/icons.svg#icon-image"></use>
+                </svg>
+              </div>
+              <div class="flex-1">
+                <h3 class="text-xl font-bold mb-1 text-primary">Image to PDF Options</h3>
+              </div>
+            </div>
+            <button class="tool-help-btn" data-target="imageToPdfDescription" aria-label="Toggle image to PDF help description">
+              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <use href="../assets/icons/icons.svg#icon-help"></use>
+              </svg>
+            </button>
+          </div>
+          <p id="imageToPdfDescription" class="text-sm mb-4 hidden text-secondary">Configure the layout of your images in the compiled PDF document.</p>
+          <div class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label for="imgPageSize" class="block text-sm font-semibold mb-2 text-primary">Page Size</label>
+                <select id="imgPageSize" class="w-full form-select">
+                  <option value="fit">Fit Image Size (Original Aspect Ratio)</option>
+                  <option value="a4">A4 (595 x 842 pt)</option>
+                  <option value="letter">US Letter (612 x 792 pt)</option>
+                </select>
+              </div>
+              <div>
+                <label for="imgOrientation" class="block text-sm font-semibold mb-2 text-primary">Page Orientation</label>
+                <select id="imgOrientation" class="w-full form-select" disabled>
+                  <option value="auto">Auto (Match Image Aspect)</option>
+                  <option value="portrait">Portrait</option>
+                  <option value="landscape">Landscape</option>
+                </select>
+              </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label for="imgMargin" class="block text-sm font-semibold mb-2 text-primary">Page Margins</label>
+                <select id="imgMargin" class="w-full form-select">
+                  <option value="0">None (0 pt)</option>
+                  <option value="10">Small (10 pt)</option>
+                  <option value="20">Normal (20 pt)</option>
+                  <option value="36">Large (36 pt)</option>
+                </select>
+              </div>
+              <div>
+                <label for="imgAlignment" class="block text-sm font-semibold mb-2 text-primary">Image Alignment</label>
+                <select id="imgAlignment" class="w-full form-select" disabled>
+                  <option value="center">Center</option>
+                  <option value="top">Top</option>
+                  <option value="bottom">Bottom</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PDF to Image Options -->
+        <div id="pdfToImgOptions" class="card p-6 hidden">
+          <div class="flex items-start justify-between mb-4">
+            <div class="flex items-start gap-3 flex-1">
+              <div class="text-2xl">
+                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <use href="../assets/icons/icons.svg#icon-file-image"></use>
+                </svg>
+              </div>
+              <div class="flex-1">
+                <h3 class="text-xl font-bold mb-1 text-primary">PDF to Image Options</h3>
+              </div>
+            </div>
+            <button class="tool-help-btn" data-target="pdfToImgDescription" aria-label="Toggle PDF to image help description">
+              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <use href="../assets/icons/icons.svg#icon-help"></use>
+              </svg>
+            </button>
+          </div>
+          <p id="pdfToImgDescription" class="text-sm mb-4 hidden text-secondary">Export individual pages of a PDF document as separate image files (PNG or JPEG).</p>
+          <div class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label for="pdfToImgFormat" class="block text-sm font-semibold mb-2 text-primary">Image Format</label>
+                <select id="pdfToImgFormat" class="w-full form-select">
+                  <option value="image/png">PNG (Lossless & transparent)</option>
+                  <option value="image/jpeg">JPEG (Smaller file size)</option>
+                </select>
+              </div>
+              <div>
+                <label for="pdfToImgScale" class="block text-sm font-semibold mb-2 text-primary">Output Quality (Resolution)</label>
+                <select id="pdfToImgScale" class="w-full form-select">
+                  <option value="1">Standard (1x DPI / 150 DPI)</option>
+                  <option value="2" selected>High Definition (2x DPI / 300 DPI)</option>
+                  <option value="3">Ultra-High (3x DPI / 450 DPI)</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-semibold mb-2 text-primary">Select Pages to Export</label>
+              <div class="flex gap-2 mb-4">
+                <button id="pdfToImgSelectAll" class="btn-batch">Select All</button>
+                <button id="pdfToImgDeselectAll" class="btn-batch">Deselect All</button>
+                <button id="pdfToImgInvert" class="btn-batch">Invert Selection</button>
+              </div>
+              <div id="pdfToImgPageSelector" class="max-h-96 overflow-y-auto custom-scrollbar page-selector-padding"></div>
+            </div>
+          </div>
         </div>
           </section>
         </div>

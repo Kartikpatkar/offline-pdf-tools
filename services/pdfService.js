@@ -336,7 +336,168 @@ class PDFService {
       }
       throw error;
     }
-  }}
+  }
+
+  /**
+   * Convert multiple image files into a single PDF
+   * @param {File[]} files - Array of image File objects
+   * @param {Object} options - Layout options (pageSize, orientation, margin, alignment)
+   * @returns {Promise<Uint8Array>} - Generated PDF as byte array
+   */
+  async imageToPDF(files, options = {}) {
+    if (!files || files.length === 0) {
+      throw new Error('No images selected');
+    }
+
+    const pdfDoc = await PDFDocument.create();
+
+    for (const file of files) {
+      const pngBytes = await convertImageToPngBytes(file);
+      const embeddedImage = await pdfDoc.embedPng(pngBytes);
+      
+      const { width: imgWidth, height: imgHeight } = embeddedImage;
+      
+      let pageWidth = imgWidth;
+      let pageHeight = imgHeight;
+      
+      const pageSize = options.pageSize || 'fit';
+      const orientation = options.orientation || 'auto';
+      const margin = options.margin !== undefined ? parseInt(options.margin, 10) : 0;
+      
+      if (pageSize === 'a4') {
+        pageWidth = 595.28;
+        pageHeight = 841.89;
+      } else if (pageSize === 'letter') {
+        pageWidth = 612;
+        pageHeight = 792;
+      }
+      
+      if (pageSize !== 'fit') {
+        const isPortrait = orientation === 'portrait' || (orientation === 'auto' && imgHeight >= imgWidth);
+        const currentIsPortrait = pageHeight >= pageWidth;
+        if (isPortrait !== currentIsPortrait) {
+          const temp = pageWidth;
+          pageWidth = pageHeight;
+          pageHeight = temp;
+        }
+      }
+      
+      const page = pdfDoc.addPage([pageWidth, pageHeight]);
+      
+      const availableWidth = pageWidth - (margin * 2);
+      const availableHeight = pageHeight - (margin * 2);
+      
+      const scale = Math.min(availableWidth / imgWidth, availableHeight / imgHeight);
+      const drawWidth = imgWidth * scale;
+      const drawHeight = imgHeight * scale;
+      
+      let x = margin + (availableWidth - drawWidth) / 2;
+      let y = margin + (availableHeight - drawHeight) / 2;
+      
+      if (options.alignment === 'top') {
+        y = pageHeight - margin - drawHeight;
+      } else if (options.alignment === 'bottom') {
+        y = margin;
+      }
+      
+      page.drawImage(embeddedImage, {
+        x,
+        y,
+        width: drawWidth,
+        height: drawHeight
+      });
+    }
+
+    return await pdfDoc.save();
+  }
+
+  /**
+   * Render a specific PDF page to an image data URL
+   * @param {File} file - PDF File object
+   * @param {number} pageIndex - Page index (0-based)
+   * @param {string} format - Image format ('image/png' or 'image/jpeg')
+   * @param {number} scale - DPI Scale multiplier (e.g. 1, 2, 3)
+   * @returns {Promise<string>} - Image data URL
+   */
+  async renderPageToImage(file, pageIndex, format = 'image/png', scale = 2) {
+    if (!file) {
+      throw new Error('No file provided');
+    }
+
+    if (typeof pdfjsLib === 'undefined') {
+      throw new Error('PDF.js library not loaded');
+    }
+
+    try {
+      let pdf;
+      if (this._cachedFile === file && this._cachedPdfjsDoc) {
+        pdf = this._cachedPdfjsDoc;
+      } else {
+        this.clearCache();
+        const arrayBuffer = await file.arrayBuffer();
+        pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        this._cachedPdfjsDoc = pdf;
+        this._cachedFile = file;
+      }
+      const page = await pdf.getPage(pageIndex + 1);
+
+      const viewport = page.getViewport({ scale });
+
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d');
+      canvas.height = viewport.height;
+      canvas.width = viewport.width;
+
+      const renderContext = {
+        canvasContext: context,
+        viewport: viewport
+      };
+
+      await page.render(renderContext).promise;
+      return canvas.toDataURL(format, 0.92);
+    } catch (error) {
+      console.error('Error in renderPageToImage:', error);
+      throw error;
+    }
+  }
+}
+
+/**
+ * Helper to convert any browser-supported image file into standard PNG bytes
+ */
+async function convertImageToPngBytes(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const img = new Image();
+      img.onload = function() {
+        try {
+          const canvas = document.createElement('canvas');
+          canvas.width = img.naturalWidth;
+          canvas.height = img.naturalHeight;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0);
+          canvas.toBlob((blob) => {
+            if (!blob) {
+              reject(new Error('Failed to convert image to Blob'));
+              return;
+            }
+            const reader2 = new FileReader();
+            reader2.onload = () => resolve(new Uint8Array(reader2.result));
+            reader2.onerror = () => reject(new Error('Failed to read image Blob'));
+            reader2.readAsArrayBuffer(blob);
+          }, 'image/png');
+        } catch (err) {
+          reject(err);
+        }
+      };
+      img.onerror = () => reject(new Error('Failed to load image file'));
+      img.src = e.target.result;
+    };
+    reader.onerror = () => reject(new Error('Failed to read image file'));
+    reader.readAsDataURL(file);
+  });
+}
 
 // Export singleton instance
 export default new PDFService();
