@@ -612,6 +612,66 @@ class PDFService {
     
     return repairedBytes;
   }
+
+  /**
+   * Extract metadata properties from a PDF file
+   * @param {File} file - PDF File object
+   * @returns {Promise<Object>} - Metadata object { title, author, subject, keywords }
+   */
+  async getPDFMetadata(file) {
+    if (!file) {
+      throw new Error('No file provided');
+    }
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const pdfDoc = await PDFDocument.load(arrayBuffer, {
+        ignoreEncryption: true,
+        updateMetadata: false
+      });
+      return {
+        title: pdfDoc.getTitle() || '',
+        author: pdfDoc.getAuthor() || '',
+        subject: pdfDoc.getSubject() || '',
+        keywords: pdfDoc.getKeywords() || ''
+      };
+    } catch (error) {
+      if (error.message?.toLowerCase().includes('encrypt') || error.message?.toLowerCase().includes('password') || error.name === 'PasswordException') {
+        throw new Error('This PDF is password-protected. Please decrypt it under the Unlock tab first.');
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * Update metadata properties of a PDF file
+   * @param {File} file - PDF File object
+   * @param {Object} metadata - Metadata values { title, author, subject, keywords }
+   * @returns {Promise<Uint8Array>} - Updated PDF bytes
+   */
+  async updatePDFMetadata(file, metadata) {
+    if (!file) {
+      throw new Error('No file provided');
+    }
+    const arrayBuffer = await file.arrayBuffer();
+    const pdfDoc = await PDFDocument.load(arrayBuffer, {
+      ignoreEncryption: true,
+      updateMetadata: false
+    });
+
+    if (metadata.title !== undefined) pdfDoc.setTitle(metadata.title);
+    if (metadata.author !== undefined) pdfDoc.setAuthor(metadata.author);
+    if (metadata.subject !== undefined) pdfDoc.setSubject(metadata.subject);
+    
+    if (metadata.keywords !== undefined) {
+      const keywordsArray = metadata.keywords
+        .split(/[\s,;]+/)
+        .map(k => k.trim())
+        .filter(k => k !== '');
+      pdfDoc.setKeywords(keywordsArray);
+    }
+
+    return await pdfDoc.save({ useObjectStreams: false });
+  }
 }
 
 /**

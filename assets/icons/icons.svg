@@ -178,6 +178,30 @@
       <line x1="1" y1="1" x2="23" y2="23"></line>
     </symbol>
 
+    <!-- Undo icon -->
+    <symbol id="icon-corner-up-left" viewBox="0 0 24 24">
+      <polyline points="9 14 4 9 9 4"></polyline>
+      <path d="M20 20v-7a4 4 0 0 0-4-4H4"></path>
+    </symbol>
+
+    <!-- Redo icon -->
+    <symbol id="icon-corner-up-right" viewBox="0 0 24 24">
+      <polyline points="15 14 20 9 15 4"></polyline>
+      <path d="M4 20v-7a4 4 0 0 1 4-4h12"></path>
+    </symbol>
+
+    <!-- Compress icon -->
+    <symbol id="icon-compress" viewBox="0 0 24 24">
+      <path d="M4 14h6v6M20 10h-6V4M14 10l7-7M10 14l-7 7"></path>
+    </symbol>
+
+    <!-- Type (Watermark) icon -->
+    <symbol id="icon-type" viewBox="0 0 24 24">
+      <polyline points="4 7 4 4 20 4 20 7"></polyline>
+      <line x1="9" y1="20" x2="15" y2="20"></line>
+      <line x1="12" y1="4" x2="12" y2="20"></line>
+    </symbol>
+
     <!-- Tool icon -->
     <symbol id="icon-tool" viewBox="0 0 24 24">
       <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>

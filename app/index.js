@@ -99,7 +99,12 @@ const elements = {
   protectAllowAnnotating: document.getElementById('protectAllowAnnotating'),
   protectEncryptMetadata: document.getElementById('protectEncryptMetadata'),
   repairOptions: document.getElementById('repairOptions'),
-  repairOptimizeLayout: document.getElementById('repairOptimizeLayout')
+  repairOptimizeLayout: document.getElementById('repairOptimizeLayout'),
+  metadataOptions: document.getElementById('metadataOptions'),
+  metadataTitle: document.getElementById('metadataTitle'),
+  metadataAuthor: document.getElementById('metadataAuthor'),
+  metadataSubject: document.getElementById('metadataSubject'),
+  metadataKeywords: document.getElementById('metadataKeywords')
 };
 
 // Initialize App
@@ -384,6 +389,11 @@ function selectTool(tool) {
       title: 'How it works',
       desc: 'Repair broken, damaged, or corrupted PDF structures offline. Rebuilds cross-reference (xref) tables, corrects stream byte offsets, and reconstructs trailers locally.',
       icon: '<svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="../assets/icons/icons.svg#icon-tool"></use></svg>'
+    },
+    metadata: {
+      title: 'How it works',
+      desc: 'Edit PDF metadata fields locally. View and modify the Title, Author, Subject, and Keywords properties stored inside the document header.',
+      icon: '<svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="../assets/icons/icons.svg#icon-document"></use></svg>'
     }
   };
 
@@ -412,7 +422,8 @@ function selectTool(tool) {
     crop: { title: 'Drop your PDF file here', multiple: false, accept: '.pdf,application/pdf' },
     unlock: { title: 'Drop your password-protected PDF here', multiple: false, accept: '.pdf,application/pdf' },
     protect: { title: 'Drop your PDF file here to protect', multiple: false, accept: '.pdf,application/pdf' },
-    repair: { title: 'Drop your corrupted PDF here to repair', multiple: false, accept: '.pdf,application/pdf' }
+    repair: { title: 'Drop your corrupted PDF here to repair', multiple: false, accept: '.pdf,application/pdf' },
+    metadata: { title: 'Drop your PDF file here to edit metadata', multiple: false, accept: '.pdf,application/pdf' }
   };
 
   const config = uploadTexts[tool];
@@ -433,7 +444,8 @@ function selectTool(tool) {
     crop: 'Crop PDF',
     unlock: 'Unlock PDF',
     protect: 'Encrypt & Protect PDF',
-    repair: 'Repair & Recover PDF'
+    repair: 'Repair & Recover PDF',
+    metadata: 'Update PDF Metadata'
   };
   elements.btnText.textContent = buttonTexts[tool];
 
@@ -686,6 +698,7 @@ function clearFiles() {
   state.isCurrentFileEncrypted = false;
   elements.fileInput.value = '';
   if (elements.pageRangeInput) elements.pageRangeInput.value = '';
+  initMetadataUI();
   pdfService.clearCache();
   displayFileList();
   hideToolOptions();
@@ -713,6 +726,25 @@ async function loadPageInfo() {
         state.pageRotations.set(i, 0);
       }
     }
+
+    // Load metadata if current tool is metadata
+    if (state.currentTool === 'metadata') {
+      showStatus('Loading document properties...', 'info');
+      try {
+        const metadata = await pdfService.getPDFMetadata(state.selectedFiles[0]);
+        if (elements.metadataTitle) elements.metadataTitle.value = metadata.title;
+        if (elements.metadataAuthor) elements.metadataAuthor.value = metadata.author;
+        if (elements.metadataSubject) elements.metadataSubject.value = metadata.subject;
+        if (elements.metadataKeywords) elements.metadataKeywords.value = metadata.keywords;
+        hideStatus();
+      } catch (err) {
+        showStatus(`Failed to read metadata: ${err.message}`, 'error');
+        if (elements.metadataTitle) elements.metadataTitle.value = '';
+        if (elements.metadataAuthor) elements.metadataAuthor.value = '';
+        if (elements.metadataSubject) elements.metadataSubject.value = '';
+        if (elements.metadataKeywords) elements.metadataKeywords.value = '';
+      }
+    }
   } catch (error) {
     showStatus(`Error loading PDF: ${error.message}`, 'error');
   }
@@ -732,7 +764,8 @@ function showToolOptions() {
     crop: elements.cropOptions,
     unlock: elements.unlockOptions,
     protect: elements.protectOptions,
-    repair: elements.repairOptions
+    repair: elements.repairOptions,
+    metadata: elements.metadataOptions
   };
 
   // Hide all panels
@@ -1487,6 +1520,24 @@ async function processFiles() {
         await downloadPDF(result, generateActionFilename(state.selectedFiles[0].name, 'repaired'));
         showStatus('PDF structurally repaired and recovered successfully!', 'success');
         break;
+
+      case 'metadata':
+        if (!state.selectedFiles[0]) {
+          throw new Error('Please select a PDF file first');
+        }
+
+        const metadataValues = {
+          title: elements.metadataTitle.value.trim(),
+          author: elements.metadataAuthor.value.trim(),
+          subject: elements.metadataSubject.value.trim(),
+          keywords: elements.metadataKeywords.value.trim()
+        };
+
+        showStatus('Updating PDF metadata locally...', 'info');
+        result = await pdfService.updatePDFMetadata(state.selectedFiles[0], metadataValues);
+        await downloadPDF(result, generateActionFilename(state.selectedFiles[0].name, 'updated_metadata'));
+        showStatus('PDF metadata updated successfully!', 'success');
+        break;
     }
   } catch (error) {
     showStatus(`Error: ${error.message}`, 'error');
@@ -2052,6 +2103,13 @@ function initProtectUI() {
 
 function initRepairUI() {
   if (elements.repairOptimizeLayout) elements.repairOptimizeLayout.checked = true;
+}
+
+function initMetadataUI() {
+  if (elements.metadataTitle) elements.metadataTitle.value = '';
+  if (elements.metadataAuthor) elements.metadataAuthor.value = '';
+  if (elements.metadataSubject) elements.metadataSubject.value = '';
+  if (elements.metadataKeywords) elements.metadataKeywords.value = '';
 }
 
 function setupProtectEventListeners() {
