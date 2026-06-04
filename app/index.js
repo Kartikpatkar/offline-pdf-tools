@@ -473,6 +473,35 @@ function setupEventListeners() {
       elements.pageNumberMarginVal.textContent = e.target.value + 'pt';
     });
   }
+  // Category selection filtering
+  const categoryTabs = document.querySelectorAll('.category-tab');
+  if (categoryTabs.length > 0) {
+    categoryTabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        categoryTabs.forEach(t => t.classList.toggle('active', t === tab));
+        
+        const category = tab.dataset.category;
+        
+        const toolTabs = document.querySelectorAll('.tool-tab');
+        toolTabs.forEach(toolTab => {
+          if (category === 'all' || toolTab.dataset.category === category) {
+            toolTab.classList.remove('hidden-filter');
+          } else {
+            toolTab.classList.add('hidden-filter');
+          }
+        });
+
+        // Auto-select the first visible tool if active tool is hidden
+        const activeTab = document.querySelector('.tool-tab.active');
+        if (activeTab && activeTab.classList.contains('hidden-filter')) {
+          const firstVisible = Array.from(toolTabs).find(t => !t.classList.contains('hidden-filter'));
+          if (firstVisible) {
+            selectTool(firstVisible.dataset.tool);
+          }
+        }
+      });
+    });
+  }
 
   // Global keyboard shortcuts (Ctrl+Z, Ctrl+Y)
   document.addEventListener('keydown', (e) => {

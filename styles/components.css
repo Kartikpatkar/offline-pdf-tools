@@ -60,25 +60,90 @@
   transform: translateY(-2px);
 }
 
-/* Tool Tabs */
+/* Tool Grid Layout */
+.tool-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+@media (max-width: 768px) {
+  .tool-grid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .tool-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+}
+
+/* Tool Tabs Redesign */
 .tool-tab {
   cursor: pointer;
-  border: 2px solid transparent;
-  background-color: var(--secondary-color);
-  color: var(--text-color);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px !important;
+  border-radius: 14px !important;
+  border: 1px solid var(--secondary-color) !important;
+  background-color: var(--surface-color) !important;
+  color: var(--text-color) !important;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  text-align: left;
+  justify-content: flex-start;
+  width: 100%;
+}
+
+.tool-tab svg {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  color: var(--primary-color);
+  transition: all 0.25s ease;
+}
+
+.tool-tab span {
+  font-weight: 600 !important;
+  font-size: 14px !important;
 }
 
 .tool-tab:hover {
-  border-color: var(--primary-color);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-color: var(--primary-color) !important;
+  transform: translateY(-3px) !important;
+  box-shadow: 0 10px 15px -3px rgba(124, 58, 237, 0.1), 0 4px 6px -2px rgba(124, 58, 237, 0.05) !important;
+}
+
+.tool-tab:hover svg {
+  transform: scale(1.15) rotate(5deg);
 }
 
 .tool-tab.active {
-  border-color: var(--primary-color);
-  background: linear-gradient(135deg, var(--primary-color), #a855f7);
-  color: white;
-  box-shadow: 0 4px 15px rgba(124, 58, 237, 0.4);
+  border-color: transparent !important;
+  background: linear-gradient(135deg, var(--primary-color) 0%, #a855f7 100%) !important;
+  color: #ffffff !important;
+  box-shadow: 0 10px 20px -3px rgba(124, 58, 237, 0.4), 0 4px 6px -2px rgba(124, 58, 237, 0.2) !important;
+}
+
+.tool-tab.active svg {
+  color: #ffffff !important;
+}
+
+html.dark-theme .tool-tab {
+  background-color: #1e293b !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -1px rgba(0, 0, 0, 0.1);
+}
+
+html.dark-theme .tool-tab:hover {
+  background-color: #243049 !important;
+  border-color: var(--primary-color) !important;
+  box-shadow: 0 10px 20px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2) !important;
 }
 
 /* Upload Zone */
@@ -922,4 +987,84 @@ html.dark-theme .form-select {
   bottom: -6px;
   right: -6px;
   cursor: nwse-resize;
+}
+
+/* Category Tabs and Filter classes */
+.category-tabs-container {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: var(--secondary-color);
+  padding: 5px;
+  border-radius: 9999px;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  max-width: 100%;
+  overflow-x: auto;
+  white-space: nowrap;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.03);
+}
+
+.category-tabs-container::-webkit-scrollbar {
+  display: none;
+}
+
+.category-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  color: var(--text-color);
+  opacity: 0.75;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 9999px;
+  font-weight: 600;
+  font-size: 13px;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  user-select: none;
+}
+
+.category-tab svg {
+  color: var(--text-color);
+  opacity: 0.8;
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.category-tab:hover {
+  opacity: 1;
+  background-color: rgba(124, 58, 237, 0.06);
+}
+
+.category-tab:hover svg {
+  transform: translateY(-1px);
+  color: var(--primary-color);
+}
+
+.category-tab.active {
+  background: var(--primary-color);
+  color: #ffffff !important;
+  opacity: 1;
+  box-shadow: 0 4px 14px rgba(124, 58, 237, 0.25);
+}
+
+.category-tab.active svg {
+  color: #ffffff !important;
+  opacity: 1;
+}
+
+html.dark-theme .category-tabs-container {
+  background-color: rgba(30, 41, 59, 0.7);
+  border-color: rgba(255, 255, 255, 0.05);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+html.dark-theme .category-tab:hover {
+  background-color: rgba(139, 92, 246, 0.12);
+}
+
+.tool-tab.hidden-filter {
+  display: none !important;
 }
