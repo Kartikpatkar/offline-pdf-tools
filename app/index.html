@@ -66,13 +66,32 @@
 
       <!-- Tool Selection Tabs -->
       <section class="mb-6">
-        <div class="flex items-center justify-between mb-3">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
           <h2 class="text-xl font-bold text-primary">Choose Your Tool</h2>
-          <button class="tool-help-btn" data-target="toolDescription" aria-label="Toggle general tool description help">
-            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <use href="../assets/icons/icons.svg#icon-help"></use>
-            </svg>
-          </button>
+          <div class="flex items-center gap-3">
+            <!-- Offline Privacy Scoreboard -->
+            <div id="privacyScoreboard" class="flex items-center gap-3 text-xs bg-secondary bg-opacity-40 px-3 py-1.5 rounded-full border border-opacity-10" style="color: var(--text-color);">
+              <div class="flex items-center gap-1.5" title="Total files processed locally">
+                <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-accent">
+                  <use href="../assets/icons/icons.svg#icon-document"></use>
+                </svg>
+                <span>Processed: <strong id="scoreboardFiles" class="text-accent font-bold">0</strong> files</span>
+              </div>
+              <div class="h-3 w-px bg-secondary-text bg-opacity-20" style="background-color: var(--text-color); opacity: 0.2;"></div>
+              <div class="flex items-center gap-1.5" title="Bandwidth/data saved from uploads">
+                <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-accent">
+                  <use href="../assets/icons/icons.svg#icon-cloud"></use>
+                </svg>
+                <span>Saved: <strong id="scoreboardSavings" class="text-accent font-bold">0.00</strong> MB</span>
+              </div>
+            </div>
+            
+            <button class="tool-help-btn" data-target="toolDescription" aria-label="Toggle general tool description help">
+              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <use href="../assets/icons/icons.svg#icon-help"></use>
+              </svg>
+            </button>
+          </div>
         </div>
         
         <!-- Tool Categories Selector -->
@@ -1163,22 +1182,7 @@
         </a>
       </div>
 
-      <!-- Offline Privacy Scoreboard -->
-      <div id="privacyScoreboard" class="footer-info-row flex justify-center items-center gap-4 text-xs text-secondary mt-2 mb-4 bg-secondary bg-opacity-50 p-2.5 rounded-lg border border-opacity-10 max-w-md mx-auto">
-        <div class="flex items-center gap-1.5" title="Total files processed locally">
-          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-accent">
-            <use href="../assets/icons/icons.svg#icon-document"></use>
-          </svg>
-          <span>Processed: <strong id="scoreboardFiles" class="text-accent font-semibold">0</strong> files</span>
-        </div>
-        <div class="h-3 w-px bg-secondary-text bg-opacity-20"></div>
-        <div class="flex items-center gap-1.5" title="Bandwidth/data saved from uploads">
-          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-accent">
-            <use href="../assets/icons/icons.svg#icon-cloud"></use>
-          </svg>
-          <span>Saved: <strong id="scoreboardSavings" class="text-accent font-semibold">0.00</strong> MB</span>
-        </div>
-      </div>
+
 
       <!-- Horizontal divider line -->
       <div class="footer-divider"></div>
