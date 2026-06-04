@@ -1,10 +1,10 @@
 # 📄 Offline PDF Tools – Private PDF Editor
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Version](https://img.shields.io/badge/Version-1.0.0-blue.svg)](#)
+[![Version](https://img.shields.io/badge/Version-1.1.0-blue.svg)](#)
 [![Chrome Extension](https://img.shields.io/badge/Chrome-Extension-green.svg?logo=google-chrome)](#)
 
-> **Tagline**: *Merge, split, and edit PDFs — 100% offline, private, and fast.*
+> **Tagline**: *Merge, split, compress, watermark, protect, and edit PDFs — 100% offline, private, and fast.*
 
 ---
 
@@ -31,7 +31,6 @@ Built for users who need reliable PDF tools without trusting online services, th
 ### ✂️ Split PDF (Page Ranges)
 
 * Split PDFs using flexible range syntax:
-
   ```
   1-3,5,7-10
   ```
@@ -61,6 +60,50 @@ Built for users who need reliable PDF tools without trusting online services, th
 * Rotate pages by **90°, 180°, or 270°**
 * Per-page rotation controls
 * Visual rotation preview before export
+
+### 🔓 Unlock PDF
+
+* Remove password security from encrypted PDFs locally
+* Instant password entry decryption
+
+### 🔒 Protect PDF
+
+* Set custom user and owner passwords completely offline
+* Restrict printing, content copying, editing, or form-filling permissions
+
+### 🛠️ Repair PDF
+
+* Reconstruct cross-reference tables (xref) and trailers of broken PDFs
+* Local stream byte offset recovery
+
+### ✍️ Edit Metadata
+
+* Modify document metadata (Title, Author, Subject, Keywords) offline
+* Auto-populates existing metadata fields for quick edits
+
+### 📉 Compress PDF
+
+* Deflate stream size losslessly to optimize PDF files locally
+
+### 💧 Watermarks & Page Numbers
+
+* Draw custom text watermarks (color, size, opacity, rotation angle)
+* Stamp dynamic page numbers at 6 standard alignments
+* Supports simultaneous dual overlays
+
+### ↩️ Global Undo/Redo
+
+* Step backward or forward through page selections, rotations, and reorder steps
+* Bound to `Ctrl/Cmd + Z` and `Ctrl/Cmd + Y` shortcuts
+
+### 📋 Action Presets (Blueprints)
+
+* Save actions (rotations and deletions) as custom local blueprints to apply to new uploads
+
+### 📊 Privacy Scoreboard
+
+* Track cumulative stats (total processed files, bandwidth saved in MB) in the footer scoreboard
+
 
 ---
 
@@ -112,7 +155,6 @@ Offline PDF Tools is designed with:
 1. Click the link above or visit the Chrome Web Store
 2. Click **"Add to Chrome"**
 3. Confirm the installation
-4. Navigate to any Salesforce org and click the extension icon
 
 ### 🔧 Load Offline PDF Tools Manually (Developer Mode)
 
@@ -154,6 +196,15 @@ Offline PDF Tools is designed with:
 ✔ Reorder pages visually
 ✔ Delete unwanted pages
 ✔ Rotate pages
+✔ Unlock password-protected PDFs
+✔ Encrypt and restrict PDF permissions
+✔ Repair corrupted/damaged PDF structures
+✔ Edit PDF metadata tags
+✔ Compress file sizes losslessly
+✔ Apply text watermarks and page numbers simultaneously
+✔ Undo/Redo stack with keyboard shortcuts
+✔ Action preset blueprints
+✔ Local privacy scoreboard
 ✔ Light / dark theme
 ✔ Full offline processing
 
@@ -161,15 +212,11 @@ Offline PDF Tools is designed with:
 
 ## 🛣️ Roadmap (Planned Enhancements)
 
-* 📉 PDF compression & optimization
-* 💧 Watermark support
-* 🔢 Page numbering
-* 🔐 Password protection
-* 📁 Batch processing
-* ⌨️ Keyboard shortcuts
-* ↩️ Undo / Redo support
-* ⚙️ Settings panel
-* 🧪 Automated tests & build tooling
+* 📁 Multi-file batch processing for conversion tools
+* 🖊️ Interactive PDF signing and form editing
+* 🔍 Offline Optical Character Recognition (OCR) text extraction
+* 🌐 Internationalization support (i18n) for more languages
+* ⚙️ Global extension configuration settings panel
 
 ---
 

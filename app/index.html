@@ -28,7 +28,23 @@
           </span>
           <span>100% Private · Offline · No Uploads</span>
         </span>
-        <input type="checkbox" class="theme-checkbox" id="themeToggle">
+        <div class="dim-toggle-container flex items-center gap-1.5 mr-2">
+          <input type="checkbox" class="theme-checkbox" id="dimToggle" aria-label="Toggle dim previews">
+          <label for="dimToggle" class="dim-toggle-label cursor-pointer flex items-center justify-between" title="Dim Page Previews in Dark Mode">
+            <span class="theme-icon flex items-center justify-center">
+              <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <use href="../assets/icons/icons.svg#icon-eye-off"></use>
+              </svg>
+            </span>
+            <span class="theme-icon flex items-center justify-center">
+              <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <use href="../assets/icons/icons.svg#icon-eye"></use>
+              </svg>
+            </span>
+            <span class="ball"></span>
+          </label>
+        </div>
+        <input type="checkbox" class="theme-checkbox" id="themeToggle" aria-label="Toggle dark mode theme">
         <label for="themeToggle" class="theme-toggle-label">
           <span class="theme-icon">
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
@@ -52,48 +68,147 @@
       <section class="mb-6">
         <div class="flex items-center justify-between mb-3">
           <h2 class="text-xl font-bold text-primary">Choose Your Tool</h2>
-          <button class="tool-help-btn" data-target="toolDescription">
+          <button class="tool-help-btn" data-target="toolDescription" aria-label="Toggle general tool description help">
             <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <use href="../assets/icons/icons.svg#icon-help"></use>
             </svg>
           </button>
         </div>
-        <div class="flex flex-wrap gap-2" id="toolCards">
-          <button class="tool-tab active px-4 py-2 rounded-lg font-medium text-sm flex items-center gap-2 transition" data-tool="merge">
+        
+        <!-- Tool Categories Selector -->
+        <div class="category-tabs-container mb-6" id="categoryTabs">
+          <button class="category-tab active" data-category="all">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="7" height="7"></rect>
+              <rect x="14" y="3" width="7" height="7"></rect>
+              <rect x="14" y="14" width="7" height="7"></rect>
+              <rect x="3" y="14" width="7" height="7"></rect>
+            </svg>
+            <span>All Tools</span>
+          </button>
+          <button class="category-tab" data-category="page">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+              <polyline points="2 17 12 22 22 17"></polyline>
+              <polyline points="2 12 12 17 22 12"></polyline>
+            </svg>
+            <span>Organize Pages</span>
+          </button>
+          <button class="category-tab" data-category="modify">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 20h9"></path>
+              <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
+            </svg>
+            <span>Edit & Watermark</span>
+          </button>
+          <button class="category-tab" data-category="convert">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m16 3 4 4-4 4"></path>
+              <path d="M20 7H9a4 4 0 0 0-4 4v3"></path>
+              <path d="m8 21-4-4 4-4"></path>
+              <path d="M4 17h11a4 4 0 0 0 4-4v-3"></path>
+            </svg>
+            <span>Convert</span>
+          </button>
+          <button class="category-tab" data-category="security">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+            <span>Security & Compress</span>
+          </button>
+        </div>
+
+        <div class="tool-grid" id="toolCards">
+          <button class="tool-tab active" data-tool="merge" data-category="page">
             <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <use href="../assets/icons/icons.svg#icon-merge"></use>
             </svg>
             <span>Merge</span>
           </button>
-          <button class="tool-tab px-4 py-2 rounded-lg font-medium text-sm flex items-center gap-2 transition" data-tool="split">
+          <button class="tool-tab" data-tool="split" data-category="page">
             <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <use href="../assets/icons/icons.svg#icon-split"></use>
             </svg>
             <span>Split</span>
           </button>
-          <button class="tool-tab px-4 py-2 rounded-lg font-medium text-sm flex items-center gap-2 transition" data-tool="extract">
+          <button class="tool-tab" data-tool="extract" data-category="page">
             <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <use href="../assets/icons/icons.svg#icon-extract"></use>
             </svg>
             <span>Extract</span>
           </button>
-          <button class="tool-tab px-4 py-2 rounded-lg font-medium text-sm flex items-center gap-2 transition" data-tool="rotate">
+          <button class="tool-tab" data-tool="rotate" data-category="modify">
             <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <use href="../assets/icons/icons.svg#icon-rotate"></use>
             </svg>
             <span>Rotate</span>
           </button>
-          <button class="tool-tab px-4 py-2 rounded-lg font-medium text-sm flex items-center gap-2 transition" data-tool="delete">
+          <button class="tool-tab" data-tool="delete" data-category="page">
             <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <use href="../assets/icons/icons.svg#icon-delete"></use>
             </svg>
             <span>Delete</span>
           </button>
-          <button class="tool-tab px-4 py-2 rounded-lg font-medium text-sm flex items-center gap-2 transition" data-tool="reorder">
+          <button class="tool-tab" data-tool="reorder" data-category="page">
             <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <use href="../assets/icons/icons.svg#icon-reorder"></use>
             </svg>
             <span>Reorder</span>
+          </button>
+          <button class="tool-tab" data-tool="crop" data-category="page">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <use href="../assets/icons/icons.svg#icon-crop"></use>
+            </svg>
+            <span>Crop</span>
+          </button>
+          <button class="tool-tab" data-tool="imageToPdf" data-category="convert">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <use href="../assets/icons/icons.svg#icon-image"></use>
+            </svg>
+            <span>Image to PDF</span>
+          </button>
+          <button class="tool-tab" data-tool="pdfToImg" data-category="convert">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <use href="../assets/icons/icons.svg#icon-file-image"></use>
+            </svg>
+            <span>PDF to Image</span>
+          </button>
+          <button class="tool-tab" data-tool="unlock" data-category="security">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <use href="../assets/icons/icons.svg#icon-unlock"></use>
+            </svg>
+            <span>Unlock PDF</span>
+          </button>
+          <button class="tool-tab" data-tool="protect" data-category="security">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <use href="../assets/icons/icons.svg#icon-lock"></use>
+            </svg>
+            <span>Protect PDF</span>
+          </button>
+          <button class="tool-tab" data-tool="repair" data-category="security">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <use href="../assets/icons/icons.svg#icon-tool"></use>
+            </svg>
+            <span>Repair PDF</span>
+          </button>
+          <button class="tool-tab" data-tool="metadata" data-category="modify">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <use href="../assets/icons/icons.svg#icon-document"></use>
+            </svg>
+            <span>Edit Metadata</span>
+          </button>
+          <button class="tool-tab" data-tool="compress" data-category="security">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <use href="../assets/icons/icons.svg#icon-compress"></use>
+            </svg>
+            <span>Compress PDF</span>
+          </button>
+          <button class="tool-tab" data-tool="watermark" data-category="modify">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <use href="../assets/icons/icons.svg#icon-type"></use>
+            </svg>
+            <span>Watermark & Numbers</span>
           </button>
         </div>
       </section>
@@ -157,7 +272,7 @@
                 <h3 class="text-xl font-bold mb-1 text-primary">Split Configuration</h3>
               </div>
             </div>
-            <button class="tool-help-btn" data-target="splitDescription">
+            <button class="tool-help-btn" data-target="splitDescription" aria-label="Toggle split tool help description">
               <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <use href="../assets/icons/icons.svg#icon-help"></use>
               </svg>
@@ -165,18 +280,12 @@
           </div>
           <p id="splitDescription" class="text-sm mb-4 hidden text-secondary">Enter page ranges to extract (e.g., 1-3, 5, 7-10)</p>
           <div class="space-y-3">
-            <div class="flex gap-2 items-end">
-              <div class="flex-1">
-                <label for="pageFrom" class="block text-sm font-semibold mb-2 text-primary">From page</label>
-                <input type="number" id="pageFrom" min="1" class="w-full" placeholder="e.g., 1">
-              </div>
-              <div class="flex-1">
-                <label for="pageTo" class="block text-sm font-semibold mb-2 text-primary">To page</label>
-                <input type="number" id="pageTo" min="1" class="w-full" placeholder="e.g., 5">
-              </div>
+            <div>
+              <label for="pageRangeInput" class="block text-sm font-semibold mb-2 text-primary">Page Range</label>
+              <input type="text" id="pageRangeInput" class="w-full" placeholder="e.g., 1-3, 5, 7-10">
             </div>
             <div class="flex items-center justify-between text-sm px-3 py-2 rounded-lg bg-secondary-text">
-              <span class="text-low-opacity">Inclusive range will be saved as a new PDF.</span>
+              <span class="text-low-opacity">The specified range will be saved as a new PDF.</span>
               <span class="flex items-center gap-2 font-semibold">
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <use href="../assets/icons/icons.svg#icon-document"></use>
@@ -200,13 +309,18 @@
                 <h3 class="text-xl font-bold mb-1 text-primary">Select Pages</h3>
               </div>
             </div>
-            <button class="tool-help-btn" data-target="extractDescription">
+            <button class="tool-help-btn" data-target="extractDescription" aria-label="Toggle page extraction help description">
               <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <use href="../assets/icons/icons.svg#icon-help"></use>
               </svg>
             </button>
           </div>
           <p id="extractDescription" class="text-sm mb-4 hidden text-secondary">Click on pages to include them in the extracted PDF</p>
+          <div class="flex gap-2 mb-4">
+            <button id="extractSelectAll" class="btn-batch">Select All</button>
+            <button id="extractDeselectAll" class="btn-batch">Deselect All</button>
+            <button id="extractInvert" class="btn-batch">Invert Selection</button>
+          </div>
           <div id="extractPageSelector" class="max-h-96 overflow-y-auto custom-scrollbar page-selector-padding"></div>
         </div>
 
@@ -223,13 +337,18 @@
                 <h3 class="text-xl font-bold mb-1 text-primary">Rotate Pages</h3>
               </div>
             </div>
-            <button class="tool-help-btn" data-target="rotateDescription">
+            <button class="tool-help-btn" data-target="rotateDescription" aria-label="Toggle page rotation help description">
               <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <use href="../assets/icons/icons.svg#icon-help"></use>
               </svg>
             </button>
           </div>
           <p id="rotateDescription" class="text-sm mb-4 hidden text-secondary">Click the rotation button on each page to cycle through 0°, 90°, 180°, 270° rotations</p>
+          <div class="flex gap-2 mb-4">
+            <button id="rotateAllCW" class="btn-batch">Rotate All +90°</button>
+            <button id="rotateAllCCW" class="btn-batch">Rotate All -90°</button>
+            <button id="rotateReset" class="btn-batch">Reset All</button>
+          </div>
           <div>
             <div id="rotatePageSelector" class="max-h-96 overflow-y-auto custom-scrollbar page-selector-padding"></div>
           </div>
@@ -248,13 +367,18 @@
                 <h3 class="text-xl font-bold mb-1 text-primary">Delete Pages</h3>
               </div>
             </div>
-            <button class="tool-help-btn" data-target="deleteDescription">
+            <button class="tool-help-btn" data-target="deleteDescription" aria-label="Toggle page deletion help description">
               <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <use href="../assets/icons/icons.svg#icon-help"></use>
               </svg>
             </button>
           </div>
           <p id="deleteDescription" class="text-sm mb-4 hidden text-secondary">Click on pages you want to remove from the PDF</p>
+          <div class="flex gap-2 mb-4">
+            <button id="deleteSelectAll" class="btn-batch">Select All</button>
+            <button id="deleteDeselectAll" class="btn-batch">Deselect All</button>
+            <button id="deleteInvert" class="btn-batch">Invert Selection</button>
+          </div>
           <div id="deletePageSelector" class="max-h-96 overflow-y-auto custom-scrollbar page-selector-padding"></div>
         </div>
 
@@ -271,16 +395,629 @@
                 <h3 class="text-xl font-bold mb-1 text-primary">Reorder Pages</h3>
               </div>
             </div>
-            <button class="tool-help-btn" data-target="reorderDescription">
+            <button class="tool-help-btn" data-target="reorderDescription" aria-label="Toggle page reordering help description">
               <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <use href="../assets/icons/icons.svg#icon-help"></use>
               </svg>
             </button>
           </div>
           <p id="reorderDescription" class="text-sm mb-4 hidden text-secondary">Drag and drop pages to change their order</p>
+          <div id="reorderInstructions" class="sr-only">Use Left and Right arrow keys to change the position of the selected page in the document.</div>
           <div id="reorderPageSelector" class="max-h-96 overflow-y-auto custom-scrollbar page-selector-padding"></div>
         </div>
-          </section>
+
+        <!-- Image to PDF Options -->
+        <div id="imageToPdfOptions" class="card p-6 hidden">
+          <div class="flex items-start justify-between mb-4">
+            <div class="flex items-start gap-3 flex-1">
+              <div class="text-2xl">
+                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <use href="../assets/icons/icons.svg#icon-image"></use>
+                </svg>
+              </div>
+              <div class="flex-1">
+                <h3 class="text-xl font-bold mb-1 text-primary">Image to PDF Options</h3>
+              </div>
+            </div>
+            <button class="tool-help-btn" data-target="imageToPdfDescription" aria-label="Toggle image to PDF help description">
+              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <use href="../assets/icons/icons.svg#icon-help"></use>
+              </svg>
+            </button>
+          </div>
+          <p id="imageToPdfDescription" class="text-sm mb-4 hidden text-secondary">Configure the layout of your images in the compiled PDF document.</p>
+          <div class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label for="imgPageSize" class="block text-sm font-semibold mb-2 text-primary">Page Size</label>
+                <select id="imgPageSize" class="w-full form-select">
+                  <option value="fit">Fit Image Size (Original Aspect Ratio)</option>
+                  <option value="a4">A4 (595 x 842 pt)</option>
+                  <option value="letter">US Letter (612 x 792 pt)</option>
+                </select>
+              </div>
+              <div>
+                <label for="imgOrientation" class="block text-sm font-semibold mb-2 text-primary">Page Orientation</label>
+                <select id="imgOrientation" class="w-full form-select" disabled>
+                  <option value="auto">Auto (Match Image Aspect)</option>
+                  <option value="portrait">Portrait</option>
+                  <option value="landscape">Landscape</option>
+                </select>
+              </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label for="imgMargin" class="block text-sm font-semibold mb-2 text-primary">Page Margins</label>
+                <select id="imgMargin" class="w-full form-select">
+                  <option value="0">None (0 pt)</option>
+                  <option value="10">Small (10 pt)</option>
+                  <option value="20">Normal (20 pt)</option>
+                  <option value="36">Large (36 pt)</option>
+                </select>
+              </div>
+              <div>
+                <label for="imgAlignment" class="block text-sm font-semibold mb-2 text-primary">Image Alignment</label>
+                <select id="imgAlignment" class="w-full form-select" disabled>
+                  <option value="center">Center</option>
+                  <option value="top">Top</option>
+                  <option value="bottom">Bottom</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PDF to Image Options -->
+        <div id="pdfToImgOptions" class="card p-6 hidden">
+          <div class="flex items-start justify-between mb-4">
+            <div class="flex items-start gap-3 flex-1">
+              <div class="text-2xl">
+                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <use href="../assets/icons/icons.svg#icon-file-image"></use>
+                </svg>
+              </div>
+              <div class="flex-1">
+                <h3 class="text-xl font-bold mb-1 text-primary">PDF to Image Options</h3>
+              </div>
+            </div>
+            <button class="tool-help-btn" data-target="pdfToImgDescription" aria-label="Toggle PDF to image help description">
+              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <use href="../assets/icons/icons.svg#icon-help"></use>
+              </svg>
+            </button>
+          </div>
+          <p id="pdfToImgDescription" class="text-sm mb-4 hidden text-secondary">Export individual pages of a PDF document as separate image files (PNG or JPEG).</p>
+          <div class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label for="pdfToImgFormat" class="block text-sm font-semibold mb-2 text-primary">Image Format</label>
+                <select id="pdfToImgFormat" class="w-full form-select">
+                  <option value="image/png">PNG (Lossless & transparent)</option>
+                  <option value="image/jpeg">JPEG (Smaller file size)</option>
+                </select>
+              </div>
+              <div>
+                <label for="pdfToImgScale" class="block text-sm font-semibold mb-2 text-primary">Output Quality (Resolution)</label>
+                <select id="pdfToImgScale" class="w-full form-select">
+                  <option value="1">Standard (1x DPI / 150 DPI)</option>
+                  <option value="2" selected>High Definition (2x DPI / 300 DPI)</option>
+                  <option value="3">Ultra-High (3x DPI / 450 DPI)</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-semibold mb-2 text-primary">Select Pages to Export</label>
+              <div class="flex gap-2 mb-4">
+                <button id="pdfToImgSelectAll" class="btn-batch">Select All</button>
+                <button id="pdfToImgDeselectAll" class="btn-batch">Deselect All</button>
+                <button id="pdfToImgInvert" class="btn-batch">Invert Selection</button>
+              </div>
+              <div id="pdfToImgPageSelector" class="max-h-96 overflow-y-auto custom-scrollbar page-selector-padding"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Crop Options -->
+        <div id="cropOptions" class="card p-6 hidden">
+          <div class="flex items-start justify-between mb-4">
+            <div class="flex items-start gap-3 flex-1">
+              <div class="text-2xl">
+                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <use href="../assets/icons/icons.svg#icon-crop"></use>
+                </svg>
+              </div>
+              <div class="flex-1">
+                <h3 class="text-xl font-bold mb-1 text-primary">Crop Settings</h3>
+              </div>
+            </div>
+            <button class="tool-help-btn" data-target="cropDescription" aria-label="Toggle crop tool help description">
+              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <use href="../assets/icons/icons.svg#icon-help"></use>
+              </svg>
+            </button>
+          </div>
+          <p id="cropDescription" class="text-sm mb-4 hidden text-secondary">Select a region visually by dragging the overlay handles, or enter exact margin dimensions in points below.</p>
+          
+          <div class="crop-layout-grid">
+            <!-- Left Column: Visual Preview -->
+            <div class="crop-preview-wrapper">
+              <div class="crop-preview-container" id="cropPreviewContainer">
+                <canvas id="cropPreviewCanvas" width="300" height="400"></canvas>
+                <div id="cropOverlay" class="crop-overlay">
+                  <div class="crop-handle crop-handle-tl" data-handle="tl"></div>
+                  <div class="crop-handle crop-handle-tr" data-handle="tr"></div>
+                  <div class="crop-handle crop-handle-bl" data-handle="bl"></div>
+                  <div class="crop-handle crop-handle-br" data-handle="br"></div>
+                </div>
+              </div>
+              <div class="text-center mt-2">
+                <span class="text-xs text-secondary">Drag handles to resize. Drag center to move.</span>
+              </div>
+            </div>
+
+            <!-- Right Column: Settings and Scope -->
+            <div class="crop-controls-wrapper space-y-4">
+              <div>
+                <label for="cropPageSelect" class="block text-sm font-semibold mb-2 text-primary">Preview Page</label>
+                <select id="cropPageSelect" class="w-full form-select">
+                  <option value="1">Page 1</option>
+                </select>
+              </div>
+
+              <div>
+                <span class="block text-sm font-semibold mb-2 text-primary">Crop Margins (pt)</span>
+                <div class="grid grid-cols-2 gap-2">
+                  <div>
+                    <label for="cropMarginTop" class="text-xs text-secondary block mb-1">Top</label>
+                    <input type="number" id="cropMarginTop" class="w-full text-sm" value="0" min="0" step="1">
+                  </div>
+                  <div>
+                    <label for="cropMarginBottom" class="text-xs text-secondary block mb-1">Bottom</label>
+                    <input type="number" id="cropMarginBottom" class="w-full text-sm" value="0" min="0" step="1">
+                  </div>
+                  <div>
+                    <label for="cropMarginLeft" class="text-xs text-secondary block mb-1">Left</label>
+                    <input type="number" id="cropMarginLeft" class="w-full text-sm" value="0" min="0" step="1">
+                  </div>
+                  <div>
+                    <label for="cropMarginRight" class="text-xs text-secondary block mb-1">Right</label>
+                    <input type="number" id="cropMarginRight" class="w-full text-sm" value="0" min="0" step="1">
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <span class="block text-sm font-semibold mb-2 text-primary">Presets</span>
+                <div class="flex flex-wrap gap-2">
+                  <button id="cropPresetReset" class="btn-batch">Reset</button>
+                  <button id="cropPresetMargins" class="btn-batch">Trim 0.5" Margins</button>
+                  <button id="cropPresetHeader" class="btn-batch">Trim Header (1.2")</button>
+                  <button id="cropPresetFooter" class="btn-batch">Trim Footer (1.2")</button>
+                </div>
+              </div>
+
+              <div>
+                <span class="block text-sm font-semibold mb-2 text-primary">Apply Crop To</span>
+                <div class="space-y-2">
+                  <label class="flex items-center gap-2 cursor-pointer text-sm text-primary">
+                    <input type="radio" name="cropScope" value="current" checked class="cursor-pointer">
+                    <span>Current page only</span>
+                  </label>
+                  <label class="flex items-center gap-2 cursor-pointer text-sm text-primary">
+                    <input type="radio" name="cropScope" value="all" class="cursor-pointer">
+                    <span>All pages</span>
+                  </label>
+                  <label class="flex items-center gap-2 cursor-pointer text-sm text-primary">
+                    <input type="radio" name="cropScope" value="range" class="cursor-pointer">
+                    <span>Custom page range</span>
+                  </label>
+                  <input type="text" id="cropScopeRange" class="w-full text-sm hidden mt-1" placeholder="e.g. 1-3, 5" value="">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Unlock PDF Options -->
+        <div id="unlockOptions" class="card p-6 hidden">
+          <div class="flex items-start justify-between mb-4">
+            <div class="flex items-start gap-3 flex-1">
+              <div class="text-2xl">
+                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <use href="../assets/icons/icons.svg#icon-unlock"></use>
+                </svg>
+              </div>
+              <div class="flex-1">
+                <h3 class="text-xl font-bold mb-1 text-primary">Unlock PDF Settings</h3>
+              </div>
+            </div>
+            <button class="tool-help-btn" data-target="unlockDescription" aria-label="Toggle unlock tool help description">
+              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <use href="../assets/icons/icons.svg#icon-help"></use>
+              </svg>
+            </button>
+          </div>
+          <p id="unlockDescription" class="text-sm mb-4 hidden text-secondary">Remove password protection from your PDF file completely so you can view, edit, or print it without entering the password again.</p>
+
+          <div class="space-y-4">
+            <!-- Encryption Info -->
+            <div id="unlockFileInfo" class="p-4 rounded-lg bg-secondary-text hidden">
+              <div class="flex items-center gap-3 mb-2">
+                <div class="text-lg text-primary">
+                  <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <use href="../assets/icons/icons.svg#icon-lock"></use>
+                  </svg>
+                </div>
+                <div class="font-semibold text-primary text-sm">Password-Protected PDF Detected</div>
+              </div>
+              <div class="text-xs text-secondary space-y-1">
+                <div>File name: <span id="unlockFileName" class="font-medium text-primary">-</span></div>
+                <div>Size: <span id="unlockFileSize" class="font-medium text-primary">-</span></div>
+                <div>Encryption details: <span id="unlockFileAlgorithm" class="font-medium text-primary">-</span></div>
+              </div>
+            </div>
+
+            <!-- Password Input Container -->
+            <div id="unlockPasswordContainer" class="hidden">
+              <label for="unlockPassword" class="block text-sm font-semibold mb-2 text-primary">Enter PDF Password</label>
+              <div class="relative">
+                <input type="password" id="unlockPassword" class="w-full text-sm pr-10" placeholder="Enter PDF password to decrypt..." autocomplete="off">
+                <button type="button" id="toggleUnlockPasswordVisibility" class="absolute right-3 top-1/2 -translate-y-1/2 text-secondary hover:text-primary" aria-label="Toggle password visibility" style="background: none; border: none; padding: 0; cursor: pointer;">
+                  <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <use href="../assets/icons/icons.svg#icon-eye"></use>
+                  </svg>
+                </button>
+              </div>
+              <p class="text-xs text-secondary mt-1">This tool runs 100% client-side. Your password and PDF data never leave your device.</p>
+            </div>
+            
+            <!-- Not Encrypted Info Container -->
+            <div id="unlockNotEncryptedInfo" class="p-4 rounded-lg bg-secondary-text hidden">
+              <div class="flex items-center gap-3">
+                <div class="text-lg text-primary" style="color: #059669;">
+                  <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <use href="../assets/icons/icons.svg#icon-unlock"></use>
+                  </svg>
+                </div>
+                <div class="font-semibold text-sm" style="color: #059669;">This PDF is not password-protected! No decryption is necessary.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Protect PDF Options -->
+        <div id="protectOptions" class="card p-6 hidden">
+          <div class="flex items-start justify-between mb-4">
+            <div class="flex items-start gap-3 flex-1">
+              <div class="text-2xl">
+                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <use href="../assets/icons/icons.svg#icon-lock"></use>
+                </svg>
+              </div>
+              <div class="flex-1">
+                <h3 class="text-xl font-bold mb-1 text-primary">Protect PDF Settings</h3>
+              </div>
+            </div>
+            <button class="tool-help-btn" data-target="protectDescription" aria-label="Toggle protect tool help description">
+              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <use href="../assets/icons/icons.svg#icon-help"></use>
+              </svg>
+            </button>
+          </div>
+          <p id="protectDescription" class="text-sm mb-4 hidden text-secondary">Encrypt your document and restrict access. Enter a Document Open Password to restrict opening, or a Permissions Password to restrict actions like printing or copying.</p>
+
+          <div class="space-y-6">
+            <!-- Open Password Section -->
+            <div class="p-4 rounded-lg bg-secondary-text border border-opacity-10 border-primary">
+              <label class="flex items-center gap-3 cursor-pointer mb-3">
+                <input type="checkbox" id="protectRequireOpenPassword" class="form-checkbox cursor-pointer h-4 w-4 rounded">
+                <span class="text-sm font-semibold text-primary">Require password to open the document</span>
+              </label>
+              
+              <div id="protectOpenPasswordContainer" class="hidden pl-7 space-y-2">
+                <label for="protectOpenPassword" class="block text-xs text-secondary font-medium">Document Open Password</label>
+                <div class="relative">
+                  <input type="password" id="protectOpenPassword" class="w-full text-sm pr-10" placeholder="Set opening password..." autocomplete="off">
+                  <button type="button" id="toggleProtectOpenPasswordVisibility" class="absolute right-3 top-1/2 -translate-y-1/2 text-secondary hover:text-primary" aria-label="Toggle password visibility" style="background: none; border: none; padding: 0; cursor: pointer;">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <use href="../assets/icons/icons.svg#icon-eye"></use>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Permissions Password Section -->
+            <div class="p-4 rounded-lg bg-secondary-text border border-opacity-10 border-primary">
+              <label class="flex items-center gap-3 cursor-pointer mb-3">
+                <input type="checkbox" id="protectRestrictPermissions" class="form-checkbox cursor-pointer h-4 w-4 rounded">
+                <span class="text-sm font-semibold text-primary">Restrict editing, printing, and copying</span>
+              </label>
+              
+              <div id="protectPermissionsContainer" class="hidden pl-7 space-y-4">
+                <div class="space-y-2">
+                  <label for="protectPermissionsPassword" class="block text-xs text-secondary font-medium">Permissions Password</label>
+                  <div class="relative">
+                    <input type="password" id="protectPermissionsPassword" class="w-full text-sm pr-10" placeholder="Set permissions password..." autocomplete="off">
+                    <button type="button" id="toggleProtectPermissionsPasswordVisibility" class="absolute right-3 top-1/2 -translate-y-1/2 text-secondary hover:text-primary" aria-label="Toggle password visibility" style="background: none; border: none; padding: 0; cursor: pointer;">
+                      <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <use href="../assets/icons/icons.svg#icon-eye"></use>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="space-y-2 border-t border-opacity-10 border-primary pt-3">
+                  <span class="block text-xs text-secondary font-semibold mb-2">Allowed Actions:</span>
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <label class="flex items-center gap-2 cursor-pointer text-xs text-primary">
+                      <input type="checkbox" id="protectAllowPrinting" checked class="form-checkbox h-3.5 w-3.5 rounded cursor-pointer">
+                      <span>Allow Printing</span>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer text-xs text-primary">
+                      <input type="checkbox" id="protectAllowCopying" checked class="form-checkbox h-3.5 w-3.5 rounded cursor-pointer">
+                      <span>Allow Copying Content</span>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer text-xs text-primary">
+                      <input type="checkbox" id="protectAllowModifying" checked class="form-checkbox h-3.5 w-3.5 rounded cursor-pointer">
+                      <span>Allow Modifying Content</span>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer text-xs text-primary">
+                      <input type="checkbox" id="protectAllowAnnotating" checked class="form-checkbox h-3.5 w-3.5 rounded cursor-pointer">
+                      <span>Allow Adding Comments</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Encryption Options Section -->
+            <div class="p-4 rounded-lg bg-secondary-text">
+              <label class="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" id="protectEncryptMetadata" checked class="form-checkbox cursor-pointer h-4 w-4 rounded">
+                <span class="text-sm font-semibold text-primary">Encrypt document metadata (recommended)</span>
+              </label>
+              <p class="text-xs text-secondary mt-1 ml-7">If unchecked, search engines and indexers can read the document's metadata (like Title and Author), but the content remains fully encrypted.</p>
+            </div>
+            
+            <p class="text-xs text-secondary text-center mt-4">100% offline, local client-side encryption. Your passwords never leave your device.</p>
+          </div>
+        </div>
+
+        <!-- Repair PDF Options -->
+        <div id="repairOptions" class="card p-6 hidden">
+          <div class="flex items-start justify-between mb-4">
+            <div class="flex items-start gap-3 flex-1">
+              <div class="text-2xl" style="color: #6366f1;">
+                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <use href="../assets/icons/icons.svg#icon-tool"></use>
+                </svg>
+              </div>
+              <div class="flex-1">
+                <h3 class="text-xl font-bold mb-1 text-primary">Repair PDF Settings</h3>
+                <p class="text-xs text-secondary mt-1">Rebuild corrupted PDF structures, adjust broken cross-reference (xref) offsets, and salvage missing catalogs/trailers offline.</p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="space-y-4">
+            <!-- Repair Options Section -->
+            <div class="p-4 rounded-lg bg-secondary-text">
+              <label class="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" id="repairOptimizeLayout" checked class="form-checkbox cursor-pointer h-4 w-4 rounded">
+                <span class="text-sm font-semibold text-primary">Optimize layout & references (recommended)</span>
+              </label>
+              <p class="text-xs text-secondary mt-1 ml-7">If checked, the repaired PDF bytes are loaded into the clean engine memory and re-saved to optimize reference indices, prune dead objects, and rebuild trailer structures.</p>
+            </div>
+            
+            <p class="text-xs text-secondary text-center mt-4">100% offline, local client-side recovery. Your documents never leave your device.</p>
+          </div>
+        </div>
+
+        <!-- Metadata Settings -->
+        <div id="metadataOptions" class="card p-6 hidden">
+          <div class="flex items-start gap-3 mb-4">
+            <div class="text-2xl" style="color: #3b82f6;">
+              <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <use href="../assets/icons/icons.svg#icon-document"></use>
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-xl font-bold mb-1 text-primary">PDF Metadata Editor</h3>
+              <p class="text-xs text-secondary mt-1">Modify PDF properties and metadata fields locally inside your browser.</p>
+            </div>
+          </div>
+          
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-semibold text-primary mb-1" for="metadataTitle">Title</label>
+              <input type="text" id="metadataTitle" class="form-input w-full p-2.5 rounded-lg border bg-primary text-primary" placeholder="e.g., Annual Report 2026">
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-primary mb-1" for="metadataAuthor">Author</label>
+              <input type="text" id="metadataAuthor" class="form-input w-full p-2.5 rounded-lg border bg-primary text-primary" placeholder="e.g., Jane Doe">
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-primary mb-1" for="metadataSubject">Subject</label>
+              <input type="text" id="metadataSubject" class="form-input w-full p-2.5 rounded-lg border bg-primary text-primary" placeholder="e.g., Financial Summary">
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-primary mb-1" for="metadataKeywords">Keywords</label>
+              <input type="text" id="metadataKeywords" class="form-input w-full p-2.5 rounded-lg border bg-primary text-primary" placeholder="e.g., finances, report, 2026 (comma or space separated)">
+            </div>
+            
+            <p class="text-xs text-secondary text-center mt-4">100% offline, local client-side metadata update. Zero bytes leaked online.</p>
+          </div>
+        </div>
+
+        <!-- Compress Settings -->
+        <div id="compressOptions" class="card p-6 hidden">
+          <div class="flex items-start gap-3 mb-4">
+            <div class="text-2xl text-accent">
+              <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <use href="../assets/icons/icons.svg#icon-compress"></use>
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-xl font-bold mb-1 text-primary">PDF Compress Options</h3>
+              <p class="text-xs text-secondary mt-1">Optimize and shrink your PDF size using client-side lossless compression.</p>
+            </div>
+          </div>
+          
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-semibold text-primary mb-1.5" for="compressLevel">Compression Level</label>
+              <select id="compressLevel" class="form-input w-full p-2.5 rounded-lg border bg-primary text-primary cursor-pointer">
+                <option value="medium">Medium (Lossless Stream Optimization - Recommended)</option>
+                <option value="high">High (Stream deflating & object references pruning)</option>
+                <option value="low">Low (Fast stream re-encoding)</option>
+              </select>
+            </div>
+            
+            <div class="p-4 rounded-lg bg-secondary-text">
+              <span class="text-sm font-semibold text-primary block mb-1">How it works:</span>
+              <p class="text-xs text-secondary leading-relaxed">
+                Offline PDF Tools uses object stream compression to pack structural elements, cross-reference tables, and raw page data streams without compressing images destructively. This ensures 100% preservation of text quality and vector graphics.
+              </p>
+            </div>
+            
+            <p class="text-xs text-secondary text-center mt-4">100% offline, local client-side compression. No files are uploaded.</p>
+          </div>
+        </div>
+
+        <!-- Watermark & Page Numbers Settings -->
+        <div id="watermarkOptions" class="card p-6 hidden">
+          <div class="flex items-start gap-3 mb-4">
+            <div class="text-2xl text-accent">
+              <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <use href="../assets/icons/icons.svg#icon-type"></use>
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-xl font-bold mb-1 text-primary">Watermark & Page Numbers</h3>
+              <p class="text-xs text-secondary mt-1">Stamp custom text watermarks or dynamically insert page numbers onto your documents.</p>
+            </div>
+          </div>
+          
+          <div class="space-y-4">
+            <!-- Operation Mode -->
+            <div>
+              <label class="block text-sm font-semibold text-primary mb-2">Operation Mode</label>
+              <div class="grid grid-cols-2 gap-3">
+                <div class="radio-card p-3 rounded-lg border cursor-pointer flex flex-col justify-center items-center text-center selected" id="watermarkModeTextBtn">
+                  <span class="text-sm font-bold text-primary">Text Watermark</span>
+                  <span class="text-xxs text-secondary mt-0.5">Rotated text stamp</span>
+                </div>
+                <div class="radio-card p-3 rounded-lg border cursor-pointer flex flex-col justify-center items-center text-center" id="watermarkModeNumBtn">
+                  <span class="text-sm font-bold text-primary">Page Numbers</span>
+                  <span class="text-xxs text-secondary mt-0.5">Page X of Y numbering</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Text Watermark Mode Fields -->
+            <div id="watermarkTextFields" class="space-y-4">
+              <div>
+                <label class="block text-sm font-semibold text-primary mb-1" for="watermarkText">Watermark Text</label>
+                <input type="text" id="watermarkText" class="form-input w-full p-2.5 rounded-lg border bg-primary text-primary" placeholder="e.g., CONFIDENTIAL" value="DRAFT">
+              </div>
+              
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-semibold text-primary mb-1" for="watermarkFontSize">Font Size (pt)</label>
+                  <div class="flex items-center gap-2">
+                    <input type="range" id="watermarkFontSize" class="form-slider flex-1" min="10" max="120" value="60">
+                    <span id="watermarkFontSizeVal" class="text-xs font-semibold w-8 text-right">60pt</span>
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-sm font-semibold text-primary mb-1" for="watermarkRotation">Rotation (deg)</label>
+                  <div class="flex items-center gap-2">
+                    <input type="range" id="watermarkRotation" class="form-slider flex-1" min="-90" max="90" value="45">
+                    <span id="watermarkRotationVal" class="text-xs font-semibold w-8 text-right">45°</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-semibold text-primary mb-1" for="watermarkColor">Text Color</label>
+                  <div class="flex items-center gap-2">
+                    <input type="color" id="watermarkColor" class="w-8 h-8 rounded cursor-pointer border-none bg-transparent" value="#ff0000">
+                    <input type="text" id="watermarkColorHex" class="form-input flex-1 p-1 rounded border bg-primary text-primary text-xs" value="#ff0000">
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-sm font-semibold text-primary mb-1" for="watermarkOpacity">Opacity</label>
+                  <div class="flex items-center gap-2">
+                    <input type="range" id="watermarkOpacity" class="form-slider flex-1" min="10" max="100" value="30">
+                    <span id="watermarkOpacityVal" class="text-xs font-semibold w-8 text-right">30%</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Page Numbers Mode Fields -->
+            <div id="watermarkNumFields" class="space-y-4 hidden">
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-semibold text-primary mb-1" for="pageNumberFormat">Number Format</label>
+                  <select id="pageNumberFormat" class="form-input w-full p-2.5 rounded-lg border bg-primary text-primary cursor-pointer">
+                    <option value="Page X of Y">Page X of Y</option>
+                    <option value="X / Y">X / Y</option>
+                    <option value="X">X (Just number)</option>
+                    <option value="- X -">- X -</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-sm font-semibold text-primary mb-1" for="pageNumberAlign">Alignment Position</label>
+                  <select id="pageNumberAlign" class="form-input w-full p-2.5 rounded-lg border bg-primary text-primary cursor-pointer">
+                    <option value="bottom-center">Bottom Center</option>
+                    <option value="bottom-right">Bottom Right</option>
+                    <option value="bottom-left">Bottom Left</option>
+                    <option value="top-center">Top Center</option>
+                    <option value="top-right">Top Right</option>
+                    <option value="top-left">Top Left</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-semibold text-primary mb-1" for="pageNumberStart">Start numbering at</label>
+                  <input type="number" id="pageNumberStart" class="form-input w-full p-2.5 rounded-lg border bg-primary text-primary" value="1" min="1">
+                </div>
+                <div>
+                  <label class="block text-sm font-semibold text-primary mb-1" for="pageNumberColor">Number Color</label>
+                  <div class="flex items-center gap-2">
+                    <input type="color" id="pageNumberColor" class="w-8 h-8 rounded cursor-pointer border-none bg-transparent" value="#000000">
+                    <input type="text" id="pageNumberColorHex" class="form-input flex-1 p-1 rounded border bg-primary text-primary text-xs" value="#000000">
+                  </div>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-semibold text-primary mb-1" for="pageNumberFontSize">Font Size (pt)</label>
+                  <div class="flex items-center gap-2">
+                    <input type="range" id="pageNumberFontSize" class="form-slider flex-1" min="6" max="36" value="10">
+                    <span id="pageNumberFontSizeVal" class="text-xs font-semibold w-8 text-right">10pt</span>
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-sm font-semibold text-primary mb-1" for="pageNumberMargin">Margin from Edge (pt)</label>
+                  <div class="flex items-center gap-2">
+                    <input type="range" id="pageNumberMargin" class="form-slider flex-1" min="10" max="100" value="36">
+                    <span id="pageNumberMarginVal" class="text-xs font-semibold w-8 text-right">36pt</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <p class="text-xs text-secondary text-center mt-4">100% offline, local client-side watermarking. Your files never leave your device.</p>
+          </div>
+        </div>
+      </section>
         </div>
 
         <!-- File List (1/3) - moved to right side -->
@@ -298,18 +1035,54 @@
                   <span id="fileCount" class="px-3 py-1 rounded-full text-sm font-semibold bg-secondary-text">0</span>
                 </div>
                 <div class="flex items-center gap-2">
-                  <button id="addMoreFiles" class="icon-btn px-3 py-2 rounded-lg text-sm font-semibold" title="Add More Files">
+                  <button id="undoBtn" class="icon-btn px-3 py-2 rounded-lg text-sm font-semibold opacity-50" title="Undo (Ctrl+Z)" disabled aria-label="Undo last change">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <use href="../assets/icons/icons.svg#icon-corner-up-left"></use>
+                    </svg>
+                  </button>
+                  <button id="redoBtn" class="icon-btn px-3 py-2 rounded-lg text-sm font-semibold opacity-50" title="Redo (Ctrl+Y)" disabled aria-label="Redo last undone change">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <use href="../assets/icons/icons.svg#icon-corner-up-right"></use>
+                    </svg>
+                  </button>
+                  <button id="addMoreFiles" class="icon-btn px-3 py-2 rounded-lg text-sm font-semibold" title="Add More Files" aria-label="Add more PDF files">
                     <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                       <use href="../assets/icons/icons.svg#icon-plus"></use>
                     </svg>
                   </button>
-                  <button id="clearFiles" class="icon-btn px-3 py-2 rounded-lg text-sm font-semibold" title="Clear All Files">
+                  <button id="clearFiles" class="icon-btn px-3 py-2 rounded-lg text-sm font-semibold" title="Clear All Files" aria-label="Clear all uploaded files">
                     <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                       <use href="../assets/icons/icons.svg#icon-delete"></use>
                     </svg>
                   </button>
                 </div>
               </div>
+
+              <!-- Blueprint Bar -->
+              <div id="blueprintBar" class="mb-4 p-3 bg-secondary rounded-lg border flex flex-col gap-2 hidden">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-semibold text-secondary flex items-center gap-1.5">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <use href="../assets/icons/icons.svg#icon-clipboard"></use>
+                    </svg>
+                    Action Blueprints
+                  </span>
+                  <button id="saveBlueprintBtn" class="btn-save-preset" title="Save current rotates/deletes as a preset">
+                    Save Preset
+                  </button>
+                </div>
+                <div class="flex gap-2 items-center">
+                  <select id="blueprintSelect" class="blueprint-select flex-1">
+                    <option value="">Apply Action Preset...</option>
+                  </select>
+                  <button id="deleteBlueprintBtn" class="btn-delete-preset hidden" title="Delete selected preset">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <use href="../assets/icons/icons.svg#icon-delete"></use>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
               <div id="fileItems" class="space-y-3 flex-1 overflow-y-auto custom-scrollbar"></div>
             </div>
           </section>
@@ -390,6 +1163,23 @@
         </a>
       </div>
 
+      <!-- Offline Privacy Scoreboard -->
+      <div id="privacyScoreboard" class="footer-info-row flex justify-center items-center gap-4 text-xs text-secondary mt-2 mb-4 bg-secondary bg-opacity-50 p-2.5 rounded-lg border border-opacity-10 max-w-md mx-auto">
+        <div class="flex items-center gap-1.5" title="Total files processed locally">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-accent">
+            <use href="../assets/icons/icons.svg#icon-document"></use>
+          </svg>
+          <span>Processed: <strong id="scoreboardFiles" class="text-accent font-semibold">0</strong> files</span>
+        </div>
+        <div class="h-3 w-px bg-secondary-text bg-opacity-20"></div>
+        <div class="flex items-center gap-1.5" title="Bandwidth/data saved from uploads">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-accent">
+            <use href="../assets/icons/icons.svg#icon-cloud"></use>
+          </svg>
+          <span>Saved: <strong id="scoreboardSavings" class="text-accent font-semibold">0.00</strong> MB</span>
+        </div>
+      </div>
+
       <!-- Horizontal divider line -->
       <div class="footer-divider"></div>
 
@@ -399,6 +1189,18 @@
       </div>
     </div>
   </footer>
+
+  <!-- Confirmation Modal -->
+  <div id="confirmModal" class="fixed inset-0 flex items-center justify-center hidden z-index-overlay backdrop-blur confirm-modal-bg">
+    <div class="card p-6 max-w-sm mx-4 text-center">
+      <h3 class="text-xl font-bold mb-2 text-primary">Clear All Files?</h3>
+      <p class="text-sm text-secondary mb-6">This will reset all your current selections and uploaded files. This action cannot be undone.</p>
+      <div class="flex gap-3 justify-center">
+        <button id="confirmCancelBtn" class="btn-secondary px-4 py-2">Cancel</button>
+        <button id="confirmClearBtn" class="btn-danger px-4 py-2" style="background-color: #ff6b6b; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; padding: 8px 16px;">Clear All</button>
+      </div>
+    </div>
+  </div>
 
   <script type="module" src="index.js"></script>
 </body>

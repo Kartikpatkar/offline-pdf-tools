@@ -60,25 +60,90 @@
   transform: translateY(-2px);
 }
 
-/* Tool Tabs */
+/* Tool Grid Layout */
+.tool-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+@media (max-width: 768px) {
+  .tool-grid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .tool-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+}
+
+/* Tool Tabs Redesign */
 .tool-tab {
   cursor: pointer;
-  border: 2px solid transparent;
-  background-color: var(--secondary-color);
-  color: var(--text-color);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px !important;
+  border-radius: 14px !important;
+  border: 1px solid var(--secondary-color) !important;
+  background-color: var(--surface-color) !important;
+  color: var(--text-color) !important;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  text-align: left;
+  justify-content: flex-start;
+  width: 100%;
+}
+
+.tool-tab svg {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  color: var(--primary-color);
+  transition: all 0.25s ease;
+}
+
+.tool-tab span {
+  font-weight: 600 !important;
+  font-size: 14px !important;
 }
 
 .tool-tab:hover {
-  border-color: var(--primary-color);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-color: var(--primary-color) !important;
+  transform: translateY(-3px) !important;
+  box-shadow: 0 10px 15px -3px rgba(124, 58, 237, 0.1), 0 4px 6px -2px rgba(124, 58, 237, 0.05) !important;
+}
+
+.tool-tab:hover svg {
+  transform: scale(1.15) rotate(5deg);
 }
 
 .tool-tab.active {
-  border-color: var(--primary-color);
-  background: linear-gradient(135deg, var(--primary-color), #a855f7);
-  color: white;
-  box-shadow: 0 4px 15px rgba(124, 58, 237, 0.4);
+  border-color: transparent !important;
+  background: linear-gradient(135deg, var(--primary-color) 0%, #a855f7 100%) !important;
+  color: #ffffff !important;
+  box-shadow: 0 10px 20px -3px rgba(124, 58, 237, 0.4), 0 4px 6px -2px rgba(124, 58, 237, 0.2) !important;
+}
+
+.tool-tab.active svg {
+  color: #ffffff !important;
+}
+
+html.dark-theme .tool-tab {
+  background-color: #1e293b !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -1px rgba(0, 0, 0, 0.1);
+}
+
+html.dark-theme .tool-tab:hover {
+  background-color: #243049 !important;
+  border-color: var(--primary-color) !important;
+  box-shadow: 0 10px 20px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2) !important;
 }
 
 /* Upload Zone */
@@ -256,6 +321,9 @@
 /* File Item */
 .file-item {
   animation: slideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  background-color: var(--secondary-color);
+  color: var(--text-color);
+  transition: all 0.3s ease;
 }
 
 @keyframes slideIn {
@@ -356,7 +424,8 @@
 
 /* Input Fields */
 input[type="text"],
-input[type="number"] {
+input[type="number"],
+input[type="password"] {
   border: 2px solid var(--secondary-color);
   border-radius: 12px;
   padding: 12px 16px;
@@ -366,7 +435,8 @@ input[type="number"] {
 }
 
 input[type="text"]:focus,
-input[type="number"]:focus {
+input[type="number"]:focus,
+input[type="password"]:focus {
   outline: none;
   border-color: var(--primary-color);
   box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
@@ -445,6 +515,72 @@ input[type="number"]:focus {
 /* Dark mode adjustments for toggle */
 html.dark-theme .theme-toggle-label {
   background-color: #334155;
+}
+
+/* Dim page previews in dark theme */
+html.dark-theme .page-thumbnail.dim-page {
+  filter: invert(1) hue-rotate(180deg) brightness(0.85);
+}
+
+/* Dim Preview Toggle Switch */
+.dim-toggle-container {
+  display: inline-flex;
+  align-items: center;
+}
+.dim-toggle-label {
+  background-color: #ffffff;
+  width: 50px;
+  height: 26px;
+  border-radius: 50px;
+  position: relative;
+  padding: 3px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background-color 0.2s ease;
+  border: 1px solid rgba(0,0,0,0.1);
+}
+html.dark-theme .dim-toggle-label {
+  background-color: #334155;
+  border-color: rgba(255,255,255,0.1);
+}
+.dim-toggle-label .theme-icon {
+  font-size: 11px;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+}
+.dim-toggle-label .theme-icon svg {
+  color: #94a3b8;
+}
+.dim-toggle-label .ball {
+  background-color: #a855f7;
+  width: 20px;
+  height: 20px;
+  position: absolute;
+  left: 2px;
+  top: 2px;
+  border-radius: 50%;
+  transition: transform 0.2s linear;
+}
+#dimToggle:checked + .dim-toggle-label .ball {
+  transform: translateX(24px);
+}
+#dimToggle:checked + .dim-toggle-label .theme-icon svg {
+  color: #ffffff;
+}
+
+/* Disabled state for icon buttons */
+.icon-btn[disabled] {
+  opacity: 0.4 !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+  box-shadow: none !important;
+  border-color: transparent !important;
 }
 
 /* Layout Classes */
@@ -629,4 +765,389 @@ html.dark-theme .footer-divider {
 
 html.dark-theme .footer-copyright {
     opacity: 0.5;
+}
+
+/* Draggable file items in Merge view */
+.draggable-file-item {
+  cursor: grab;
+  position: relative;
+  user-select: none;
+}
+
+.draggable-file-item:active {
+  cursor: grabbing;
+}
+
+.draggable-file-item.dragging {
+  opacity: 0.5;
+  transform: scale(0.98);
+  border: 2px dashed var(--primary-color);
+}
+
+/* Custom Confirmation Modal Overlay */
+.confirm-modal-bg {
+  background-color: rgba(0, 0, 0, 0.65);
+}
+
+#confirmModal .card {
+  background: var(--surface-color) !important;
+  border: 1px solid var(--secondary-color);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+}
+
+/* Ensure the card has solid background in dark mode */
+html.dark-theme #confirmModal .card {
+  background: var(--surface-color) !important;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Sleek Compact Batch Control Buttons */
+.btn-batch {
+  background: var(--secondary-color);
+  color: var(--text-color);
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-batch:hover {
+  background-color: var(--primary-color);
+  color: white;
+  transform: translateY(-1px);
+}
+
+.btn-batch:active {
+  transform: translateY(0);
+}
+
+/* Dark Mode soft filter to dim glaring white PDF pages */
+html.dark-theme .page-thumbnail {
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  filter: brightness(0.9) contrast(1.05);
+  transition: filter 0.2s ease;
+}
+
+html.dark-theme .page-item:hover .page-thumbnail {
+  filter: brightness(1) contrast(1);
+}
+
+/* Screen-reader-only utility */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Keyboard selection focus rings and selected move state */
+.page-item:focus-visible {
+  outline: 3px solid var(--primary-color) !important;
+  outline-offset: 4px;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.2);
+}
+
+.page-item.keyboard-selected {
+  border: 2px dashed var(--primary-color) !important;
+  background-color: rgba(124, 58, 237, 0.15) !important;
+  box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.25) !important;
+  animation: pulse-border 1.5s infinite ease-in-out;
+}
+
+@keyframes pulse-border {
+  0% { opacity: 0.8; }
+  50% { opacity: 1; }
+  100% { opacity: 0.8; }
+}
+
+/* Form Select Styling */
+.form-select {
+  border: 2px solid var(--secondary-color);
+  border-radius: 12px;
+  padding: 12px 16px;
+  transition: all 0.2s ease;
+  background: var(--surface-color);
+  color: var(--text-color);
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%237c3aed' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  background-size: 16px;
+  padding-right: 40px;
+  cursor: pointer;
+  width: 100%;
+  font-family: inherit;
+  font-size: 14px;
+}
+
+html.dark-theme .form-select {
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238b5cf6' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+}
+
+.form-select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+}
+
+.form-select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: var(--secondary-color);
+}
+
+/* Crop Tool Visuals */
+.crop-layout-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+}
+
+@media (min-width: 768px) {
+  .crop-layout-grid {
+    grid-template-columns: 1.2fr 1fr;
+  }
+}
+
+.crop-preview-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--secondary-color);
+  padding: 24px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.crop-preview-container {
+  position: relative;
+  display: inline-block;
+  user-select: none;
+}
+
+#cropPreviewCanvas {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  background-color: white;
+}
+
+.crop-overlay {
+  position: absolute;
+  border: 2px dashed var(--primary-color);
+  background-color: rgba(124, 58, 237, 0.15);
+  box-sizing: border-box;
+  cursor: move;
+}
+
+.crop-handle {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  background-color: var(--primary-color);
+  border: 2px solid white;
+  border-radius: 50%;
+  box-sizing: border-box;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.25);
+  z-index: 10;
+}
+
+.crop-handle-tl {
+  top: -6px;
+  left: -6px;
+  cursor: nwse-resize;
+}
+
+.crop-handle-tr {
+  top: -6px;
+  right: -6px;
+  cursor: nesw-resize;
+}
+
+.crop-handle-bl {
+  bottom: -6px;
+  left: -6px;
+  cursor: nesw-resize;
+}
+
+.crop-handle-br {
+  bottom: -6px;
+  right: -6px;
+  cursor: nwse-resize;
+}
+
+/* Category Tabs and Filter classes */
+.category-tabs-container {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: var(--secondary-color);
+  padding: 5px;
+  border-radius: 9999px;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  max-width: 100%;
+  overflow-x: auto;
+  white-space: nowrap;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.03);
+}
+
+.category-tabs-container::-webkit-scrollbar {
+  display: none;
+}
+
+.category-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  color: var(--text-color);
+  opacity: 0.75;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 9999px;
+  font-weight: 600;
+  font-size: 13px;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  user-select: none;
+}
+
+.category-tab svg {
+  color: var(--text-color);
+  opacity: 0.8;
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.category-tab:hover {
+  opacity: 1;
+  background-color: rgba(124, 58, 237, 0.06);
+}
+
+.category-tab:hover svg {
+  transform: translateY(-1px);
+  color: var(--primary-color);
+}
+
+.category-tab.active {
+  background: var(--primary-color);
+  color: #ffffff !important;
+  opacity: 1;
+  box-shadow: 0 4px 14px rgba(124, 58, 237, 0.25);
+}
+
+.category-tab.active svg {
+  color: #ffffff !important;
+  opacity: 1;
+}
+
+html.dark-theme .category-tabs-container {
+  background-color: rgba(30, 41, 59, 0.7);
+  border-color: rgba(255, 255, 255, 0.05);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+html.dark-theme .category-tab:hover {
+  background-color: rgba(139, 92, 246, 0.12);
+}
+
+.tool-tab.hidden-filter {
+  display: none !important;
+}
+
+/* -------------------------------
+   Blueprint Bar Custom Styles
+------------------------------- */
+.blueprint-select {
+  border: 1px solid var(--secondary-color);
+  border-radius: 8px;
+  padding: 6px 12px;
+  background-color: var(--surface-color);
+  color: var(--text-color);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%237c3aed' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 12px;
+  padding-right: 28px;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+html.dark-theme .blueprint-select {
+  background-color: #1e293b;
+  border-color: rgba(255, 255, 255, 0.08);
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238b5cf6' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+}
+
+.blueprint-select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+}
+
+.btn-save-preset {
+  background-color: var(--primary-color);
+  color: white !important;
+  border: none;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(124, 58, 237, 0.15);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-save-preset:hover {
+  background-color: #6d28d9;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(124, 58, 237, 0.25);
+}
+
+.btn-save-preset:active {
+  transform: translateY(0);
+}
+
+html.dark-theme .btn-save-preset {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.btn-delete-preset {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  border-radius: 8px;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  background-color: rgba(239, 68, 68, 0.05);
+  color: #ef4444;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-delete-preset:hover {
+  background-color: #ef4444;
+  color: white;
+  border-color: #ef4444;
 }
