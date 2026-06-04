@@ -11,7 +11,7 @@
  */
 
 import { PDFDocument, degrees } from '../lib/pdf-lib.esm.js';
-import { decryptPDF, isEncrypted } from '../lib/pdf-decrypt/index.js';
+import { decryptPDF, isEncrypted, encryptPDF } from '../lib/pdf-decrypt/index.js';
 
 class PDFService {
   constructor() {
@@ -565,6 +565,20 @@ class PDFService {
     }
     const arrayBuffer = await file.arrayBuffer();
     return await decryptPDF(new Uint8Array(arrayBuffer), password);
+  }
+
+  /**
+   * Encrypt/protect a PDF file with a password
+   * @param {File} file - PDF File object
+   * @param {Object} options - Encryption options
+   * @returns {Promise<Uint8Array>} - Encrypted PDF bytes
+   */
+  async protectPDF(file, options) {
+    if (!file) {
+      throw new Error('No file provided');
+    }
+    const arrayBuffer = await file.arrayBuffer();
+    return await encryptPDF(new Uint8Array(arrayBuffer), options);
   }
 }
 

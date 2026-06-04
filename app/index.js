@@ -83,7 +83,21 @@ const elements = {
   unlockPasswordContainer: document.getElementById('unlockPasswordContainer'),
   unlockPassword: document.getElementById('unlockPassword'),
   toggleUnlockPasswordVisibility: document.getElementById('toggleUnlockPasswordVisibility'),
-  unlockNotEncryptedInfo: document.getElementById('unlockNotEncryptedInfo')
+  unlockNotEncryptedInfo: document.getElementById('unlockNotEncryptedInfo'),
+  protectOptions: document.getElementById('protectOptions'),
+  protectRequireOpenPassword: document.getElementById('protectRequireOpenPassword'),
+  protectOpenPasswordContainer: document.getElementById('protectOpenPasswordContainer'),
+  protectOpenPassword: document.getElementById('protectOpenPassword'),
+  toggleProtectOpenPasswordVisibility: document.getElementById('toggleProtectOpenPasswordVisibility'),
+  protectRestrictPermissions: document.getElementById('protectRestrictPermissions'),
+  protectPermissionsContainer: document.getElementById('protectPermissionsContainer'),
+  protectPermissionsPassword: document.getElementById('protectPermissionsPassword'),
+  toggleProtectPermissionsPasswordVisibility: document.getElementById('toggleProtectPermissionsPasswordVisibility'),
+  protectAllowPrinting: document.getElementById('protectAllowPrinting'),
+  protectAllowCopying: document.getElementById('protectAllowCopying'),
+  protectAllowModifying: document.getElementById('protectAllowModifying'),
+  protectAllowAnnotating: document.getElementById('protectAllowAnnotating'),
+  protectEncryptMetadata: document.getElementById('protectEncryptMetadata')
 };
 
 // Initialize App
@@ -293,6 +307,9 @@ function setupEventListeners() {
 
   // Setup Unlock-specific listeners
   setupUnlockEventListeners();
+
+  // Setup Protect-specific listeners
+  setupProtectEventListeners();
 }
 
 // Tool Selection
@@ -355,6 +372,11 @@ function selectTool(tool) {
       title: 'How it works',
       desc: 'Remove password security from an encrypted PDF. Upload a password-protected PDF, type its password, and export an unencrypted version.',
       icon: '<svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="../assets/icons/icons.svg#icon-unlock"></use></svg>'
+    },
+    protect: {
+      title: 'How it works',
+      desc: 'Encrypt your PDF with a password offline. You can set a password to open the file, or set custom permissions (like restricting copying or printing) with a permissions password.',
+      icon: '<svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="../assets/icons/icons.svg#icon-lock"></use></svg>'
     }
   };
 
@@ -381,7 +403,8 @@ function selectTool(tool) {
     imageToPdf: { title: 'Drop your image files here', multiple: true, accept: '.png,.jpg,.jpeg,.webp,.gif,.bmp,.svg,image/*' },
     pdfToImg: { title: 'Drop your PDF file here', multiple: false, accept: '.pdf,application/pdf' },
     crop: { title: 'Drop your PDF file here', multiple: false, accept: '.pdf,application/pdf' },
-    unlock: { title: 'Drop your password-protected PDF here', multiple: false, accept: '.pdf,application/pdf' }
+    unlock: { title: 'Drop your password-protected PDF here', multiple: false, accept: '.pdf,application/pdf' },
+    protect: { title: 'Drop your PDF file here to protect', multiple: false, accept: '.pdf,application/pdf' }
   };
 
   const config = uploadTexts[tool];
@@ -400,7 +423,8 @@ function selectTool(tool) {
     imageToPdf: 'Convert to PDF',
     pdfToImg: 'Convert Pages to Images',
     crop: 'Crop PDF',
-    unlock: 'Unlock PDF'
+    unlock: 'Unlock PDF',
+    protect: 'Encrypt & Protect PDF'
   };
   elements.btnText.textContent = buttonTexts[tool];
 
@@ -697,7 +721,8 @@ function showToolOptions() {
     imageToPdf: elements.imageToPdfOptions,
     pdfToImg: elements.pdfToImgOptions,
     crop: elements.cropOptions,
-    unlock: elements.unlockOptions
+    unlock: elements.unlockOptions,
+    protect: elements.protectOptions
   };
 
   // Hide all panels
@@ -734,6 +759,8 @@ function showToolOptions() {
       loadCropPagePreview();
     } else if (state.currentTool === 'unlock') {
       displayUnlockOptionsUI();
+    } else if (state.currentTool === 'protect') {
+      initProtectUI();
     }
   } else {
     elements.toolOptions.classList.add('hidden');
@@ -1363,6 +1390,76 @@ async function processFiles() {
         await downloadPDF(result, generateActionFilename(state.selectedFiles[0].name, 'unlocked'));
         showStatus('PDF unlocked and decrypted successfully!', 'success');
         break;
+
+      case 'protect':
+        if (!state.selectedFiles[0]) {
+          throw new Error('Please select a PDF file first');
+        }
+
+        const requireOpen = elements.protectRequireOpenPassword.checked;
+        const restrictPerms = elements.protectRestrictPermissions.checked;
+
+        if (!requireOpen && !restrictPerms) {
+          throw new Error('Please configure at least one protection option (Open Password or Permissions Restriction)');
+        }
+
+        let userPass = '';
+        if (requireOpen) {
+          userPass = elements.protectOpenPassword.value;
+          if (!userPass) {
+            elements.protectOpenPassword.style.borderColor = '#ef4444';
+            elements.protectOpenPassword.focus();
+            throw new Error('Please enter a Document Open Password');
+          }
+        }
+
+        let ownerPass = '';
+        if (restrictPerms) {
+          ownerPass = elements.protectPermissionsPassword.value;
+          if (!ownerPass) {
+            elements.protectPermissionsPassword.style.borderColor = '#ef4444';
+            elements.protectPermissionsPassword.focus();
+            throw new Error('Please enter a Permissions Password');
+          }
+        }
+
+        // Calculate permission flags (standard PDF P-value)
+        let P = -4; // Full permissions by default
+        if (restrictPerms) {
+          const allowPrint = elements.protectAllowPrinting.checked;
+          const allowCopy = elements.protectAllowCopying.checked;
+          const allowModify = elements.protectAllowModifying.checked;
+          const allowAnnotate = elements.protectAllowAnnotating.checked;
+
+          if (!allowPrint) {
+            P &= ~(1 << 2);  // Print
+            P &= ~(1 << 11); // High-res print
+          }
+          if (!allowCopy) {
+            P &= ~(1 << 4);  // Copy
+            P &= ~(1 << 9);  // Accessibility copy
+          }
+          if (!allowModify) {
+            P &= ~(1 << 3);  // Modify
+            P &= ~(1 << 10); // Assemble
+          }
+          if (!allowAnnotate) {
+            P &= ~(1 << 5);  // Annotations
+          }
+        }
+
+        const protectOptions = {
+          userPassword: userPass,
+          ownerPassword: ownerPass,
+          permissions: P,
+          encryptMetadata: elements.protectEncryptMetadata.checked
+        };
+
+        showStatus('Encrypting PDF locally...', 'info');
+        result = await pdfService.protectPDF(state.selectedFiles[0], protectOptions);
+        await downloadPDF(result, generateActionFilename(state.selectedFiles[0].name, 'protected'));
+        showStatus('PDF protected and encrypted successfully!', 'success');
+        break;
     }
   } catch (error) {
     showStatus(`Error: ${error.message}`, 'error');
@@ -1901,6 +1998,114 @@ function displayUnlockOptionsUI() {
     console.log('[Unlock UI] Showing non-encrypted info');
     // Show Not Encrypted Message
     if (elements.unlockNotEncryptedInfo) elements.unlockNotEncryptedInfo.classList.remove('hidden');
+  }
+}
+
+function initProtectUI() {
+  if (elements.protectRequireOpenPassword) elements.protectRequireOpenPassword.checked = false;
+  if (elements.protectOpenPasswordContainer) elements.protectOpenPasswordContainer.classList.add('hidden');
+  if (elements.protectOpenPassword) {
+    elements.protectOpenPassword.value = '';
+    elements.protectOpenPassword.style.borderColor = '';
+  }
+  
+  if (elements.protectRestrictPermissions) elements.protectRestrictPermissions.checked = false;
+  if (elements.protectPermissionsContainer) elements.protectPermissionsContainer.classList.add('hidden');
+  if (elements.protectPermissionsPassword) {
+    elements.protectPermissionsPassword.value = '';
+    elements.protectPermissionsPassword.style.borderColor = '';
+  }
+  
+  if (elements.protectAllowPrinting) elements.protectAllowPrinting.checked = true;
+  if (elements.protectAllowCopying) elements.protectAllowCopying.checked = true;
+  if (elements.protectAllowModifying) elements.protectAllowModifying.checked = true;
+  if (elements.protectAllowAnnotating) elements.protectAllowAnnotating.checked = true;
+  if (elements.protectEncryptMetadata) elements.protectEncryptMetadata.checked = true;
+}
+
+function setupProtectEventListeners() {
+  // Checkbox: Require Open Password
+  if (elements.protectRequireOpenPassword) {
+    elements.protectRequireOpenPassword.addEventListener('change', () => {
+      const show = elements.protectRequireOpenPassword.checked;
+      if (show) {
+        elements.protectOpenPasswordContainer.classList.remove('hidden');
+        elements.protectOpenPassword.focus();
+      } else {
+        elements.protectOpenPasswordContainer.classList.add('hidden');
+      }
+    });
+  }
+
+  // Checkbox: Restrict Permissions
+  if (elements.protectRestrictPermissions) {
+    elements.protectRestrictPermissions.addEventListener('change', () => {
+      const show = elements.protectRestrictPermissions.checked;
+      if (show) {
+        elements.protectPermissionsContainer.classList.remove('hidden');
+        elements.protectPermissionsPassword.focus();
+      } else {
+        elements.protectPermissionsContainer.classList.add('hidden');
+      }
+    });
+  }
+
+  // Visibility toggle: Open Password
+  if (elements.toggleProtectOpenPasswordVisibility) {
+    elements.toggleProtectOpenPasswordVisibility.addEventListener('click', () => {
+      const input = elements.protectOpenPassword;
+      if (!input) return;
+      if (input.type === 'password') {
+        input.type = 'text';
+        elements.toggleProtectOpenPasswordVisibility.innerHTML = `
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <use href="../assets/icons/icons.svg#icon-eye-off"></use>
+          </svg>
+        `;
+      } else {
+        input.type = 'password';
+        elements.toggleProtectOpenPasswordVisibility.innerHTML = `
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <use href="../assets/icons/icons.svg#icon-eye"></use>
+          </svg>
+        `;
+      }
+    });
+  }
+
+  // Visibility toggle: Permissions Password
+  if (elements.toggleProtectPermissionsPasswordVisibility) {
+    elements.toggleProtectPermissionsPasswordVisibility.addEventListener('click', () => {
+      const input = elements.protectPermissionsPassword;
+      if (!input) return;
+      if (input.type === 'password') {
+        input.type = 'text';
+        elements.toggleProtectPermissionsPasswordVisibility.innerHTML = `
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <use href="../assets/icons/icons.svg#icon-eye-off"></use>
+          </svg>
+        `;
+      } else {
+        input.type = 'password';
+        elements.toggleProtectPermissionsPasswordVisibility.innerHTML = `
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <use href="../assets/icons/icons.svg#icon-eye"></use>
+          </svg>
+        `;
+      }
+    });
+  }
+
+  // Input listeners to reset validation borders
+  if (elements.protectOpenPassword) {
+    elements.protectOpenPassword.addEventListener('input', () => {
+      elements.protectOpenPassword.style.borderColor = '';
+    });
+  }
+  if (elements.protectPermissionsPassword) {
+    elements.protectPermissionsPassword.addEventListener('input', () => {
+      elements.protectPermissionsPassword.style.borderColor = '';
+    });
   }
 }
 

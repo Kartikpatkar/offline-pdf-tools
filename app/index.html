@@ -119,6 +119,12 @@
             </svg>
             <span>Unlock PDF</span>
           </button>
+          <button class="tool-tab px-4 py-2 rounded-lg font-medium text-sm flex items-center gap-2 transition" data-tool="protect">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <use href="../assets/icons/icons.svg#icon-lock"></use>
+            </svg>
+            <span>Protect PDF</span>
+          </button>
         </div>
       </section>
 
@@ -591,6 +597,105 @@
                 <div class="font-semibold text-sm" style="color: #059669;">This PDF is not password-protected! No decryption is necessary.</div>
               </div>
             </div>
+          </div>
+        </div>
+
+        <!-- Protect PDF Options -->
+        <div id="protectOptions" class="card p-6 hidden">
+          <div class="flex items-start justify-between mb-4">
+            <div class="flex items-start gap-3 flex-1">
+              <div class="text-2xl">
+                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <use href="../assets/icons/icons.svg#icon-lock"></use>
+                </svg>
+              </div>
+              <div class="flex-1">
+                <h3 class="text-xl font-bold mb-1 text-primary">Protect PDF Settings</h3>
+              </div>
+            </div>
+            <button class="tool-help-btn" data-target="protectDescription" aria-label="Toggle protect tool help description">
+              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <use href="../assets/icons/icons.svg#icon-help"></use>
+              </svg>
+            </button>
+          </div>
+          <p id="protectDescription" class="text-sm mb-4 hidden text-secondary">Encrypt your document and restrict access. Enter a Document Open Password to restrict opening, or a Permissions Password to restrict actions like printing or copying.</p>
+
+          <div class="space-y-6">
+            <!-- Open Password Section -->
+            <div class="p-4 rounded-lg bg-secondary-text border border-opacity-10 border-primary">
+              <label class="flex items-center gap-3 cursor-pointer mb-3">
+                <input type="checkbox" id="protectRequireOpenPassword" class="form-checkbox cursor-pointer h-4 w-4 rounded">
+                <span class="text-sm font-semibold text-primary">Require password to open the document</span>
+              </label>
+              
+              <div id="protectOpenPasswordContainer" class="hidden pl-7 space-y-2">
+                <label for="protectOpenPassword" class="block text-xs text-secondary font-medium">Document Open Password</label>
+                <div class="relative">
+                  <input type="password" id="protectOpenPassword" class="w-full text-sm pr-10" placeholder="Set opening password..." autocomplete="off">
+                  <button type="button" id="toggleProtectOpenPasswordVisibility" class="absolute right-3 top-1/2 -translate-y-1/2 text-secondary hover:text-primary" aria-label="Toggle password visibility" style="background: none; border: none; padding: 0; cursor: pointer;">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <use href="../assets/icons/icons.svg#icon-eye"></use>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Permissions Password Section -->
+            <div class="p-4 rounded-lg bg-secondary-text border border-opacity-10 border-primary">
+              <label class="flex items-center gap-3 cursor-pointer mb-3">
+                <input type="checkbox" id="protectRestrictPermissions" class="form-checkbox cursor-pointer h-4 w-4 rounded">
+                <span class="text-sm font-semibold text-primary">Restrict editing, printing, and copying</span>
+              </label>
+              
+              <div id="protectPermissionsContainer" class="hidden pl-7 space-y-4">
+                <div class="space-y-2">
+                  <label for="protectPermissionsPassword" class="block text-xs text-secondary font-medium">Permissions Password</label>
+                  <div class="relative">
+                    <input type="password" id="protectPermissionsPassword" class="w-full text-sm pr-10" placeholder="Set permissions password..." autocomplete="off">
+                    <button type="button" id="toggleProtectPermissionsPasswordVisibility" class="absolute right-3 top-1/2 -translate-y-1/2 text-secondary hover:text-primary" aria-label="Toggle password visibility" style="background: none; border: none; padding: 0; cursor: pointer;">
+                      <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <use href="../assets/icons/icons.svg#icon-eye"></use>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="space-y-2 border-t border-opacity-10 border-primary pt-3">
+                  <span class="block text-xs text-secondary font-semibold mb-2">Allowed Actions:</span>
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <label class="flex items-center gap-2 cursor-pointer text-xs text-primary">
+                      <input type="checkbox" id="protectAllowPrinting" checked class="form-checkbox h-3.5 w-3.5 rounded cursor-pointer">
+                      <span>Allow Printing</span>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer text-xs text-primary">
+                      <input type="checkbox" id="protectAllowCopying" checked class="form-checkbox h-3.5 w-3.5 rounded cursor-pointer">
+                      <span>Allow Copying Content</span>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer text-xs text-primary">
+                      <input type="checkbox" id="protectAllowModifying" checked class="form-checkbox h-3.5 w-3.5 rounded cursor-pointer">
+                      <span>Allow Modifying Content</span>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer text-xs text-primary">
+                      <input type="checkbox" id="protectAllowAnnotating" checked class="form-checkbox h-3.5 w-3.5 rounded cursor-pointer">
+                      <span>Allow Adding Comments</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Encryption Options Section -->
+            <div class="p-4 rounded-lg bg-secondary-text">
+              <label class="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" id="protectEncryptMetadata" checked class="form-checkbox cursor-pointer h-4 w-4 rounded">
+                <span class="text-sm font-semibold text-primary">Encrypt document metadata (recommended)</span>
+              </label>
+              <p class="text-xs text-secondary mt-1 ml-7">If unchecked, search engines and indexers can read the document's metadata (like Title and Author), but the content remains fully encrypted.</p>
+            </div>
+            
+            <p class="text-xs text-secondary text-center mt-4">100% offline, local client-side encryption. Your passwords never leave your device.</p>
           </div>
         </div>
       </section>
