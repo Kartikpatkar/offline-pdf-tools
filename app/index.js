@@ -97,7 +97,9 @@ const elements = {
   protectAllowCopying: document.getElementById('protectAllowCopying'),
   protectAllowModifying: document.getElementById('protectAllowModifying'),
   protectAllowAnnotating: document.getElementById('protectAllowAnnotating'),
-  protectEncryptMetadata: document.getElementById('protectEncryptMetadata')
+  protectEncryptMetadata: document.getElementById('protectEncryptMetadata'),
+  repairOptions: document.getElementById('repairOptions'),
+  repairOptimizeLayout: document.getElementById('repairOptimizeLayout')
 };
 
 // Initialize App
@@ -377,6 +379,11 @@ function selectTool(tool) {
       title: 'How it works',
       desc: 'Encrypt your PDF with a password offline. You can set a password to open the file, or set custom permissions (like restricting copying or printing) with a permissions password.',
       icon: '<svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="../assets/icons/icons.svg#icon-lock"></use></svg>'
+    },
+    repair: {
+      title: 'How it works',
+      desc: 'Repair broken, damaged, or corrupted PDF structures offline. Rebuilds cross-reference (xref) tables, corrects stream byte offsets, and reconstructs trailers locally.',
+      icon: '<svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="../assets/icons/icons.svg#icon-tool"></use></svg>'
     }
   };
 
@@ -404,7 +411,8 @@ function selectTool(tool) {
     pdfToImg: { title: 'Drop your PDF file here', multiple: false, accept: '.pdf,application/pdf' },
     crop: { title: 'Drop your PDF file here', multiple: false, accept: '.pdf,application/pdf' },
     unlock: { title: 'Drop your password-protected PDF here', multiple: false, accept: '.pdf,application/pdf' },
-    protect: { title: 'Drop your PDF file here to protect', multiple: false, accept: '.pdf,application/pdf' }
+    protect: { title: 'Drop your PDF file here to protect', multiple: false, accept: '.pdf,application/pdf' },
+    repair: { title: 'Drop your corrupted PDF here to repair', multiple: false, accept: '.pdf,application/pdf' }
   };
 
   const config = uploadTexts[tool];
@@ -424,7 +432,8 @@ function selectTool(tool) {
     pdfToImg: 'Convert Pages to Images',
     crop: 'Crop PDF',
     unlock: 'Unlock PDF',
-    protect: 'Encrypt & Protect PDF'
+    protect: 'Encrypt & Protect PDF',
+    repair: 'Repair & Recover PDF'
   };
   elements.btnText.textContent = buttonTexts[tool];
 
@@ -722,7 +731,8 @@ function showToolOptions() {
     pdfToImg: elements.pdfToImgOptions,
     crop: elements.cropOptions,
     unlock: elements.unlockOptions,
-    protect: elements.protectOptions
+    protect: elements.protectOptions,
+    repair: elements.repairOptions
   };
 
   // Hide all panels
@@ -761,6 +771,8 @@ function showToolOptions() {
       displayUnlockOptionsUI();
     } else if (state.currentTool === 'protect') {
       initProtectUI();
+    } else if (state.currentTool === 'repair') {
+      initRepairUI();
     }
   } else {
     elements.toolOptions.classList.add('hidden');
@@ -1460,6 +1472,21 @@ async function processFiles() {
         await downloadPDF(result, generateActionFilename(state.selectedFiles[0].name, 'protected'));
         showStatus('PDF protected and encrypted successfully!', 'success');
         break;
+
+      case 'repair':
+        if (!state.selectedFiles[0]) {
+          throw new Error('Please select a PDF file first');
+        }
+
+        const repairOptions = {
+          optimizeLayout: elements.repairOptimizeLayout.checked
+        };
+
+        showStatus('Repairing PDF structures locally...', 'info');
+        result = await pdfService.repairPDF(state.selectedFiles[0], repairOptions);
+        await downloadPDF(result, generateActionFilename(state.selectedFiles[0].name, 'repaired'));
+        showStatus('PDF structurally repaired and recovered successfully!', 'success');
+        break;
     }
   } catch (error) {
     showStatus(`Error: ${error.message}`, 'error');
@@ -2021,6 +2048,10 @@ function initProtectUI() {
   if (elements.protectAllowModifying) elements.protectAllowModifying.checked = true;
   if (elements.protectAllowAnnotating) elements.protectAllowAnnotating.checked = true;
   if (elements.protectEncryptMetadata) elements.protectEncryptMetadata.checked = true;
+}
+
+function initRepairUI() {
+  if (elements.repairOptimizeLayout) elements.repairOptimizeLayout.checked = true;
 }
 
 function setupProtectEventListeners() {

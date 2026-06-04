@@ -11,7 +11,7 @@
  */
 
 import { PDFDocument, degrees } from '../lib/pdf-lib.esm.js';
-import { decryptPDF, isEncrypted, encryptPDF } from '../lib/pdf-decrypt/index.js';
+import { decryptPDF, isEncrypted, encryptPDF, repairPDF } from '../lib/pdf-decrypt/index.js';
 
 class PDFService {
   constructor() {
@@ -579,6 +579,38 @@ class PDFService {
     }
     const arrayBuffer = await file.arrayBuffer();
     return await encryptPDF(new Uint8Array(arrayBuffer), options);
+  }
+
+  /**
+   * Repair a corrupted PDF file client-side
+   * @param {File} file - PDF File object
+   * @param {Object} options - Repair settings { optimizeLayout: boolean }
+   * @returns {Promise<Uint8Array>} - Repaired PDF bytes
+   */
+  async repairPDF(file, options = {}) {
+    if (!file) {
+      throw new Error('No file provided');
+    }
+    const arrayBuffer = await file.arrayBuffer();
+    const inputBytes = new Uint8Array(arrayBuffer);
+    
+    // 1. Run the structural repair engine
+    let repairedBytes = repairPDF(inputBytes);
+    
+    // 2. Optional: Load and save via pdf-lib to rebuild layout streams and prune dead references
+    if (options.optimizeLayout !== false) {
+      try {
+        const pdfDoc = await PDFDocument.load(repairedBytes, {
+          ignoreEncryption: true,
+          updateMetadata: false
+        });
+        repairedBytes = await pdfDoc.save({ useObjectStreams: false });
+      } catch (err) {
+        console.warn('pdf-lib optimization failed; returning structurally repaired bytes directly:', err);
+      }
+    }
+    
+    return repairedBytes;
   }
 }
 

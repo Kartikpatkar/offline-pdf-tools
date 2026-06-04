@@ -125,6 +125,12 @@
             </svg>
             <span>Protect PDF</span>
           </button>
+          <button class="tool-tab px-4 py-2 rounded-lg font-medium text-sm flex items-center gap-2 transition" data-tool="repair">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <use href="../assets/icons/icons.svg#icon-tool"></use>
+            </svg>
+            <span>Repair PDF</span>
+          </button>
         </div>
       </section>
 
@@ -696,6 +702,36 @@
             </div>
             
             <p class="text-xs text-secondary text-center mt-4">100% offline, local client-side encryption. Your passwords never leave your device.</p>
+          </div>
+        </div>
+
+        <!-- Repair PDF Options -->
+        <div id="repairOptions" class="card p-6 hidden">
+          <div class="flex items-start justify-between mb-4">
+            <div class="flex items-start gap-3 flex-1">
+              <div class="text-2xl" style="color: #6366f1;">
+                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <use href="../assets/icons/icons.svg#icon-tool"></use>
+                </svg>
+              </div>
+              <div class="flex-1">
+                <h3 class="text-xl font-bold mb-1 text-primary">Repair PDF Settings</h3>
+                <p class="text-xs text-secondary mt-1">Rebuild corrupted PDF structures, adjust broken cross-reference (xref) offsets, and salvage missing catalogs/trailers offline.</p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="space-y-4">
+            <!-- Repair Options Section -->
+            <div class="p-4 rounded-lg bg-secondary-text">
+              <label class="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" id="repairOptimizeLayout" checked class="form-checkbox cursor-pointer h-4 w-4 rounded">
+                <span class="text-sm font-semibold text-primary">Optimize layout & references (recommended)</span>
+              </label>
+              <p class="text-xs text-secondary mt-1 ml-7">If checked, the repaired PDF bytes are loaded into the clean engine memory and re-saved to optimize reference indices, prune dead objects, and rebuild trailer structures.</p>
+            </div>
+            
+            <p class="text-xs text-secondary text-center mt-4">100% offline, local client-side recovery. Your documents never leave your device.</p>
           </div>
         </div>
       </section>
