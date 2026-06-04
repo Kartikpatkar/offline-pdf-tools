@@ -713,16 +713,42 @@ class PDFService {
       updateMetadata: false
     });
 
-    const { mode, text, fontSize, rotation, colorHex, opacity, format, align, startNumber, margin } = options;
-    const { r, g, b } = hexToRgb(colorHex || '#000000');
+    const {
+      addText,
+      addNumbers,
+      mode,
+      text,
+      fontSize,
+      rotation,
+      colorHex,
+      opacity,
+      format,
+      align,
+      startNumber,
+      margin,
+      numColorHex,
+      numFontSize
+    } = options;
 
+    // Backward compatibility with legacy mode string parameter
+    let shouldAddText = addText;
+    let shouldAddNumbers = addNumbers;
     if (mode === 'text') {
+      shouldAddText = true;
+      shouldAddNumbers = false;
+    } else if (mode === 'number') {
+      shouldAddText = false;
+      shouldAddNumbers = true;
+    }
+
+    if (shouldAddText) {
       const font = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
       const pages = pdfDoc.getPages();
       const opacityVal = (opacity !== undefined ? opacity : 30) / 100;
       const rotDeg = rotation !== undefined ? rotation : 45;
       const size = fontSize || 60;
       const txt = text || 'DRAFT';
+      const { r, g, b } = hexToRgb(colorHex || '#ff0000');
 
       for (const page of pages) {
         const { width, height } = page.getSize();
@@ -746,15 +772,18 @@ class PDFService {
           rotate: degrees(rotDeg),
         });
       }
-    } else if (mode === 'number') {
+    }
+
+    if (shouldAddNumbers) {
       const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
       const pages = pdfDoc.getPages();
       const totalPages = pages.length;
       const startNum = startNumber !== undefined ? parseInt(startNumber, 10) : 1;
       const mgn = margin !== undefined ? parseInt(margin, 10) : 36;
-      const size = fontSize || 10;
+      const size = numFontSize || fontSize || 10;
       const fmt = format || 'Page X of Y';
       const aln = align || 'bottom-center';
+      const { r, g, b } = hexToRgb(numColorHex || colorHex || '#000000');
 
       for (let i = 0; i < totalPages; i++) {
         const page = pages[i];

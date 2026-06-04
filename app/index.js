@@ -433,21 +433,17 @@ function setupEventListeners() {
     });
   }
 
-  // Setup Watermark mode toggling
+  // Setup Watermark mode toggling (allows selecting both!)
   if (elements.watermarkModeTextBtn) {
     elements.watermarkModeTextBtn.addEventListener('click', () => {
-      elements.watermarkModeTextBtn.classList.add('selected');
-      elements.watermarkModeNumBtn.classList.remove('selected');
-      elements.watermarkTextFields.classList.remove('hidden');
-      elements.watermarkNumFields.classList.add('hidden');
+      const active = elements.watermarkModeTextBtn.classList.toggle('selected');
+      elements.watermarkTextFields.classList.toggle('hidden', !active);
     });
   }
   if (elements.watermarkModeNumBtn) {
     elements.watermarkModeNumBtn.addEventListener('click', () => {
-      elements.watermarkModeNumBtn.classList.add('selected');
-      elements.watermarkModeTextBtn.classList.remove('selected');
-      elements.watermarkNumFields.classList.remove('hidden');
-      elements.watermarkTextFields.classList.add('hidden');
+      const active = elements.watermarkModeNumBtn.classList.toggle('selected');
+      elements.watermarkNumFields.classList.toggle('hidden', !active);
     });
   }
 
@@ -1786,37 +1782,48 @@ async function processFiles() {
         if (!state.selectedFiles[0]) {
           throw new Error('Please select a PDF file first');
         }
-        const watermarkMode = elements.watermarkModeTextBtn.classList.contains('selected') ? 'text' : 'number';
-        let watermarkOpts = {};
-        if (watermarkMode === 'text') {
+        const addText = elements.watermarkModeTextBtn.classList.contains('selected');
+        const addNumbers = elements.watermarkModeNumBtn.classList.contains('selected');
+
+        if (!addText && !addNumbers) {
+          throw new Error('Please select at least one overlay to apply (Text Watermark or Page Numbers)');
+        }
+
+        const watermarkOpts = {
+          addText,
+          addNumbers
+        };
+
+        if (addText) {
           const text = elements.watermarkText.value.trim();
           if (!text) {
             throw new Error('Please enter watermark text');
           }
-          watermarkOpts = {
-            mode: 'text',
-            text: text,
-            fontSize: parseInt(elements.watermarkFontSize.value, 10),
-            rotation: parseInt(elements.watermarkRotation.value, 10),
-            colorHex: elements.watermarkColorHex.value.trim(),
-            opacity: parseInt(elements.watermarkOpacity.value, 10)
-          };
-        } else {
-          watermarkOpts = {
-            mode: 'number',
-            format: elements.pageNumberFormat.value,
-            align: elements.pageNumberAlign.value,
-            startNumber: parseInt(elements.pageNumberStart.value, 10) || 1,
-            colorHex: elements.pageNumberColorHex.value.trim(),
-            fontSize: parseInt(elements.pageNumberFontSize.value, 10),
-            margin: parseInt(elements.pageNumberMargin.value, 10) || 36
-          };
+          watermarkOpts.text = text;
+          watermarkOpts.fontSize = parseInt(elements.watermarkFontSize.value, 10);
+          watermarkOpts.rotation = parseInt(elements.watermarkRotation.value, 10);
+          watermarkOpts.colorHex = elements.watermarkColorHex.value.trim();
+          watermarkOpts.opacity = parseInt(elements.watermarkOpacity.value, 10);
         }
-        showStatus('Watermarking PDF offline...', 'info');
+
+        if (addNumbers) {
+          watermarkOpts.format = elements.pageNumberFormat.value;
+          watermarkOpts.align = elements.pageNumberAlign.value;
+          watermarkOpts.startNumber = parseInt(elements.pageNumberStart.value, 10) || 1;
+          watermarkOpts.numColorHex = elements.pageNumberColorHex.value.trim();
+          watermarkOpts.numFontSize = parseInt(elements.pageNumberFontSize.value, 10);
+          watermarkOpts.margin = parseInt(elements.pageNumberMargin.value, 10) || 36;
+        }
+
+        showStatus('Applying overlays offline...', 'info');
         result = await pdfService.watermarkPDF(state.selectedFiles[0], watermarkOpts);
-        const suffix = watermarkMode === 'text' ? 'watermarked' : 'numbered';
+        
+        let suffix = 'overlay';
+        if (addText && !addNumbers) suffix = 'watermarked';
+        else if (!addText && addNumbers) suffix = 'numbered';
+
         await downloadPDF(result, generateActionFilename(state.selectedFiles[0].name, suffix));
-        showStatus('PDF watermark applied successfully!', 'success');
+        showStatus('PDF overlays applied successfully!', 'success');
         break;
     }
 
