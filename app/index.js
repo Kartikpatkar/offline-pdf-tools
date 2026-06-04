@@ -21,7 +21,9 @@ const state = {
   cropPreviewPage: 1,
   cropBounds: { left: 0, top: 0, width: 1, height: 1 },
   cropPageSizes: new Map(),
-  isCurrentFileEncrypted: false
+  isCurrentFileEncrypted: false,
+  historyUndoStack: [],
+  historyRedoStack: []
 };
 
 // DOM Elements
@@ -104,7 +106,55 @@ const elements = {
   metadataTitle: document.getElementById('metadataTitle'),
   metadataAuthor: document.getElementById('metadataAuthor'),
   metadataSubject: document.getElementById('metadataSubject'),
-  metadataKeywords: document.getElementById('metadataKeywords')
+  metadataKeywords: document.getElementById('metadataKeywords'),
+  
+  // Compress Elements
+  compressOptions: document.getElementById('compressOptions'),
+  compressLevel: document.getElementById('compressLevel'),
+  
+  // Watermark Elements
+  watermarkOptions: document.getElementById('watermarkOptions'),
+  watermarkModeTextBtn: document.getElementById('watermarkModeTextBtn'),
+  watermarkModeNumBtn: document.getElementById('watermarkModeNumBtn'),
+  watermarkTextFields: document.getElementById('watermarkTextFields'),
+  watermarkNumFields: document.getElementById('watermarkNumFields'),
+  watermarkText: document.getElementById('watermarkText'),
+  watermarkFontSize: document.getElementById('watermarkFontSize'),
+  watermarkFontSizeVal: document.getElementById('watermarkFontSizeVal'),
+  watermarkRotation: document.getElementById('watermarkRotation'),
+  watermarkRotationVal: document.getElementById('watermarkRotationVal'),
+  watermarkColor: document.getElementById('watermarkColor'),
+  watermarkColorHex: document.getElementById('watermarkColorHex'),
+  watermarkOpacity: document.getElementById('watermarkOpacity'),
+  watermarkOpacityVal: document.getElementById('watermarkOpacityVal'),
+  
+  // Page Numbers Elements
+  pageNumberFormat: document.getElementById('pageNumberFormat'),
+  pageNumberAlign: document.getElementById('pageNumberAlign'),
+  pageNumberStart: document.getElementById('pageNumberStart'),
+  pageNumberColor: document.getElementById('pageNumberColor'),
+  pageNumberColorHex: document.getElementById('pageNumberColorHex'),
+  pageNumberFontSize: document.getElementById('pageNumberFontSize'),
+  pageNumberFontSizeVal: document.getElementById('pageNumberFontSizeVal'),
+  pageNumberMargin: document.getElementById('pageNumberMargin'),
+  pageNumberMarginVal: document.getElementById('pageNumberMarginVal'),
+
+  // Dim Previews
+  dimToggle: document.getElementById('dimToggle'),
+
+  // Undo/Redo
+  undoBtn: document.getElementById('undoBtn'),
+  redoBtn: document.getElementById('redoBtn'),
+
+  // Blueprints
+  blueprintBar: document.getElementById('blueprintBar'),
+  blueprintSelect: document.getElementById('blueprintSelect'),
+  saveBlueprintBtn: document.getElementById('saveBlueprintBtn'),
+  deleteBlueprintBtn: document.getElementById('deleteBlueprintBtn'),
+
+  // Scoreboard
+  scoreboardFiles: document.getElementById('scoreboardFiles'),
+  scoreboardSavings: document.getElementById('scoreboardSavings')
 };
 
 // Initialize App
@@ -119,6 +169,21 @@ async function init() {
   if (yearElement) {
     yearElement.textContent = currentYear;
   }
+
+  // Initialize dim previews from saved state
+  try {
+    const savedDim = localStorage.getItem('dim_previews') === 'true';
+    if (elements.dimToggle) {
+      elements.dimToggle.checked = savedDim;
+      toggleDimPreviews(savedDim);
+    }
+  } catch (e) {
+    console.warn('Failed to load dim state:', e);
+  }
+
+  // Initialize privacy scoreboard
+  displayPrivacyScore();
+
   console.log('Offline PDF Tools initialized - 100% private, 100% offline');
 }
 
@@ -317,6 +382,119 @@ function setupEventListeners() {
 
   // Setup Protect-specific listeners
   setupProtectEventListeners();
+
+  // Setup Undo/Redo button listeners
+  if (elements.undoBtn) {
+    elements.undoBtn.addEventListener('click', undo);
+  }
+  if (elements.redoBtn) {
+    elements.redoBtn.addEventListener('click', redo);
+  }
+
+  // Setup Dim Previews listener
+  if (elements.dimToggle) {
+    elements.dimToggle.addEventListener('change', (e) => {
+      toggleDimPreviews(e.target.checked);
+    });
+  }
+
+  // Setup Action Blueprints listeners
+  if (elements.saveBlueprintBtn) {
+    elements.saveBlueprintBtn.addEventListener('click', saveBlueprint);
+  }
+  if (elements.blueprintSelect) {
+    elements.blueprintSelect.addEventListener('change', (e) => {
+      applyBlueprint(e.target.value);
+    });
+  }
+  if (elements.deleteBlueprintBtn) {
+    elements.deleteBlueprintBtn.addEventListener('click', deleteBlueprint);
+  }
+
+  // Setup Watermark color sync
+  if (elements.watermarkColor && elements.watermarkColorHex) {
+    elements.watermarkColor.addEventListener('input', (e) => {
+      elements.watermarkColorHex.value = e.target.value;
+    });
+    elements.watermarkColorHex.addEventListener('input', (e) => {
+      if (/^#[0-9A-F]{6}$/i.test(e.target.value)) {
+        elements.watermarkColor.value = e.target.value;
+      }
+    });
+  }
+  if (elements.pageNumberColor && elements.pageNumberColorHex) {
+    elements.pageNumberColor.addEventListener('input', (e) => {
+      elements.pageNumberColorHex.value = e.target.value;
+    });
+    elements.pageNumberColorHex.addEventListener('input', (e) => {
+      if (/^#[0-9A-F]{6}$/i.test(e.target.value)) {
+        elements.pageNumberColor.value = e.target.value;
+      }
+    });
+  }
+
+  // Setup Watermark mode toggling
+  if (elements.watermarkModeTextBtn) {
+    elements.watermarkModeTextBtn.addEventListener('click', () => {
+      elements.watermarkModeTextBtn.classList.add('selected');
+      elements.watermarkModeNumBtn.classList.remove('selected');
+      elements.watermarkTextFields.classList.remove('hidden');
+      elements.watermarkNumFields.classList.add('hidden');
+    });
+  }
+  if (elements.watermarkModeNumBtn) {
+    elements.watermarkModeNumBtn.addEventListener('click', () => {
+      elements.watermarkModeNumBtn.classList.add('selected');
+      elements.watermarkModeTextBtn.classList.remove('selected');
+      elements.watermarkNumFields.classList.remove('hidden');
+      elements.watermarkTextFields.classList.add('hidden');
+    });
+  }
+
+  // Setup Watermark sliders value displays sync
+  if (elements.watermarkFontSize && elements.watermarkFontSizeVal) {
+    elements.watermarkFontSize.addEventListener('input', (e) => {
+      elements.watermarkFontSizeVal.textContent = e.target.value + 'pt';
+    });
+  }
+  if (elements.watermarkRotation && elements.watermarkRotationVal) {
+    elements.watermarkRotation.addEventListener('input', (e) => {
+      elements.watermarkRotationVal.textContent = e.target.value + '°';
+    });
+  }
+  if (elements.watermarkOpacity && elements.watermarkOpacityVal) {
+    elements.watermarkOpacity.addEventListener('input', (e) => {
+      elements.watermarkOpacityVal.textContent = e.target.value + '%';
+    });
+  }
+  if (elements.pageNumberFontSize && elements.pageNumberFontSizeVal) {
+    elements.pageNumberFontSize.addEventListener('input', (e) => {
+      elements.pageNumberFontSizeVal.textContent = e.target.value + 'pt';
+    });
+  }
+  if (elements.pageNumberMargin && elements.pageNumberMarginVal) {
+    elements.pageNumberMargin.addEventListener('input', (e) => {
+      elements.pageNumberMarginVal.textContent = e.target.value + 'pt';
+    });
+  }
+
+  // Global keyboard shortcuts (Ctrl+Z, Ctrl+Y)
+  document.addEventListener('keydown', (e) => {
+    const isCmdOrCtrl = e.metaKey || e.ctrlKey;
+    if (isCmdOrCtrl) {
+      if (e.key.toLowerCase() === 'z') {
+        e.preventDefault();
+        if (e.shiftKey) {
+          redo();
+        } else {
+          undo();
+        }
+      } else if (e.key.toLowerCase() === 'y') {
+        e.preventDefault();
+        redo();
+      }
+    }
+  });
 }
 
 // Tool Selection
@@ -394,6 +572,16 @@ function selectTool(tool) {
       title: 'How it works',
       desc: 'Edit PDF metadata fields locally. View and modify the Title, Author, Subject, and Keywords properties stored inside the document header.',
       icon: '<svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="../assets/icons/icons.svg#icon-document"></use></svg>'
+    },
+    compress: {
+      title: 'How it works',
+      desc: 'Optimize and shrink the file size of your PDF documents lossless. Stream deflation and reference table cleanups are applied offline.',
+      icon: '<svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="../assets/icons/icons.svg#icon-compress"></use></svg>'
+    },
+    watermark: {
+      title: 'How it works',
+      desc: 'Insert custom text watermarks or dynamically number pages (e.g. Page X of Y) at selected positions with custom sizes, margins, colors, and opacity.',
+      icon: '<svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="../assets/icons/icons.svg#icon-type"></use></svg>'
     }
   };
 
@@ -423,7 +611,9 @@ function selectTool(tool) {
     unlock: { title: 'Drop your password-protected PDF here', multiple: false, accept: '.pdf,application/pdf' },
     protect: { title: 'Drop your PDF file here to protect', multiple: false, accept: '.pdf,application/pdf' },
     repair: { title: 'Drop your corrupted PDF here to repair', multiple: false, accept: '.pdf,application/pdf' },
-    metadata: { title: 'Drop your PDF file here to edit metadata', multiple: false, accept: '.pdf,application/pdf' }
+    metadata: { title: 'Drop your PDF file here to edit metadata', multiple: false, accept: '.pdf,application/pdf' },
+    compress: { title: 'Drop your PDF file here to compress', multiple: false, accept: '.pdf,application/pdf' },
+    watermark: { title: 'Drop your PDF file here to add watermark/numbering', multiple: false, accept: '.pdf,application/pdf' }
   };
 
   const config = uploadTexts[tool];
@@ -445,7 +635,9 @@ function selectTool(tool) {
     unlock: 'Unlock PDF',
     protect: 'Encrypt & Protect PDF',
     repair: 'Repair & Recover PDF',
-    metadata: 'Update PDF Metadata'
+    metadata: 'Update PDF Metadata',
+    compress: 'Compress PDF',
+    watermark: 'Apply Watermark/Numbers'
   };
   elements.btnText.textContent = buttonTexts[tool];
 
@@ -674,10 +866,22 @@ function displayFileList() {
     elements.filesAndOptionsContainer.classList.remove('hidden');
     elements.actionSection.classList.remove('hidden');
     elements.uploadSection.classList.add('hidden');
+    
+    // Show blueprint bar if page-based tool
+    const isPageTool = ['rotate', 'delete', 'extract', 'reorder', 'split'].includes(state.currentTool);
+    if (isPageTool && elements.blueprintBar) {
+      elements.blueprintBar.classList.remove('hidden');
+      populateBlueprintsDropdown();
+    } else if (elements.blueprintBar) {
+      elements.blueprintBar.classList.add('hidden');
+    }
   } else {
     elements.filesAndOptionsContainer.classList.add('hidden');
     elements.actionSection.classList.add('hidden');
     elements.uploadSection.classList.remove('hidden');
+    if (elements.blueprintBar) {
+      elements.blueprintBar.classList.add('hidden');
+    }
   }
   
   console.log('Container display:', elements.filesAndOptionsContainer.classList);
@@ -696,6 +900,17 @@ function clearFiles() {
   state.cropBounds = { left: 0, top: 0, width: 1, height: 1 };
   state.cropPageSizes.clear();
   state.isCurrentFileEncrypted = false;
+  
+  // Clear Undo/Redo
+  state.historyUndoStack = [];
+  state.historyRedoStack = [];
+  updateUndoRedoButtons();
+  
+  // Hide blueprint bar
+  if (elements.blueprintBar) {
+    elements.blueprintBar.classList.add('hidden');
+  }
+
   elements.fileInput.value = '';
   if (elements.pageRangeInput) elements.pageRangeInput.value = '';
   initMetadataUI();
@@ -765,7 +980,9 @@ function showToolOptions() {
     unlock: elements.unlockOptions,
     protect: elements.protectOptions,
     repair: elements.repairOptions,
-    metadata: elements.metadataOptions
+    metadata: elements.metadataOptions,
+    compress: elements.compressOptions,
+    watermark: elements.watermarkOptions
   };
 
   // Hide all panels
@@ -806,6 +1023,10 @@ function showToolOptions() {
       initProtectUI();
     } else if (state.currentTool === 'repair') {
       initRepairUI();
+    } else if (state.currentTool === 'compress') {
+      elements.compressLevel.value = 'medium';
+    } else if (state.currentTool === 'watermark') {
+      initWatermarkUI();
     }
   } else {
     elements.toolOptions.classList.add('hidden');
@@ -840,6 +1061,9 @@ function renderPageSelector(containerId) {
     // Create canvas for thumbnail
     const canvas = document.createElement('canvas');
     canvas.className = 'page-thumbnail';
+    if (elements.dimToggle && elements.dimToggle.checked) {
+      canvas.classList.add('dim-page');
+    }
     canvas.width = 120;
     canvas.height = 160;
 
@@ -872,6 +1096,7 @@ function renderPageSelector(containerId) {
       rotateBtn.setAttribute('aria-label', `Rotate page ${i}. Current rotation: ${currentRotation} degrees`);
       rotateBtn.addEventListener('click', (e) => {
         e.stopPropagation();
+        saveHistoryState();
         const newRotation = (state.pageRotations.get(i) + 90) % 360;
         state.pageRotations.set(i, newRotation);
         rotateBtn.textContent = `${newRotation}°`;
@@ -893,6 +1118,7 @@ function renderPageSelector(containerId) {
       }
 
       const toggleSelection = () => {
+        saveHistoryState();
         if (state.selectedPages.has(i)) {
           state.selectedPages.delete(i);
           pageItem.classList.remove('selected');
@@ -1052,6 +1278,9 @@ function renderReorderList() {
     // Create canvas for thumbnail
     const canvas = document.createElement('canvas');
     canvas.className = 'page-thumbnail';
+    if (elements.dimToggle && elements.dimToggle.checked) {
+      canvas.classList.add('dim-page');
+    }
     canvas.width = 120;
     canvas.height = 160;
 
@@ -1111,6 +1340,7 @@ function renderReorderList() {
         e.preventDefault();
         if (state.keyboardSelectedReorderIndex !== null) {
           if (idx > 0) {
+            saveHistoryState();
             const temp = state.pageOrder[idx];
             state.pageOrder[idx] = state.pageOrder[idx - 1];
             state.pageOrder[idx - 1] = temp;
@@ -1125,6 +1355,7 @@ function renderReorderList() {
         e.preventDefault();
         if (state.keyboardSelectedReorderIndex !== null) {
           if (idx < state.pageOrder.length - 1) {
+            saveHistoryState();
             const temp = state.pageOrder[idx];
             state.pageOrder[idx] = state.pageOrder[idx + 1];
             state.pageOrder[idx + 1] = temp;
@@ -1225,6 +1456,7 @@ function handleReorderDrop(event) {
   const dropIndex = parseInt(targetItem.dataset.index, 10);
 
   if (draggedIndex !== null && draggedIndex !== dropIndex) {
+    saveHistoryState();
     // Reorder array
     const [removed] = state.pageOrder.splice(draggedIndex, 1);
     state.pageOrder.splice(dropIndex, 0, removed);
@@ -1538,7 +1770,62 @@ async function processFiles() {
         await downloadPDF(result, generateActionFilename(state.selectedFiles[0].name, 'updated_metadata'));
         showStatus('PDF metadata updated successfully!', 'success');
         break;
+
+      case 'compress':
+        if (!state.selectedFiles[0]) {
+          throw new Error('Please select a PDF file first');
+        }
+        const compressLvl = elements.compressLevel.value;
+        showStatus('Compressing PDF offline...', 'info');
+        result = await pdfService.compressPDF(state.selectedFiles[0], compressLvl);
+        await downloadPDF(result, generateActionFilename(state.selectedFiles[0].name, 'compressed'));
+        showStatus('PDF compressed successfully!', 'success');
+        break;
+
+      case 'watermark':
+        if (!state.selectedFiles[0]) {
+          throw new Error('Please select a PDF file first');
+        }
+        const watermarkMode = elements.watermarkModeTextBtn.classList.contains('selected') ? 'text' : 'number';
+        let watermarkOpts = {};
+        if (watermarkMode === 'text') {
+          const text = elements.watermarkText.value.trim();
+          if (!text) {
+            throw new Error('Please enter watermark text');
+          }
+          watermarkOpts = {
+            mode: 'text',
+            text: text,
+            fontSize: parseInt(elements.watermarkFontSize.value, 10),
+            rotation: parseInt(elements.watermarkRotation.value, 10),
+            colorHex: elements.watermarkColorHex.value.trim(),
+            opacity: parseInt(elements.watermarkOpacity.value, 10)
+          };
+        } else {
+          watermarkOpts = {
+            mode: 'number',
+            format: elements.pageNumberFormat.value,
+            align: elements.pageNumberAlign.value,
+            startNumber: parseInt(elements.pageNumberStart.value, 10) || 1,
+            colorHex: elements.pageNumberColorHex.value.trim(),
+            fontSize: parseInt(elements.pageNumberFontSize.value, 10),
+            margin: parseInt(elements.pageNumberMargin.value, 10) || 36
+          };
+        }
+        showStatus('Watermarking PDF offline...', 'info');
+        result = await pdfService.watermarkPDF(state.selectedFiles[0], watermarkOpts);
+        const suffix = watermarkMode === 'text' ? 'watermarked' : 'numbered';
+        await downloadPDF(result, generateActionFilename(state.selectedFiles[0].name, suffix));
+        showStatus('PDF watermark applied successfully!', 'success');
+        break;
     }
+
+    // Record metrics on success
+    let totalBytesProcessed = 0;
+    state.selectedFiles.forEach(file => {
+      totalBytesProcessed += file.size;
+    });
+    recordOfflineMetrics(state.selectedFiles.length, totalBytesProcessed);
   } catch (error) {
     showStatus(`Error: ${error.message}`, 'error');
     console.error('Processing error:', error);
@@ -2197,6 +2484,295 @@ function setupProtectEventListeners() {
     });
   }
 }
+
+// --- EXTRA Roadmap Features Helper Functions ---
+
+// 1. Dim Previews
+function toggleDimPreviews(dimmed) {
+  try {
+    localStorage.setItem('dim_previews', dimmed ? 'true' : 'false');
+  } catch (e) {}
+  
+  if (elements.dimToggle) {
+    elements.dimToggle.checked = dimmed;
+  }
+  
+  document.querySelectorAll('.page-thumbnail').forEach(canvas => {
+    canvas.classList.toggle('dim-page', dimmed);
+  });
+}
+
+// 2. Global Undo/Redo
+function saveHistoryState() {
+  const snapshot = {
+    selectedPages: new Set(state.selectedPages),
+    pageOrder: [...state.pageOrder],
+    pageRotations: new Map(state.pageRotations)
+  };
+  
+  state.historyUndoStack.push(snapshot);
+  state.historyRedoStack = []; // Reset Redo stack on new action
+  
+  updateUndoRedoButtons();
+}
+
+// Ensure global reference for handlers in reorder.js if needed
+window.saveHistoryState = saveHistoryState;
+
+function updateUndoRedoButtons() {
+  const hasUndo = state.historyUndoStack && state.historyUndoStack.length > 0;
+  const hasRedo = state.historyRedoStack && state.historyRedoStack.length > 0;
+  
+  if (elements.undoBtn) {
+    elements.undoBtn.disabled = !hasUndo;
+    elements.undoBtn.classList.toggle('opacity-50', !hasUndo);
+  }
+  if (elements.redoBtn) {
+    elements.redoBtn.disabled = !hasRedo;
+    elements.redoBtn.classList.toggle('opacity-50', !hasRedo);
+  }
+}
+
+function undo() {
+  if (!state.historyUndoStack || state.historyUndoStack.length === 0) return;
+  
+  const currentSnapshot = {
+    selectedPages: new Set(state.selectedPages),
+    pageOrder: [...state.pageOrder],
+    pageRotations: new Map(state.pageRotations)
+  };
+  state.historyRedoStack.push(currentSnapshot);
+  
+  const prevSnapshot = state.historyUndoStack.pop();
+  state.selectedPages = prevSnapshot.selectedPages;
+  state.pageOrder = prevSnapshot.pageOrder;
+  state.pageRotations = prevSnapshot.pageRotations;
+  
+  updateUndoRedoButtons();
+  refreshActiveToolUI();
+}
+
+function redo() {
+  if (!state.historyRedoStack || state.historyRedoStack.length === 0) return;
+  
+  const currentSnapshot = {
+    selectedPages: new Set(state.selectedPages),
+    pageOrder: [...state.pageOrder],
+    pageRotations: new Map(state.pageRotations)
+  };
+  state.historyUndoStack.push(currentSnapshot);
+  
+  const nextSnapshot = state.historyRedoStack.pop();
+  state.selectedPages = nextSnapshot.selectedPages;
+  state.pageOrder = nextSnapshot.pageOrder;
+  state.pageRotations = nextSnapshot.pageRotations;
+  
+  updateUndoRedoButtons();
+  refreshActiveToolUI();
+}
+
+function refreshActiveToolUI() {
+  if (state.currentTool === 'extract') {
+    renderPageSelector('extractPageSelector');
+  } else if (state.currentTool === 'rotate') {
+    renderPageSelector('rotatePageSelector');
+  } else if (state.currentTool === 'delete') {
+    renderPageSelector('deletePageSelector');
+  } else if (state.currentTool === 'reorder') {
+    renderReorderList();
+  } else if (state.currentTool === 'pdfToImg') {
+    renderPageSelector('pdfToImgPageSelector');
+  }
+}
+
+// 3. Action Preset Blueprints
+function populateBlueprintsDropdown() {
+  if (!elements.blueprintSelect) return;
+  
+  // Clear existing options except the placeholder
+  elements.blueprintSelect.innerHTML = '<option value="">Apply Action Preset...</option>';
+  
+  try {
+    const blueprints = JSON.parse(localStorage.getItem('pdf_action_blueprints') || '{}');
+    Object.keys(blueprints).forEach(name => {
+      const option = document.createElement('option');
+      option.value = name;
+      option.textContent = name;
+      elements.blueprintSelect.appendChild(option);
+    });
+  } catch (e) {
+    console.error('Error loading blueprints from localStorage:', e);
+  }
+  
+  if (elements.deleteBlueprintBtn) {
+    elements.deleteBlueprintBtn.classList.add('hidden');
+  }
+}
+
+function saveBlueprint() {
+  const presetName = prompt('Enter a name for this action preset / blueprint:');
+  if (!presetName) return;
+  
+  const trimmedName = presetName.trim();
+  if (!trimmedName) {
+    showStatus('Preset name cannot be empty', 'error');
+    return;
+  }
+  
+  const blueprintData = {
+    pageRotations: Array.from(state.pageRotations.entries()),
+    selectedPages: Array.from(state.selectedPages)
+  };
+  
+  try {
+    const blueprints = JSON.parse(localStorage.getItem('pdf_action_blueprints') || '{}');
+    blueprints[trimmedName] = blueprintData;
+    localStorage.setItem('pdf_action_blueprints', JSON.stringify(blueprints));
+    
+    showStatus(`Preset "${trimmedName}" saved successfully!`, 'success');
+    populateBlueprintsDropdown();
+  } catch (e) {
+    showStatus('Failed to save preset: ' + e.message, 'error');
+  }
+}
+
+function applyBlueprint(name) {
+  if (!name) {
+    if (elements.deleteBlueprintBtn) {
+      elements.deleteBlueprintBtn.classList.add('hidden');
+    }
+    return;
+  }
+  
+  try {
+    const blueprints = JSON.parse(localStorage.getItem('pdf_action_blueprints') || '{}');
+    const blueprint = blueprints[name];
+    if (!blueprint) {
+      showStatus('Preset not found', 'error');
+      return;
+    }
+    
+    saveHistoryState();
+    
+    // Restore rotations (making sure indices are within bounds)
+    state.pageRotations.clear();
+    if (blueprint.pageRotations) {
+      blueprint.pageRotations.forEach(([idx, rot]) => {
+        if (idx <= state.pageCount) {
+          state.pageRotations.set(idx, rot);
+        }
+      });
+    }
+    
+    // Restore selections (making sure indices are within bounds)
+    state.selectedPages.clear();
+    if (blueprint.selectedPages) {
+      blueprint.selectedPages.forEach(idx => {
+        if (idx <= state.pageCount) {
+          state.selectedPages.add(idx);
+        }
+      });
+    }
+    
+    refreshActiveToolUI();
+    showStatus(`Applied preset "${name}"`, 'success');
+    
+    if (elements.deleteBlueprintBtn) {
+      elements.deleteBlueprintBtn.classList.remove('hidden');
+    }
+  } catch (e) {
+    showStatus('Failed to apply preset: ' + e.message, 'error');
+  }
+}
+
+function deleteBlueprint() {
+  const selectedName = elements.blueprintSelect.value;
+  if (!selectedName) return;
+  
+  if (!confirm(`Are you sure you want to delete the preset "${selectedName}"?`)) return;
+  
+  try {
+    const blueprints = JSON.parse(localStorage.getItem('pdf_action_blueprints') || '{}');
+    delete blueprints[selectedName];
+    localStorage.setItem('pdf_action_blueprints', JSON.stringify(blueprints));
+    
+    showStatus(`Preset "${selectedName}" deleted`, 'success');
+    populateBlueprintsDropdown();
+  } catch (e) {
+    showStatus('Failed to delete preset: ' + e.message, 'error');
+  }
+}
+
+// 4. Privacy Scoreboard
+function recordOfflineMetrics(fileCount, totalBytes) {
+  try {
+    const storedFiles = parseInt(localStorage.getItem('privacy_files_processed') || '0', 10);
+    const storedSavings = parseFloat(localStorage.getItem('privacy_bytes_saved') || '0');
+    
+    localStorage.setItem('privacy_files_processed', (storedFiles + fileCount).toString());
+    localStorage.setItem('privacy_bytes_saved', (storedSavings + totalBytes).toString());
+    
+    displayPrivacyScore();
+  } catch (e) {
+    console.error('Error writing metrics to localStorage:', e);
+  }
+}
+
+function displayPrivacyScore() {
+  try {
+    const files = localStorage.getItem('privacy_files_processed') || '0';
+    const bytes = parseFloat(localStorage.getItem('privacy_bytes_saved') || '0');
+    const mb = bytes / (1024 * 1024);
+    
+    if (elements.scoreboardFiles) {
+      elements.scoreboardFiles.textContent = files;
+    }
+    if (elements.scoreboardSavings) {
+      elements.scoreboardSavings.textContent = mb.toFixed(2);
+    }
+  } catch (e) {
+    console.error('Error reading metrics from localStorage:', e);
+  }
+}
+
+// 5. Initialize Watermark UI
+function initWatermarkUI() {
+  if (elements.watermarkModeTextBtn) {
+    elements.watermarkModeTextBtn.classList.add('selected');
+    elements.watermarkModeNumBtn.classList.remove('selected');
+  }
+  if (elements.watermarkTextFields) {
+    elements.watermarkTextFields.classList.remove('hidden');
+  }
+  if (elements.watermarkNumFields) {
+    elements.watermarkNumFields.classList.add('hidden');
+  }
+  
+  // Set default values and reset values displays
+  if (elements.watermarkText) elements.watermarkText.value = 'DRAFT';
+  if (elements.watermarkFontSize) elements.watermarkFontSize.value = '60';
+  if (elements.watermarkFontSizeVal) elements.watermarkFontSizeVal.textContent = '60pt';
+  
+  if (elements.watermarkRotation) elements.watermarkRotation.value = '45';
+  if (elements.watermarkRotationVal) elements.watermarkRotationVal.textContent = '45°';
+  
+  if (elements.watermarkColor) elements.watermarkColor.value = '#ff0000';
+  if (elements.watermarkColorHex) elements.watermarkColorHex.value = '#ff0000';
+  
+  if (elements.watermarkOpacity) elements.watermarkOpacity.value = '30';
+  if (elements.watermarkOpacityVal) elements.watermarkOpacityVal.textContent = '30%';
+  
+  if (elements.pageNumberFormat) elements.pageNumberFormat.value = 'Page X of Y';
+  if (elements.pageNumberAlign) elements.pageNumberAlign.value = 'bottom-center';
+  if (elements.pageNumberStart) elements.pageNumberStart.value = '1';
+  if (elements.pageNumberColor) elements.pageNumberColor.value = '#000000';
+  if (elements.pageNumberColorHex) elements.pageNumberColorHex.value = '#000000';
+  if (elements.pageNumberFontSize) elements.pageNumberFontSize.value = '10';
+  if (elements.pageNumberFontSizeVal) elements.pageNumberFontSizeVal.textContent = '10pt';
+  if (elements.pageNumberMargin) elements.pageNumberMargin.value = '36';
+  if (elements.pageNumberMarginVal) elements.pageNumberMarginVal.textContent = '36pt';
+}
+
 
 // Initialize on load
 init();

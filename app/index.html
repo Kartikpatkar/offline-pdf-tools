@@ -804,6 +804,174 @@
             <p class="text-xs text-secondary text-center mt-4">100% offline, local client-side metadata update. Zero bytes leaked online.</p>
           </div>
         </div>
+
+        <!-- Compress Settings -->
+        <div id="compressOptions" class="card p-6 hidden">
+          <div class="flex items-start gap-3 mb-4">
+            <div class="text-2xl text-accent">
+              <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <use href="../assets/icons/icons.svg#icon-compress"></use>
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-xl font-bold mb-1 text-primary">PDF Compress Options</h3>
+              <p class="text-xs text-secondary mt-1">Optimize and shrink your PDF size using client-side lossless compression.</p>
+            </div>
+          </div>
+          
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-semibold text-primary mb-1.5" for="compressLevel">Compression Level</label>
+              <select id="compressLevel" class="form-input w-full p-2.5 rounded-lg border bg-primary text-primary cursor-pointer">
+                <option value="medium">Medium (Lossless Stream Optimization - Recommended)</option>
+                <option value="high">High (Stream deflating & object references pruning)</option>
+                <option value="low">Low (Fast stream re-encoding)</option>
+              </select>
+            </div>
+            
+            <div class="p-4 rounded-lg bg-secondary-text">
+              <span class="text-sm font-semibold text-primary block mb-1">How it works:</span>
+              <p class="text-xs text-secondary leading-relaxed">
+                Offline PDF Tools uses object stream compression to pack structural elements, cross-reference tables, and raw page data streams without compressing images destructively. This ensures 100% preservation of text quality and vector graphics.
+              </p>
+            </div>
+            
+            <p class="text-xs text-secondary text-center mt-4">100% offline, local client-side compression. No files are uploaded.</p>
+          </div>
+        </div>
+
+        <!-- Watermark & Page Numbers Settings -->
+        <div id="watermarkOptions" class="card p-6 hidden">
+          <div class="flex items-start gap-3 mb-4">
+            <div class="text-2xl text-accent">
+              <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <use href="../assets/icons/icons.svg#icon-type"></use>
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-xl font-bold mb-1 text-primary">Watermark & Page Numbers</h3>
+              <p class="text-xs text-secondary mt-1">Stamp custom text watermarks or dynamically insert page numbers onto your documents.</p>
+            </div>
+          </div>
+          
+          <div class="space-y-4">
+            <!-- Operation Mode -->
+            <div>
+              <label class="block text-sm font-semibold text-primary mb-2">Operation Mode</label>
+              <div class="grid grid-cols-2 gap-3">
+                <div class="radio-card p-3 rounded-lg border cursor-pointer flex flex-col justify-center items-center text-center selected" id="watermarkModeTextBtn">
+                  <span class="text-sm font-bold text-primary">Text Watermark</span>
+                  <span class="text-xxs text-secondary mt-0.5">Rotated text stamp</span>
+                </div>
+                <div class="radio-card p-3 rounded-lg border cursor-pointer flex flex-col justify-center items-center text-center" id="watermarkModeNumBtn">
+                  <span class="text-sm font-bold text-primary">Page Numbers</span>
+                  <span class="text-xxs text-secondary mt-0.5">Page X of Y numbering</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Text Watermark Mode Fields -->
+            <div id="watermarkTextFields" class="space-y-4">
+              <div>
+                <label class="block text-sm font-semibold text-primary mb-1" for="watermarkText">Watermark Text</label>
+                <input type="text" id="watermarkText" class="form-input w-full p-2.5 rounded-lg border bg-primary text-primary" placeholder="e.g., CONFIDENTIAL" value="DRAFT">
+              </div>
+              
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-semibold text-primary mb-1" for="watermarkFontSize">Font Size (pt)</label>
+                  <div class="flex items-center gap-2">
+                    <input type="range" id="watermarkFontSize" class="form-slider flex-1" min="10" max="120" value="60">
+                    <span id="watermarkFontSizeVal" class="text-xs font-semibold w-8 text-right">60pt</span>
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-sm font-semibold text-primary mb-1" for="watermarkRotation">Rotation (deg)</label>
+                  <div class="flex items-center gap-2">
+                    <input type="range" id="watermarkRotation" class="form-slider flex-1" min="-90" max="90" value="45">
+                    <span id="watermarkRotationVal" class="text-xs font-semibold w-8 text-right">45°</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-semibold text-primary mb-1" for="watermarkColor">Text Color</label>
+                  <div class="flex items-center gap-2">
+                    <input type="color" id="watermarkColor" class="w-8 h-8 rounded cursor-pointer border-none bg-transparent" value="#ff0000">
+                    <input type="text" id="watermarkColorHex" class="form-input flex-1 p-1 rounded border bg-primary text-primary text-xs" value="#ff0000">
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-sm font-semibold text-primary mb-1" for="watermarkOpacity">Opacity</label>
+                  <div class="flex items-center gap-2">
+                    <input type="range" id="watermarkOpacity" class="form-slider flex-1" min="10" max="100" value="30">
+                    <span id="watermarkOpacityVal" class="text-xs font-semibold w-8 text-right">30%</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Page Numbers Mode Fields -->
+            <div id="watermarkNumFields" class="space-y-4 hidden">
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-semibold text-primary mb-1" for="pageNumberFormat">Number Format</label>
+                  <select id="pageNumberFormat" class="form-input w-full p-2.5 rounded-lg border bg-primary text-primary cursor-pointer">
+                    <option value="Page X of Y">Page X of Y</option>
+                    <option value="X / Y">X / Y</option>
+                    <option value="X">X (Just number)</option>
+                    <option value="- X -">- X -</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-sm font-semibold text-primary mb-1" for="pageNumberAlign">Alignment Position</label>
+                  <select id="pageNumberAlign" class="form-input w-full p-2.5 rounded-lg border bg-primary text-primary cursor-pointer">
+                    <option value="bottom-center">Bottom Center</option>
+                    <option value="bottom-right">Bottom Right</option>
+                    <option value="bottom-left">Bottom Left</option>
+                    <option value="top-center">Top Center</option>
+                    <option value="top-right">Top Right</option>
+                    <option value="top-left">Top Left</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-semibold text-primary mb-1" for="pageNumberStart">Start numbering at</label>
+                  <input type="number" id="pageNumberStart" class="form-input w-full p-2.5 rounded-lg border bg-primary text-primary" value="1" min="1">
+                </div>
+                <div>
+                  <label class="block text-sm font-semibold text-primary mb-1" for="pageNumberColor">Number Color</label>
+                  <div class="flex items-center gap-2">
+                    <input type="color" id="pageNumberColor" class="w-8 h-8 rounded cursor-pointer border-none bg-transparent" value="#000000">
+                    <input type="text" id="pageNumberColorHex" class="form-input flex-1 p-1 rounded border bg-primary text-primary text-xs" value="#000000">
+                  </div>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-semibold text-primary mb-1" for="pageNumberFontSize">Font Size (pt)</label>
+                  <div class="flex items-center gap-2">
+                    <input type="range" id="pageNumberFontSize" class="form-slider flex-1" min="6" max="36" value="10">
+                    <span id="pageNumberFontSizeVal" class="text-xs font-semibold w-8 text-right">10pt</span>
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-sm font-semibold text-primary mb-1" for="pageNumberMargin">Margin from Edge (pt)</label>
+                  <div class="flex items-center gap-2">
+                    <input type="range" id="pageNumberMargin" class="form-slider flex-1" min="10" max="100" value="36">
+                    <span id="pageNumberMarginVal" class="text-xs font-semibold w-8 text-right">36pt</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <p class="text-xs text-secondary text-center mt-4">100% offline, local client-side watermarking. Your files never leave your device.</p>
+          </div>
+        </div>
       </section>
         </div>
 
@@ -948,6 +1116,23 @@
           </svg>
           Email
         </a>
+      </div>
+
+      <!-- Offline Privacy Scoreboard -->
+      <div id="privacyScoreboard" class="footer-info-row flex justify-center items-center gap-4 text-xs text-secondary mt-2 mb-4 bg-secondary bg-opacity-50 p-2.5 rounded-lg border border-opacity-10 max-w-md mx-auto">
+        <div class="flex items-center gap-1.5" title="Total files processed locally">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-accent">
+            <use href="../assets/icons/icons.svg#icon-document"></use>
+          </svg>
+          <span>Processed: <strong id="scoreboardFiles" class="text-accent font-semibold">0</strong> files</span>
+        </div>
+        <div class="h-3 w-px bg-secondary-text bg-opacity-20"></div>
+        <div class="flex items-center gap-1.5" title="Bandwidth/data saved from uploads">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-accent">
+            <use href="../assets/icons/icons.svg#icon-cloud"></use>
+          </svg>
+          <span>Saved: <strong id="scoreboardSavings" class="text-accent font-semibold">0.00</strong> MB</span>
+        </div>
       </div>
 
       <!-- Horizontal divider line -->

@@ -452,6 +452,72 @@ html.dark-theme .theme-toggle-label {
   background-color: #334155;
 }
 
+/* Dim page previews in dark theme */
+html.dark-theme .page-thumbnail.dim-page {
+  filter: invert(1) hue-rotate(180deg) brightness(0.85);
+}
+
+/* Dim Preview Toggle Switch */
+.dim-toggle-container {
+  display: inline-flex;
+  align-items: center;
+}
+.dim-toggle-label {
+  background-color: #ffffff;
+  width: 50px;
+  height: 26px;
+  border-radius: 50px;
+  position: relative;
+  padding: 3px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background-color 0.2s ease;
+  border: 1px solid rgba(0,0,0,0.1);
+}
+html.dark-theme .dim-toggle-label {
+  background-color: #334155;
+  border-color: rgba(255,255,255,0.1);
+}
+.dim-toggle-label .theme-icon {
+  font-size: 11px;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+}
+.dim-toggle-label .theme-icon svg {
+  color: #94a3b8;
+}
+.dim-toggle-label .ball {
+  background-color: #a855f7;
+  width: 20px;
+  height: 20px;
+  position: absolute;
+  left: 2px;
+  top: 2px;
+  border-radius: 50%;
+  transition: transform 0.2s linear;
+}
+#dimToggle:checked + .dim-toggle-label .ball {
+  transform: translateX(24px);
+}
+#dimToggle:checked + .dim-toggle-label .theme-icon svg {
+  color: #ffffff;
+}
+
+/* Disabled state for icon buttons */
+.icon-btn[disabled] {
+  opacity: 0.4 !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+  box-shadow: none !important;
+  border-color: transparent !important;
+}
+
 /* Layout Classes */
 .files-options-container {
   display: flex;

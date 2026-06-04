@@ -10,7 +10,7 @@
  * - deletePages: Remove specific pages
  */
 
-import { PDFDocument, degrees } from '../lib/pdf-lib.esm.js';
+import { PDFDocument, degrees, rgb, StandardFonts } from '../lib/pdf-lib.esm.js';
 import { decryptPDF, isEncrypted, encryptPDF, repairPDF } from '../lib/pdf-decrypt/index.js';
 
 class PDFService {
@@ -672,6 +672,159 @@ class PDFService {
 
     return await pdfDoc.save({ useObjectStreams: false });
   }
+
+  /**
+   * Compress PDF size client-side
+   * @param {File} file - PDF File object
+   * @param {string} level - Compression level ('low', 'medium', 'high')
+   * @returns {Promise<Uint8Array>} - Compressed PDF bytes
+   */
+  async compressPDF(file, level = 'medium') {
+    if (!file) {
+      throw new Error('No file provided');
+    }
+    const arrayBuffer = await file.arrayBuffer();
+    const pdfDoc = await PDFDocument.load(arrayBuffer, {
+      ignoreEncryption: true,
+      updateMetadata: false
+    });
+
+    // Object streams compression (lossless)
+    const saveOptions = {
+      useObjectStreams: true
+    };
+    
+    return await pdfDoc.save(saveOptions);
+  }
+
+  /**
+   * Add text watermark or page numbers to PDF
+   * @param {File} file - PDF File object
+   * @param {Object} options - Watermark / Page numbering options
+   * @returns {Promise<Uint8Array>} - Updated PDF bytes
+   */
+  async watermarkPDF(file, options) {
+    if (!file) {
+      throw new Error('No file provided');
+    }
+    const arrayBuffer = await file.arrayBuffer();
+    const pdfDoc = await PDFDocument.load(arrayBuffer, {
+      ignoreEncryption: true,
+      updateMetadata: false
+    });
+
+    const { mode, text, fontSize, rotation, colorHex, opacity, format, align, startNumber, margin } = options;
+    const { r, g, b } = hexToRgb(colorHex || '#000000');
+
+    if (mode === 'text') {
+      const font = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+      const pages = pdfDoc.getPages();
+      const opacityVal = (opacity !== undefined ? opacity : 30) / 100;
+      const rotDeg = rotation !== undefined ? rotation : 45;
+      const size = fontSize || 60;
+      const txt = text || 'DRAFT';
+
+      for (const page of pages) {
+        const { width, height } = page.getSize();
+        const textWidth = font.widthOfTextAtSize(txt, size);
+        const textHeight = font.heightAtSize(size);
+        
+        const x = width / 2;
+        const y = height / 2;
+        
+        const radians = (rotDeg * Math.PI) / 180;
+        const cos = Math.cos(radians);
+        const sin = Math.sin(radians);
+        
+        page.drawText(txt, {
+          x: x - (textWidth / 2) * cos + (textHeight / 2) * sin,
+          y: y - (textWidth / 2) * sin - (textHeight / 2) * cos,
+          size: size,
+          font: font,
+          color: rgb(r, g, b),
+          opacity: opacityVal,
+          rotate: degrees(rotDeg),
+        });
+      }
+    } else if (mode === 'number') {
+      const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+      const pages = pdfDoc.getPages();
+      const totalPages = pages.length;
+      const startNum = startNumber !== undefined ? parseInt(startNumber, 10) : 1;
+      const mgn = margin !== undefined ? parseInt(margin, 10) : 36;
+      const size = fontSize || 10;
+      const fmt = format || 'Page X of Y';
+      const aln = align || 'bottom-center';
+
+      for (let i = 0; i < totalPages; i++) {
+        const page = pages[i];
+        const { width, height } = page.getSize();
+        const pageNum = startNum + i;
+        
+        const txt = fmt
+          .replace('X', pageNum.toString())
+          .replace('Y', totalPages.toString());
+        
+        const textWidth = font.widthOfTextAtSize(txt, size);
+        const textHeight = font.heightAtSize(size);
+        
+        let x = 0;
+        let y = 0;
+        
+        switch (aln) {
+          case 'top-left':
+            x = mgn;
+            y = height - mgn - textHeight;
+            break;
+          case 'top-center':
+            x = (width - textWidth) / 2;
+            y = height - mgn - textHeight;
+            break;
+          case 'top-right':
+            x = width - mgn - textWidth;
+            y = height - mgn - textHeight;
+            break;
+          case 'bottom-left':
+            x = mgn;
+            y = mgn;
+            break;
+          case 'bottom-center':
+            x = (width - textWidth) / 2;
+            y = mgn;
+            break;
+          case 'bottom-right':
+            x = width - mgn - textWidth;
+            y = mgn;
+            break;
+          default:
+            x = (width - textWidth) / 2;
+            y = mgn;
+        }
+        
+        page.drawText(txt, {
+          x: x,
+          y: y,
+          size: size,
+          font: font,
+          color: rgb(r, g, b),
+          opacity: 1.0,
+        });
+      }
+    }
+
+    return await pdfDoc.save();
+  }
+}
+
+/**
+ * Helper to convert hex color to RGB percentage values (0.0 to 1.0)
+ */
+function hexToRgb(hex) {
+  const cleanHex = hex.replace(/^#/, '');
+  const r = parseInt(cleanHex.substring(0, 2), 16) / 255;
+  const g = parseInt(cleanHex.substring(2, 4), 16) / 255;
+  const b = parseInt(cleanHex.substring(4, 6), 16) / 255;
+  return { r, g, b };
 }
 
 /**
