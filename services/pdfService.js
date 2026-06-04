@@ -11,6 +11,7 @@
  */
 
 import { PDFDocument, degrees } from '../lib/pdf-lib.esm.js';
+import { decryptPDF, isEncrypted } from '../lib/pdf-decrypt/index.js';
 
 class PDFService {
   constructor() {
@@ -459,6 +460,111 @@ class PDFService {
       console.error('Error in renderPageToImage:', error);
       throw error;
     }
+  }
+
+  /**
+   * Get width and height of a page in PDF points
+   * @param {File} file - PDF File object
+   * @param {number} pageIndex - Page index (0-based)
+   * @returns {Promise<{width: number, height: number}>} - Dimensions
+   */
+  async getPageSize(file, pageIndex) {
+    if (!file) {
+      throw new Error('No file provided');
+    }
+    const arrayBuffer = await file.arrayBuffer();
+    const pdfDoc = await PDFDocument.load(arrayBuffer);
+    const page = pdfDoc.getPage(pageIndex);
+    return {
+      width: page.getWidth(),
+      height: page.getHeight()
+    };
+  }
+
+  /**
+   * Crop pages of a PDF file
+   * @param {File} file - PDF File object
+   * @param {Object} cropBounds - Crop bounds {left, top, width, height} as fractions from 0 to 1
+   * @param {Object} scopeOptions - Scope options {scope, currentPage, range}
+   * @returns {Promise<Uint8Array>} - Cropped PDF bytes
+   */
+  async cropPDF(file, cropBounds, scopeOptions = {}) {
+    if (!file) {
+      throw new Error('No file provided');
+    }
+
+    const arrayBuffer = await file.arrayBuffer();
+    const pdfDoc = await PDFDocument.load(arrayBuffer);
+    const totalPages = pdfDoc.getPageCount();
+
+    // Determine which pages to crop
+    let pagesToCrop = [];
+    const scope = scopeOptions.scope || 'current';
+
+    if (scope === 'current') {
+      const curr = scopeOptions.currentPage || 1;
+      if (curr >= 1 && curr <= totalPages) {
+        pagesToCrop.push(curr - 1);
+      }
+    } else if (scope === 'all') {
+      pagesToCrop = Array.from({ length: totalPages }, (_, i) => i);
+    } else if (scope === 'range') {
+      const rangeString = scopeOptions.range || '';
+      const { parsePageRange } = await import('../utils/rangeParser.js');
+      const pageIndices = parsePageRange(rangeString, totalPages);
+      pagesToCrop = pageIndices;
+    }
+
+    if (pagesToCrop.length === 0) {
+      throw new Error('No pages selected for cropping');
+    }
+
+    const { left, top, width: wFrac, height: hFrac } = cropBounds;
+
+    pagesToCrop.forEach(pageIndex => {
+      const page = pdfDoc.getPage(pageIndex);
+      const pageWidth = page.getWidth();
+      const pageHeight = page.getHeight();
+
+      // Map relative coordinates to absolute PDF points (starts from bottom-left)
+      const x = Math.max(0, Math.min(left, 1)) * pageWidth;
+      const width = Math.max(0, Math.min(wFrac, 1 - left)) * pageWidth;
+      const height = Math.max(0, Math.min(hFrac, 1 - top)) * pageHeight;
+      const y = Math.max(0, Math.min(1 - top - hFrac, 1)) * pageHeight;
+
+      // Apply crop bounds to crop box and media box
+      page.setCropBox(x, y, width, height);
+      page.setMediaBox(x, y, width, height);
+    });
+
+    return await pdfDoc.save();
+  }
+
+  /**
+   * Check if a PDF file is password protected/encrypted
+   * @param {File} file - PDF File object
+   * @returns {Promise<{encrypted: boolean, algorithm?: string, version?: number, revision?: number, keyLength?: number}>}
+   */
+  async checkEncryption(file) {
+    if (!file) {
+      throw new Error('No file provided');
+    }
+    const arrayBuffer = await file.arrayBuffer();
+    return await isEncrypted(new Uint8Array(arrayBuffer));
+  }
+
+  /**
+   * Decrypt/unlock a password-protected PDF
+   * @param {File} file - PDF File object
+   * @param {string} password - PDF password
+   * @returns {Promise<Uint8Array>} - Decrypted PDF bytes
+   */
+  async unlockPDF(file, password) {
+    if (!file) {
+      throw new Error('No file provided');
+    }
+    const arrayBuffer = await file.arrayBuffer();
+    return await decryptPDF(new Uint8Array(arrayBuffer), password);
   }
 }
 

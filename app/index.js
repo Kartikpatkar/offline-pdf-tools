@@ -17,7 +17,11 @@ const state = {
   pageOrder: [],
   pageRotations: new Map(), // pageIndex -> rotation (0, 90, 180, 270)
   thumbnailImages: new Map(), // pageIndex -> Image object for redrawing
-  keyboardSelectedReorderIndex: null
+  keyboardSelectedReorderIndex: null,
+  cropPreviewPage: 1,
+  cropBounds: { left: 0, top: 0, width: 1, height: 1 },
+  cropPageSizes: new Map(),
+  isCurrentFileEncrypted: false
 };
 
 // DOM Elements
@@ -60,7 +64,26 @@ const elements = {
   imgMargin: document.getElementById('imgMargin'),
   imgAlignment: document.getElementById('imgAlignment'),
   pdfToImgFormat: document.getElementById('pdfToImgFormat'),
-  pdfToImgScale: document.getElementById('pdfToImgScale')
+  pdfToImgScale: document.getElementById('pdfToImgScale'),
+  cropOptions: document.getElementById('cropOptions'),
+  cropPreviewContainer: document.getElementById('cropPreviewContainer'),
+  cropPreviewCanvas: document.getElementById('cropPreviewCanvas'),
+  cropOverlay: document.getElementById('cropOverlay'),
+  cropPageSelect: document.getElementById('cropPageSelect'),
+  cropMarginTop: document.getElementById('cropMarginTop'),
+  cropMarginBottom: document.getElementById('cropMarginBottom'),
+  cropMarginLeft: document.getElementById('cropMarginLeft'),
+  cropMarginRight: document.getElementById('cropMarginRight'),
+  cropScopeRange: document.getElementById('cropScopeRange'),
+  unlockOptions: document.getElementById('unlockOptions'),
+  unlockFileInfo: document.getElementById('unlockFileInfo'),
+  unlockFileName: document.getElementById('unlockFileName'),
+  unlockFileSize: document.getElementById('unlockFileSize'),
+  unlockFileAlgorithm: document.getElementById('unlockFileAlgorithm'),
+  unlockPasswordContainer: document.getElementById('unlockPasswordContainer'),
+  unlockPassword: document.getElementById('unlockPassword'),
+  toggleUnlockPasswordVisibility: document.getElementById('toggleUnlockPasswordVisibility'),
+  unlockNotEncryptedInfo: document.getElementById('unlockNotEncryptedInfo')
 };
 
 // Initialize App
@@ -81,31 +104,38 @@ async function init() {
 // Load PDF.js from extension resources
 function loadPDFJS() {
   return new Promise((resolve, reject) => {
+    let pdfjsUrl = '../lib/pdf.min.js';
+    let workerUrl = '../lib/pdf.worker.min.js';
+
     if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.getURL) {
-      const pdfjsScript = document.createElement('script');
-      pdfjsScript.src = chrome.runtime.getURL('lib/pdf.min.js');
-      pdfjsScript.onload = function() {
-        console.log('PDF.js script loaded');
-        // Configure PDF.js worker after PDF.js loads
-        if (typeof pdfjsLib !== 'undefined') {
-          pdfjsLib.GlobalWorkerOptions.workerSrc = chrome.runtime.getURL('lib/pdf.worker.min.js');
-          console.log('PDF.js configured successfully, version:', pdfjsLib.version);
-          window.pdfjsReady = true;
-          resolve();
-        } else {
-          console.error('pdfjsLib not available after script load');
-          reject(new Error('pdfjsLib not available after script load'));
-        }
-      };
-      pdfjsScript.onerror = function(e) {
-        console.error('Failed to load PDF.js script:', e);
-        reject(new Error('Failed to load PDF.js script'));
-      };
-      document.head.appendChild(pdfjsScript);
-    } else {
-      console.error('Chrome runtime not available');
-      reject(new Error('Chrome runtime not available'));
+      try {
+        pdfjsUrl = chrome.runtime.getURL('lib/pdf.min.js');
+        workerUrl = chrome.runtime.getURL('lib/pdf.worker.min.js');
+      } catch (e) {
+        console.warn('Failed to get extension URLs, falling back to relative paths:', e);
+      }
     }
+
+    const pdfjsScript = document.createElement('script');
+    pdfjsScript.src = pdfjsUrl;
+    pdfjsScript.onload = function() {
+      console.log('PDF.js script loaded');
+      // Configure PDF.js worker after PDF.js loads
+      if (typeof pdfjsLib !== 'undefined') {
+        pdfjsLib.GlobalWorkerOptions.workerSrc = workerUrl;
+        console.log('PDF.js configured successfully, version:', pdfjsLib.version);
+        window.pdfjsReady = true;
+        resolve();
+      } else {
+        console.error('pdfjsLib not available after script load');
+        reject(new Error('pdfjsLib not available after script load'));
+      }
+    };
+    pdfjsScript.onerror = function(e) {
+      console.error('Failed to load PDF.js script:', e);
+      reject(new Error('Failed to load PDF.js script'));
+    };
+    document.head.appendChild(pdfjsScript);
   });
 }
 
@@ -257,6 +287,12 @@ function setupEventListeners() {
       elements.imgAlignment.disabled = isFit;
     });
   }
+
+  // Setup Crop-specific listeners
+  setupCropEventListeners();
+
+  // Setup Unlock-specific listeners
+  setupUnlockEventListeners();
 }
 
 // Tool Selection
@@ -309,6 +345,16 @@ function selectTool(tool) {
       title: 'How it works',
       desc: 'Convert and download pages of a PDF document as images (PNG or JPEG). Upload a PDF, choose the format and quality, and select pages.',
       icon: '<svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="../assets/icons/icons.svg#icon-help"></use></svg>'
+    },
+    crop: {
+      title: 'How it works',
+      desc: 'Crop pages or trim borders from your PDF document visually. Drag handles to define your boundaries and select range.',
+      icon: '<svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="../assets/icons/icons.svg#icon-crop"></use></svg>'
+    },
+    unlock: {
+      title: 'How it works',
+      desc: 'Remove password security from an encrypted PDF. Upload a password-protected PDF, type its password, and export an unencrypted version.',
+      icon: '<svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="../assets/icons/icons.svg#icon-unlock"></use></svg>'
     }
   };
 
@@ -333,7 +379,9 @@ function selectTool(tool) {
     delete: { title: 'Drop your PDF file here', multiple: false, accept: '.pdf,application/pdf' },
     reorder: { title: 'Drop your PDF file here', multiple: false, accept: '.pdf,application/pdf' },
     imageToPdf: { title: 'Drop your image files here', multiple: true, accept: '.png,.jpg,.jpeg,.webp,.gif,.bmp,.svg,image/*' },
-    pdfToImg: { title: 'Drop your PDF file here', multiple: false, accept: '.pdf,application/pdf' }
+    pdfToImg: { title: 'Drop your PDF file here', multiple: false, accept: '.pdf,application/pdf' },
+    crop: { title: 'Drop your PDF file here', multiple: false, accept: '.pdf,application/pdf' },
+    unlock: { title: 'Drop your password-protected PDF here', multiple: false, accept: '.pdf,application/pdf' }
   };
 
   const config = uploadTexts[tool];
@@ -350,7 +398,9 @@ function selectTool(tool) {
     delete: 'Delete Pages',
     reorder: 'Reorder & Export',
     imageToPdf: 'Convert to PDF',
-    pdfToImg: 'Convert Pages to Images'
+    pdfToImg: 'Convert Pages to Images',
+    crop: 'Crop PDF',
+    unlock: 'Unlock PDF'
   };
   elements.btnText.textContent = buttonTexts[tool];
 
@@ -430,14 +480,29 @@ async function addFiles(files) {
     const metadataPromises = state.selectedFiles.map(async (file) => {
       if (!state.fileMetadata.has(file)) {
         try {
+          if (state.currentTool === 'unlock') {
+            const encInfo = await pdfService.checkEncryption(file);
+            state.isCurrentFileEncrypted = encInfo.encrypted;
+            if (encInfo.encrypted) {
+              state.fileMetadata.set(file, { pageCount: '?', encrypted: true, encInfo });
+              return;
+            }
+          }
+
           const pageCount = await pdfService.getPageCount(file);
-          state.fileMetadata.set(file, { pageCount });
+          state.fileMetadata.set(file, { pageCount, encrypted: false });
         } catch (error) {
           console.error('Error loading page count for', file.name, error);
           
           const isEncrypted = error.message?.toLowerCase().includes('encrypt') || 
                               error.message?.toLowerCase().includes('password') || 
                               error.name === 'PasswordException';
+          
+          if (state.currentTool === 'unlock' && isEncrypted) {
+            state.isCurrentFileEncrypted = true;
+            state.fileMetadata.set(file, { pageCount: '?', encrypted: true });
+            return;
+          }
                               
           let errorMsg = isEncrypted 
             ? `"${file.name}" is password-protected or encrypted. Because all processing happens locally inside your browser, encrypted PDFs are not supported.`
@@ -456,7 +521,11 @@ async function addFiles(files) {
   
   // For single-file tools, load page info
   if (state.currentTool !== 'merge' && state.currentTool !== 'imageToPdf' && state.selectedFiles.length > 0) {
-    await loadPageInfo();
+    if (state.currentTool === 'unlock' && state.isCurrentFileEncrypted) {
+      // Skip loadPageInfo as PDF is encrypted and will throw error
+    } else {
+      await loadPageInfo();
+    }
   }
 
   // Show options if file is selected
@@ -578,6 +647,10 @@ function clearFiles() {
   state.pageRotations.clear();
   state.thumbnailImages.clear();
   state.keyboardSelectedReorderIndex = null;
+  state.cropPreviewPage = 1;
+  state.cropBounds = { left: 0, top: 0, width: 1, height: 1 };
+  state.cropPageSizes.clear();
+  state.isCurrentFileEncrypted = false;
   elements.fileInput.value = '';
   if (elements.pageRangeInput) elements.pageRangeInput.value = '';
   pdfService.clearCache();
@@ -622,7 +695,9 @@ function showToolOptions() {
     delete: elements.deleteOptions,
     reorder: elements.reorderOptions,
     imageToPdf: elements.imageToPdfOptions,
-    pdfToImg: elements.pdfToImgOptions
+    pdfToImg: elements.pdfToImgOptions,
+    crop: elements.cropOptions,
+    unlock: elements.unlockOptions
   };
 
   // Hide all panels
@@ -654,6 +729,11 @@ function showToolOptions() {
     } else if (state.currentTool === 'pdfToImg') {
       state.selectedPages.clear();
       renderPageSelector('pdfToImgPageSelector');
+    } else if (state.currentTool === 'crop') {
+      setupCropPageSelect();
+      loadCropPagePreview();
+    } else if (state.currentTool === 'unlock') {
+      displayUnlockOptionsUI();
     }
   } else {
     elements.toolOptions.classList.add('hidden');
@@ -1235,6 +1315,54 @@ async function processFiles() {
         
         showStatus('Pages exported to images successfully!', 'success');
         break;
+
+      case 'crop':
+        const scopeRadio = document.querySelector('input[name="cropScope"]:checked');
+        const scope = scopeRadio ? scopeRadio.value : 'current';
+        
+        let rangeVal = '';
+        if (scope === 'range') {
+          rangeVal = elements.cropScopeRange.value.trim();
+          if (!rangeVal) {
+            throw new Error('Please enter a custom page range');
+          }
+          if (!isValidRangeSyntax(rangeVal)) {
+            throw new Error('Invalid range syntax. Use numbers, commas, and hyphens (e.g. 1-3, 5).');
+          }
+        }
+        
+        const scopeOptions = {
+          scope,
+          currentPage: state.cropPreviewPage,
+          range: rangeVal
+        };
+        
+        result = await pdfService.cropPDF(state.selectedFiles[0], state.cropBounds, scopeOptions);
+        await downloadPDF(result, generateActionFilename(state.selectedFiles[0].name, 'cropped'));
+        showStatus('PDF pages cropped successfully!', 'success');
+        break;
+
+      case 'unlock':
+        if (!state.selectedFiles[0]) {
+          throw new Error('Please select a PDF file first');
+        }
+        if (!state.isCurrentFileEncrypted) {
+          throw new Error('This PDF file is not password-protected. Decryption is not required.');
+        }
+        const unlockPassword = elements.unlockPassword.value;
+        if (!unlockPassword) {
+          if (elements.unlockPassword) {
+            elements.unlockPassword.style.borderColor = '#ef4444';
+            elements.unlockPassword.focus();
+          }
+          throw new Error('Please enter the password to decrypt the PDF');
+        }
+        
+        showStatus('Decrypting PDF offline...', 'info');
+        result = await pdfService.unlockPDF(state.selectedFiles[0], unlockPassword);
+        await downloadPDF(result, generateActionFilename(state.selectedFiles[0].name, 'unlocked'));
+        showStatus('PDF unlocked and decrypted successfully!', 'success');
+        break;
     }
   } catch (error) {
     showStatus(`Error: ${error.message}`, 'error');
@@ -1352,6 +1480,428 @@ function focusReorderItem(index) {
     const target = items[index];
     if (target) target.focus();
   }, 50);
+}
+
+/**
+ * Setup crop page select dropdown list options
+ */
+function setupCropPageSelect() {
+  if (!elements.cropPageSelect) return;
+  elements.cropPageSelect.innerHTML = '';
+  for (let i = 1; i <= state.pageCount; i++) {
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = `Page ${i}`;
+    elements.cropPageSelect.appendChild(opt);
+  }
+}
+
+/**
+ * Load page thumbnail and render on preview canvas, resizing overlay container
+ */
+async function loadCropPagePreview() {
+  const pageNum = state.cropPreviewPage;
+  const file = state.selectedFiles[0];
+  if (!file) return;
+
+  try {
+    showProgress();
+    
+    // Get page size from pdf-lib
+    const pageIndex = pageNum - 1;
+    let size = state.cropPageSizes.get(pageIndex);
+    if (!size) {
+      size = await pdfService.getPageSize(file, pageIndex);
+      state.cropPageSizes.set(pageIndex, size);
+    }
+    
+    // Render page thumbnail to canvas
+    const dataUrl = await pdfService.renderPageThumbnail(file, pageIndex, 300, 400);
+    const img = new Image();
+    img.onload = () => {
+      const canvas = elements.cropPreviewCanvas;
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0);
+      
+      // Update Crop Overlay container style
+      const container = elements.cropPreviewContainer;
+      container.style.width = `${img.width}px`;
+      container.style.height = `${img.height}px`;
+      
+      // Update visual overlay position based on current cropBounds
+      updateCropOverlayUI();
+      hideProgress();
+    };
+    img.src = dataUrl;
+  } catch (error) {
+    console.error('Error loading crop preview:', error);
+    showStatus(`Failed to load preview: ${error.message}`, 'error');
+    hideProgress();
+  }
+}
+
+/**
+ * Synchronize screen overlay styling to state.cropBounds
+ */
+function updateCropOverlayUI() {
+  const container = elements.cropPreviewContainer;
+  const overlay = elements.cropOverlay;
+  if (!container || !overlay) return;
+  
+  const contWidth = container.clientWidth || 300;
+  const contHeight = container.clientHeight || 400;
+  
+  const { left, top, width, height } = state.cropBounds;
+  
+  overlay.style.left = `${left * contWidth}px`;
+  overlay.style.top = `${top * contHeight}px`;
+  overlay.style.width = `${width * contWidth}px`;
+  overlay.style.height = `${height * contHeight}px`;
+  
+  // Sync numerical inputs (display absolute points based on current page size)
+  const pageIndex = state.cropPreviewPage - 1;
+  const size = state.cropPageSizes.get(pageIndex) || { width: 612, height: 792 };
+  
+  const ptLeft = Math.round(left * size.width);
+  const ptTop = Math.round(top * size.height);
+  const ptRight = Math.round((1 - left - width) * size.width);
+  const ptBottom = Math.round((1 - top - height) * size.height);
+  
+  elements.cropMarginLeft.value = ptLeft;
+  elements.cropMarginTop.value = ptTop;
+  elements.cropMarginRight.value = ptRight;
+  elements.cropMarginBottom.value = ptBottom;
+}
+
+/**
+ * Update state bounds from numeric input values
+ */
+function updateBoundsFromInputs() {
+  const pageIndex = state.cropPreviewPage - 1;
+  const size = state.cropPageSizes.get(pageIndex) || { width: 612, height: 792 };
+  
+  // Read points values
+  const ptLeft = parseFloat(elements.cropMarginLeft.value) || 0;
+  const ptTop = parseFloat(elements.cropMarginTop.value) || 0;
+  const ptRight = parseFloat(elements.cropMarginRight.value) || 0;
+  const ptBottom = parseFloat(elements.cropMarginBottom.value) || 0;
+  
+  // Convert back to fractions
+  let left = ptLeft / size.width;
+  let top = ptTop / size.height;
+  let right = ptRight / size.width;
+  let bottom = ptBottom / size.height;
+  
+  // Validate and clamp
+  left = Math.max(0, Math.min(left, 1));
+  top = Math.max(0, Math.min(top, 1));
+  right = Math.max(0, Math.min(right, 1 - left));
+  bottom = Math.max(0, Math.min(bottom, 1 - top));
+  
+  const width = 1 - left - right;
+  const height = 1 - top - bottom;
+  
+  state.cropBounds = { left, top, width, height };
+  
+  // Re-update overlay UI (this clamps visual input values if they were out-of-bounds)
+  const container = elements.cropPreviewContainer;
+  const overlay = elements.cropOverlay;
+  const contWidth = container.clientWidth || 300;
+  const contHeight = container.clientHeight || 400;
+  
+  overlay.style.left = `${left * contWidth}px`;
+  overlay.style.top = `${top * contHeight}px`;
+  overlay.style.width = `${width * contWidth}px`;
+  overlay.style.height = `${height * contHeight}px`;
+}
+
+/**
+ * Visual crop box dragging and resizing
+ */
+function setupCropDragAndResize() {
+  const overlay = elements.cropOverlay;
+  const container = elements.cropPreviewContainer;
+  if (!overlay || !container) return;
+  
+  let isDragging = false;
+  let activeHandle = null; // 'tl', 'tr', 'bl', 'br', or null
+  
+  let startX, startY;
+  let startLeft, startTop, startWidth, startHeight;
+  
+  overlay.addEventListener('mousedown', startAction);
+  overlay.addEventListener('touchstart', startAction, { passive: false });
+  
+  function startAction(e) {
+    e.preventDefault();
+    const event = e.touches ? e.touches[0] : e;
+    
+    const handleElement = e.target.closest('.crop-handle');
+    if (handleElement) {
+      activeHandle = handleElement.dataset.handle;
+    } else {
+      activeHandle = null;
+    }
+    
+    isDragging = true;
+    startX = event.clientX;
+    startY = event.clientY;
+    
+    startLeft = parseFloat(overlay.style.left) || 0;
+    startTop = parseFloat(overlay.style.top) || 0;
+    startWidth = parseFloat(overlay.style.width) || 0;
+    startHeight = parseFloat(overlay.style.height) || 0;
+    
+    document.addEventListener('mousemove', moveAction);
+    document.addEventListener('mouseup', endAction);
+    document.addEventListener('touchmove', moveAction, { passive: false });
+    document.addEventListener('touchend', endAction);
+  }
+  
+  function moveAction(e) {
+    if (!isDragging) return;
+    e.preventDefault();
+    const event = e.touches ? e.touches[0] : e;
+    
+    const dx = event.clientX - startX;
+    const dy = event.clientY - startY;
+    
+    const contWidth = container.clientWidth;
+    const contHeight = container.clientHeight;
+    
+    let newLeft = startLeft;
+    let newTop = startTop;
+    let newWidth = startWidth;
+    let newHeight = startHeight;
+    
+    if (activeHandle === null) {
+      newLeft = Math.max(0, Math.min(startLeft + dx, contWidth - startWidth));
+      newTop = Math.max(0, Math.min(startTop + dy, contHeight - startHeight));
+    } else {
+      const minSize = 20;
+      if (activeHandle.includes('l')) {
+        const potentialLeft = startLeft + dx;
+        const boundedLeft = Math.max(0, Math.min(potentialLeft, startLeft + startWidth - minSize));
+        newLeft = boundedLeft;
+        newWidth = startWidth - (boundedLeft - startLeft);
+      }
+      if (activeHandle.includes('r')) {
+        newWidth = Math.max(minSize, Math.min(startWidth + dx, contWidth - startLeft));
+      }
+      if (activeHandle.includes('t')) {
+        const potentialTop = startTop + dy;
+        const boundedTop = Math.max(0, Math.min(potentialTop, startTop + startHeight - minSize));
+        newTop = boundedTop;
+        newHeight = startHeight - (boundedTop - startTop);
+      }
+      if (activeHandle.includes('b')) {
+        newHeight = Math.max(minSize, Math.min(startHeight + dy, contHeight - startTop));
+      }
+    }
+    
+    state.cropBounds = {
+      left: newLeft / contWidth,
+      top: newTop / contHeight,
+      width: newWidth / contWidth,
+      height: newHeight / contHeight
+    };
+    
+    overlay.style.left = `${newLeft}px`;
+    overlay.style.top = `${newTop}px`;
+    overlay.style.width = `${newWidth}px`;
+    overlay.style.height = `${newHeight}px`;
+    
+    const pageIndex = state.cropPreviewPage - 1;
+    const size = state.cropPageSizes.get(pageIndex) || { width: 612, height: 792 };
+    
+    elements.cropMarginLeft.value = Math.round(state.cropBounds.left * size.width);
+    elements.cropMarginTop.value = Math.round(state.cropBounds.top * size.height);
+    elements.cropMarginRight.value = Math.round((1 - state.cropBounds.left - state.cropBounds.width) * size.width);
+    elements.cropMarginBottom.value = Math.round((1 - state.cropBounds.top - state.cropBounds.height) * size.height);
+  }
+  
+  function endAction() {
+    isDragging = false;
+    activeHandle = null;
+    document.removeEventListener('mousemove', moveAction);
+    document.removeEventListener('mouseup', endAction);
+    document.removeEventListener('touchmove', moveAction);
+    document.removeEventListener('touchend', endAction);
+  }
+}
+
+/**
+ * Setup preset button handlers
+ */
+function setupCropPresets() {
+  const resetBtn = document.getElementById('cropPresetReset');
+  const marginsBtn = document.getElementById('cropPresetMargins');
+  const headerBtn = document.getElementById('cropPresetHeader');
+  const footerBtn = document.getElementById('cropPresetFooter');
+  
+  if (resetBtn) {
+    resetBtn.addEventListener('click', () => {
+      state.cropBounds = { left: 0, top: 0, width: 1, height: 1 };
+      updateCropOverlayUI();
+    });
+  }
+  
+  if (marginsBtn) {
+    marginsBtn.addEventListener('click', () => {
+      elements.cropMarginLeft.value = 36;
+      elements.cropMarginTop.value = 36;
+      elements.cropMarginRight.value = 36;
+      elements.cropMarginBottom.value = 36;
+      updateBoundsFromInputs();
+    });
+  }
+  
+  if (headerBtn) {
+    headerBtn.addEventListener('click', () => {
+      elements.cropMarginLeft.value = 0;
+      elements.cropMarginTop.value = 86;
+      elements.cropMarginRight.value = 0;
+      elements.cropMarginBottom.value = 0;
+      updateBoundsFromInputs();
+    });
+  }
+  
+  if (footerBtn) {
+    footerBtn.addEventListener('click', () => {
+      elements.cropMarginLeft.value = 0;
+      elements.cropMarginTop.value = 0;
+      elements.cropMarginRight.value = 0;
+      elements.cropMarginBottom.value = 86;
+      updateBoundsFromInputs();
+    });
+  }
+}
+
+/**
+ * Setup crop scope radio bindings
+ */
+function setupCropScopeListeners() {
+  document.querySelectorAll('input[name="cropScope"]').forEach(radio => {
+    radio.addEventListener('change', (e) => {
+      if (e.target.value === 'range') {
+        elements.cropScopeRange.classList.remove('hidden');
+        elements.cropScopeRange.focus();
+      } else {
+        elements.cropScopeRange.classList.add('hidden');
+      }
+    });
+  });
+}
+
+/**
+ * Main Crop tool listeners initializer
+ */
+function setupCropEventListeners() {
+  if (elements.cropPageSelect) {
+    elements.cropPageSelect.addEventListener('change', async (e) => {
+      state.cropPreviewPage = parseInt(e.target.value, 10);
+      await loadCropPagePreview();
+    });
+  }
+
+  const marginInputs = [elements.cropMarginTop, elements.cropMarginBottom, elements.cropMarginLeft, elements.cropMarginRight];
+  marginInputs.forEach(input => {
+    if (input) {
+      input.addEventListener('input', () => {
+        updateBoundsFromInputs();
+      });
+    }
+  });
+
+  setupCropPresets();
+  setupCropScopeListeners();
+  setupCropDragAndResize();
+}
+
+/**
+ * Main Unlock tool listeners initializer
+ */
+function setupUnlockEventListeners() {
+  if (elements.toggleUnlockPasswordVisibility) {
+    elements.toggleUnlockPasswordVisibility.addEventListener('click', () => {
+      const input = elements.unlockPassword;
+      if (!input) return;
+      
+      if (input.type === 'password') {
+        input.type = 'text';
+        elements.toggleUnlockPasswordVisibility.innerHTML = `
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <use href="../assets/icons/icons.svg#icon-eye-off"></use>
+          </svg>
+        `;
+      } else {
+        input.type = 'password';
+        elements.toggleUnlockPasswordVisibility.innerHTML = `
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <use href="../assets/icons/icons.svg#icon-eye"></use>
+          </svg>
+        `;
+      }
+    });
+  }
+
+  if (elements.unlockPassword) {
+    elements.unlockPassword.addEventListener('input', () => {
+      elements.unlockPassword.style.borderColor = '';
+    });
+  }
+}
+
+/**
+ * Display options/results for PDF unlocking
+ */
+function displayUnlockOptionsUI() {
+  const file = state.selectedFiles[0];
+  console.log('[Unlock UI] Displaying options for file:', file ? file.name : null);
+  if (!file) return;
+
+  const metadata = state.fileMetadata.get(file);
+  console.log('[Unlock UI] Retrieved metadata:', metadata);
+  const isEncrypted = metadata ? metadata.encrypted : false;
+  console.log('[Unlock UI] isEncrypted flag:', isEncrypted, 'state.isCurrentFileEncrypted:', state.isCurrentFileEncrypted);
+
+  // Hide everything first
+  if (elements.unlockFileInfo) elements.unlockFileInfo.classList.add('hidden');
+  if (elements.unlockPasswordContainer) elements.unlockPasswordContainer.classList.add('hidden');
+  if (elements.unlockNotEncryptedInfo) elements.unlockNotEncryptedInfo.classList.add('hidden');
+
+  if (isEncrypted) {
+    // Show File Info
+    if (elements.unlockFileName) elements.unlockFileName.textContent = file.name;
+    if (elements.unlockFileSize) elements.unlockFileSize.textContent = formatFileSize(file.size);
+    
+    let algoDesc = 'Unknown';
+    if (metadata && metadata.encInfo) {
+      const info = metadata.encInfo;
+      algoDesc = `${info.algorithm || 'AES-256'} (V=${info.version || 5}, R=${info.revision || 6})`;
+      if (info.keyLength) {
+        algoDesc += `, ${info.keyLength}-bit`;
+      }
+    }
+    if (elements.unlockFileAlgorithm) elements.unlockFileAlgorithm.textContent = algoDesc;
+
+    console.log('[Unlock UI] Removing hidden class from elements');
+    if (elements.unlockFileInfo) elements.unlockFileInfo.classList.remove('hidden');
+    if (elements.unlockPasswordContainer) elements.unlockPasswordContainer.classList.remove('hidden');
+    
+    if (elements.unlockPassword) {
+      elements.unlockPassword.value = '';
+      elements.unlockPassword.style.borderColor = '';
+      elements.unlockPassword.focus();
+    }
+  } else {
+    console.log('[Unlock UI] Showing non-encrypted info');
+    // Show Not Encrypted Message
+    if (elements.unlockNotEncryptedInfo) elements.unlockNotEncryptedInfo.classList.remove('hidden');
+  }
 }
 
 // Initialize on load

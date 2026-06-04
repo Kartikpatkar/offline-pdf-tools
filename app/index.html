@@ -95,6 +95,12 @@
             </svg>
             <span>Reorder</span>
           </button>
+          <button class="tool-tab px-4 py-2 rounded-lg font-medium text-sm flex items-center gap-2 transition" data-tool="crop">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <use href="../assets/icons/icons.svg#icon-crop"></use>
+            </svg>
+            <span>Crop</span>
+          </button>
           <button class="tool-tab px-4 py-2 rounded-lg font-medium text-sm flex items-center gap-2 transition" data-tool="imageToPdf">
             <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <use href="../assets/icons/icons.svg#icon-image"></use>
@@ -106,6 +112,12 @@
               <use href="../assets/icons/icons.svg#icon-file-image"></use>
             </svg>
             <span>PDF to Image</span>
+          </button>
+          <button class="tool-tab px-4 py-2 rounded-lg font-medium text-sm flex items-center gap-2 transition" data-tool="unlock">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <use href="../assets/icons/icons.svg#icon-unlock"></use>
+            </svg>
+            <span>Unlock PDF</span>
           </button>
         </div>
       </section>
@@ -413,7 +425,175 @@
             </div>
           </div>
         </div>
-          </section>
+
+        <!-- Crop Options -->
+        <div id="cropOptions" class="card p-6 hidden">
+          <div class="flex items-start justify-between mb-4">
+            <div class="flex items-start gap-3 flex-1">
+              <div class="text-2xl">
+                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <use href="../assets/icons/icons.svg#icon-crop"></use>
+                </svg>
+              </div>
+              <div class="flex-1">
+                <h3 class="text-xl font-bold mb-1 text-primary">Crop Settings</h3>
+              </div>
+            </div>
+            <button class="tool-help-btn" data-target="cropDescription" aria-label="Toggle crop tool help description">
+              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <use href="../assets/icons/icons.svg#icon-help"></use>
+              </svg>
+            </button>
+          </div>
+          <p id="cropDescription" class="text-sm mb-4 hidden text-secondary">Select a region visually by dragging the overlay handles, or enter exact margin dimensions in points below.</p>
+          
+          <div class="crop-layout-grid">
+            <!-- Left Column: Visual Preview -->
+            <div class="crop-preview-wrapper">
+              <div class="crop-preview-container" id="cropPreviewContainer">
+                <canvas id="cropPreviewCanvas" width="300" height="400"></canvas>
+                <div id="cropOverlay" class="crop-overlay">
+                  <div class="crop-handle crop-handle-tl" data-handle="tl"></div>
+                  <div class="crop-handle crop-handle-tr" data-handle="tr"></div>
+                  <div class="crop-handle crop-handle-bl" data-handle="bl"></div>
+                  <div class="crop-handle crop-handle-br" data-handle="br"></div>
+                </div>
+              </div>
+              <div class="text-center mt-2">
+                <span class="text-xs text-secondary">Drag handles to resize. Drag center to move.</span>
+              </div>
+            </div>
+
+            <!-- Right Column: Settings and Scope -->
+            <div class="crop-controls-wrapper space-y-4">
+              <div>
+                <label for="cropPageSelect" class="block text-sm font-semibold mb-2 text-primary">Preview Page</label>
+                <select id="cropPageSelect" class="w-full form-select">
+                  <option value="1">Page 1</option>
+                </select>
+              </div>
+
+              <div>
+                <span class="block text-sm font-semibold mb-2 text-primary">Crop Margins (pt)</span>
+                <div class="grid grid-cols-2 gap-2">
+                  <div>
+                    <label for="cropMarginTop" class="text-xs text-secondary block mb-1">Top</label>
+                    <input type="number" id="cropMarginTop" class="w-full text-sm" value="0" min="0" step="1">
+                  </div>
+                  <div>
+                    <label for="cropMarginBottom" class="text-xs text-secondary block mb-1">Bottom</label>
+                    <input type="number" id="cropMarginBottom" class="w-full text-sm" value="0" min="0" step="1">
+                  </div>
+                  <div>
+                    <label for="cropMarginLeft" class="text-xs text-secondary block mb-1">Left</label>
+                    <input type="number" id="cropMarginLeft" class="w-full text-sm" value="0" min="0" step="1">
+                  </div>
+                  <div>
+                    <label for="cropMarginRight" class="text-xs text-secondary block mb-1">Right</label>
+                    <input type="number" id="cropMarginRight" class="w-full text-sm" value="0" min="0" step="1">
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <span class="block text-sm font-semibold mb-2 text-primary">Presets</span>
+                <div class="flex flex-wrap gap-2">
+                  <button id="cropPresetReset" class="btn-batch">Reset</button>
+                  <button id="cropPresetMargins" class="btn-batch">Trim 0.5" Margins</button>
+                  <button id="cropPresetHeader" class="btn-batch">Trim Header (1.2")</button>
+                  <button id="cropPresetFooter" class="btn-batch">Trim Footer (1.2")</button>
+                </div>
+              </div>
+
+              <div>
+                <span class="block text-sm font-semibold mb-2 text-primary">Apply Crop To</span>
+                <div class="space-y-2">
+                  <label class="flex items-center gap-2 cursor-pointer text-sm text-primary">
+                    <input type="radio" name="cropScope" value="current" checked class="cursor-pointer">
+                    <span>Current page only</span>
+                  </label>
+                  <label class="flex items-center gap-2 cursor-pointer text-sm text-primary">
+                    <input type="radio" name="cropScope" value="all" class="cursor-pointer">
+                    <span>All pages</span>
+                  </label>
+                  <label class="flex items-center gap-2 cursor-pointer text-sm text-primary">
+                    <input type="radio" name="cropScope" value="range" class="cursor-pointer">
+                    <span>Custom page range</span>
+                  </label>
+                  <input type="text" id="cropScopeRange" class="w-full text-sm hidden mt-1" placeholder="e.g. 1-3, 5" value="">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Unlock PDF Options -->
+        <div id="unlockOptions" class="card p-6 hidden">
+          <div class="flex items-start justify-between mb-4">
+            <div class="flex items-start gap-3 flex-1">
+              <div class="text-2xl">
+                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <use href="../assets/icons/icons.svg#icon-unlock"></use>
+                </svg>
+              </div>
+              <div class="flex-1">
+                <h3 class="text-xl font-bold mb-1 text-primary">Unlock PDF Settings</h3>
+              </div>
+            </div>
+            <button class="tool-help-btn" data-target="unlockDescription" aria-label="Toggle unlock tool help description">
+              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <use href="../assets/icons/icons.svg#icon-help"></use>
+              </svg>
+            </button>
+          </div>
+          <p id="unlockDescription" class="text-sm mb-4 hidden text-secondary">Remove password protection from your PDF file completely so you can view, edit, or print it without entering the password again.</p>
+
+          <div class="space-y-4">
+            <!-- Encryption Info -->
+            <div id="unlockFileInfo" class="p-4 rounded-lg bg-secondary-text hidden">
+              <div class="flex items-center gap-3 mb-2">
+                <div class="text-lg text-primary">
+                  <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <use href="../assets/icons/icons.svg#icon-lock"></use>
+                  </svg>
+                </div>
+                <div class="font-semibold text-primary text-sm">Password-Protected PDF Detected</div>
+              </div>
+              <div class="text-xs text-secondary space-y-1">
+                <div>File name: <span id="unlockFileName" class="font-medium text-primary">-</span></div>
+                <div>Size: <span id="unlockFileSize" class="font-medium text-primary">-</span></div>
+                <div>Encryption details: <span id="unlockFileAlgorithm" class="font-medium text-primary">-</span></div>
+              </div>
+            </div>
+
+            <!-- Password Input Container -->
+            <div id="unlockPasswordContainer" class="hidden">
+              <label for="unlockPassword" class="block text-sm font-semibold mb-2 text-primary">Enter PDF Password</label>
+              <div class="relative">
+                <input type="password" id="unlockPassword" class="w-full text-sm pr-10" placeholder="Enter PDF password to decrypt..." autocomplete="off">
+                <button type="button" id="toggleUnlockPasswordVisibility" class="absolute right-3 top-1/2 -translate-y-1/2 text-secondary hover:text-primary" aria-label="Toggle password visibility" style="background: none; border: none; padding: 0; cursor: pointer;">
+                  <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <use href="../assets/icons/icons.svg#icon-eye"></use>
+                  </svg>
+                </button>
+              </div>
+              <p class="text-xs text-secondary mt-1">This tool runs 100% client-side. Your password and PDF data never leave your device.</p>
+            </div>
+            
+            <!-- Not Encrypted Info Container -->
+            <div id="unlockNotEncryptedInfo" class="p-4 rounded-lg bg-secondary-text hidden">
+              <div class="flex items-center gap-3">
+                <div class="text-lg text-primary" style="color: #059669;">
+                  <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <use href="../assets/icons/icons.svg#icon-unlock"></use>
+                  </svg>
+                </div>
+                <div class="font-semibold text-sm" style="color: #059669;">This PDF is not password-protected! No decryption is necessary.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
         </div>
 
         <!-- File List (1/3) - moved to right side -->
